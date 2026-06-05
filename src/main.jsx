@@ -167,13 +167,6 @@ function Sidebar({ view, setView, project }) {
           </div>
         </div>
 
-        <div className="clientProfileLine">
-          <Layers3 size={15} />
-          <div>
-            <span>{project.service}</span>
-            <small>Proyecto activo</small>
-          </div>
-        </div>
       </div>
 
       <nav className="nav premiumNav">
