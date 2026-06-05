@@ -13629,37 +13629,58 @@ body {
   font-size: 0.96rem;
 }
 
-.canvaRouteMap {
-  position: relative;
+.canvaRoutePath {
   display: grid;
-  grid-template-columns: repeat(6, minmax(70px, 1fr));
-  row-gap: 36px;
-  column-gap: 10px;
-  padding: 18px 4px 10px;
+  gap: 28px;
+  padding: 20px 8px 8px;
 }
 
-.canvaRouteMap::before {
+.canvaRouteRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(72px, 1fr));
+  gap: 10px;
+}
+
+.canvaRouteRow::before {
   content: "";
   position: absolute;
-  left: 9%;
-  right: 7%;
-  top: 44px;
-  height: 118px;
+  left: calc((100% / 6) * 0.5);
+  right: calc((100% / 6) * 0.5);
+  top: 20px;
   border-top: 3px dotted #141b1f;
+  pointer-events: none;
+}
+
+.canvaRouteRow.reverse::after {
+  content: "";
+  position: absolute;
+  right: calc((100% / 6) * 0.5);
+  top: -28px;
+  height: 48px;
   border-right: 3px dotted #141b1f;
-  border-bottom: 3px dotted #141b1f;
-  border-radius: 0 40px 40px 0;
+  pointer-events: none;
+}
+
+.canvaRoutePath .canvaRouteRow:nth-child(3)::after {
+  content: "";
+  position: absolute;
+  left: calc((100% / 6) * 0.5);
+  top: -28px;
+  height: 48px;
+  border-left: 3px dotted #141b1f;
   pointer-events: none;
 }
 
 .canvaRoutePin {
   position: absolute;
-  top: -12px;
-  left: 47%;
-  z-index: 3;
+  top: -43px;
+  left: 50%;
+  z-index: 4;
   color: #00b8b5;
   fill: #00b8b5;
   stroke: #00b8b5;
+  transform: translateX(-50%);
 }
 
 .canvaRouteNode {
@@ -13669,6 +13690,7 @@ body {
   display: grid;
   justify-items: center;
   gap: 3px;
+  padding-top: 0;
   border: 0;
   background: transparent;
   color: #141b1f;
@@ -13900,11 +13922,13 @@ body {
       "detail";
   }
 
-  .canvaRouteMap {
+  .canvaRouteRow {
     grid-template-columns: repeat(4, minmax(70px, 1fr));
   }
 
-  .canvaRouteMap::before {
+  .canvaRouteRow::before,
+  .canvaRouteRow::after,
+  .canvaRoutePath .canvaRouteRow:nth-child(3)::after {
     display: none;
   }
 }
@@ -13920,7 +13944,7 @@ body {
     justify-content: space-between;
   }
 
-  .canvaRouteMap {
+  .canvaRouteRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

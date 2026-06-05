@@ -765,6 +765,7 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
     };
   });
   const unlockedCount = allMilestones.filter((item) => item.unlocked).length;
+  const pinIndex = Math.max(0, allMilestones.findLastIndex((item) => item.unlocked));
 
   const totalCost = (rows = []) => rows.reduce((sum, item) => {
     const cost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"] ?? 0);
@@ -909,18 +910,7 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
               <strong>E{Math.max(0, unlockedCount - 1)}/E12</strong>
             </div>
           </div>
-          <div className="canvaRouteMap">
-            <MapPin className="canvaRoutePin" size={34} />
-            {allMilestones.map((item, index) => (
-              <button className={`canvaRouteNode ${statusClass(item.status)} ${item.unlocked ? "unlocked" : "locked"}`} key={`${item.id}-${index}`} onClick={() => setView?.("ruta")}>
-                <span>{String(item.id).replace(".0", "")}</span>
-                <ChevronRight size={13} />
-                <strong>{item.title}</strong>
-                <small>{item.date}</small>
-                <em>{item.unlocked ? "Abierto" : "Cerrado"}</em>
-              </button>
-            ))}
-          </div>
+          <CanvaMilestonePath milestones={allMilestones} pinIndex={pinIndex} statusClass={statusClass} setView={setView} />
         </article>
 
         <article className="canvaPanel canvaCoePanel">
@@ -976,6 +966,44 @@ function CanvaRing({ value = 0, total = 1 }) {
   return (
     <div className="canvaRing" style={{ "--ring": `${percent}%` }}>
       <span>{value}</span>
+    </div>
+  );
+}
+
+function CanvaMilestonePath({ milestones = [], pinIndex = 0, statusClass, setView }) {
+  const perRow = 6;
+  const rows = [];
+  for (let index = 0; index < milestones.length; index += perRow) {
+    rows.push(milestones.slice(index, index + perRow));
+  }
+
+  return (
+    <div className="canvaRoutePath" style={{ "--pin-index": pinIndex }}>
+      {rows.map((row, rowIndex) => {
+        const isReverse = rowIndex % 2 === 1;
+        const displayRow = isReverse ? [...row].reverse() : row;
+        return (
+          <div className={`canvaRouteRow ${isReverse ? "reverse" : ""}`} key={`route-row-${rowIndex}`}>
+            {displayRow.map((item) => {
+              const originalIndex = milestones.indexOf(item);
+              return (
+                <button
+                  className={`canvaRouteNode ${statusClass(item.status)} ${item.unlocked ? "unlocked" : "locked"} ${originalIndex === pinIndex ? "current" : ""}`}
+                  key={`${item.id}-${originalIndex}`}
+                  onClick={() => setView?.("ruta")}
+                >
+                  {originalIndex === pinIndex && <MapPin className="canvaRoutePin" size={38} />}
+                  <span>{String(item.id).replace(".0", "")}</span>
+                  <ChevronRight size={13} />
+                  <strong>{item.title}</strong>
+                  <small>{item.date}</small>
+                  <em>{item.unlocked ? "Abierto" : "Cerrado"}</em>
+                </button>
+              );
+            })}
+          </div>
+        );
+      })}
     </div>
   );
 }
