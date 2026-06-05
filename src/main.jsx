@@ -713,7 +713,7 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
   );
 }
 
-function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], deliverables = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], updates = [], setView }) {
+function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], deliverables = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], updates = [], meetings = [], setView }) {
   const [openPanel, setOpenPanel] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -723,7 +723,14 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
   const activePending = pending.filter(isPendingActive).length;
   const meetUrl = safeUrl(project?.linkMeet);
 
-  const meetings = [
+  const meetingItems = [
+    ...meetings.map((item) => ({
+      title: item.title || "ReuniÃ³n",
+      date: [item.date, item.time].filter(Boolean).join(" Â· ") || "Por definir",
+      link: safeUrl(item.link) || meetUrl,
+      status: item.status,
+      observation: item.observation,
+    })),
     {
       title: project?.nextStep || "Próxima reunión",
       date: project?.nextDate || "Por definir",
@@ -736,12 +743,17 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
   ].filter((item) => item.title || item.date);
 
   const pendingItems = pending.filter(isPendingActive).slice(0, 8);
+  const isMilestoneOpen = (item = {}, index = 0) => {
+    const explicit = normalizeSystemName(item.open || item.abierto || "");
+    if (explicit) return explicit === "si" || explicit === "sí" || explicit.includes("abierto") || explicit.includes("disponible");
+    return index < 4 || isCompletedStatus(item.status);
+  };
   const allMilestones = Array.from({ length: Math.max(12, milestones.length || 0) }, (_, index) => {
     const item = milestones[index] || {};
     const code = item.id || `E${index}`;
     const title = item.title || "Por definir";
     const status = item.status || (index < 4 ? "Abierto" : "Cerrado");
-    const unlocked = index < 4 || isCompletedStatus(status);
+    const unlocked = isMilestoneOpen(item, index);
     return {
       ...item,
       id: code,
@@ -822,12 +834,13 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
             {openPanel === "meetings" && (
               <div className="canvaPopover">
                 <h4>Reuniones</h4>
-                {meetings.map((item, index) => (
+                {meetingItems.map((item, index) => (
                   <div className="canvaPopoverItem" key={`${item.title}-${index}`}>
                     <CalendarDays size={16} />
                     <div>
                       <strong>{item.title}</strong>
                       <span>{item.date}</span>
+                      {item.status && <span>{item.status}</span>}
                       {item.link && <a href={item.link} target="_blank" rel="noreferrer">Conectarse</a>}
                     </div>
                   </div>
@@ -922,7 +935,7 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
               <span><i className="muted"></i> COE TO BE</span>
             </div>
           </div>
-          <CanvaTrendChart asIs={asIsCOE} toBe={toBeCOE} progress={projectProgress} />
+          <CanvaTrendChart coeAsIs={coeAsIs} coeToBe={coeToBe} asIs={asIsCOE} toBe={toBeCOE} progress={projectProgress} />
         </article>
 
         <article className="canvaPanel canvaSystemsPanel">
@@ -967,15 +980,52 @@ function CanvaRing({ value = 0, total = 1 }) {
   );
 }
 
-function CanvaTrendChart({ asIs = 0, toBe = 0, progress = 0 }) {
+function CanvaTrendChart({ coeAsIs = [], coeToBe = [], asIs = 0, toBe = 0, progress = 0 }) {
+  const normalizeMonth = (value = "") => {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    const numeric = Number(raw);
+    if (Number.isFinite(numeric) && numeric > 0) return `Mes ${numeric}`;
+    return raw;
+  };
+  const costFor = (item = {}) => {
+    const cost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"] ?? 0);
+    const frequency = parseNumericValue(item.frequency ?? item.frecuencia ?? item.FRECUENCIA ?? 1) || 1;
+    return cost * frequency;
+  };
+  const totalsByMonth = (rows = []) => rows.reduce((acc, item) => {
+    const month = normalizeMonth(item.month || item.mes || item.MES);
+    if (!month) return acc;
+    acc.set(month, (acc.get(month) || 0) + costFor(item));
+    return acc;
+  }, new Map());
+
+  const asIsMap = totalsByMonth(coeAsIs);
+  const toBeMap = totalsByMonth(coeToBe);
+  const monthLabels = [...new Set([...asIsMap.keys(), ...toBeMap.keys()])].slice(0, 6);
+
+  if (monthLabels.length) {
+    const asIsValues = monthLabels.map((month) => asIsMap.get(month) || 0);
+    const toBeValues = monthLabels.map((month) => toBeMap.get(month) || 0);
+    const hasRealCost = [...asIsValues, ...toBeValues].some((value) => value > 0);
+    if (hasRealCost) {
+      return <CanvaTrendSvg labels={monthLabels} asIsValues={asIsValues} toBeValues={toBeValues} />;
+    }
+  }
+
   const base = Number(asIs) || Math.max(40, 90 - progress);
   const target = Number(toBe) || Math.max(15, base * 0.68);
-  const months = [1, 2, 3, 4, 5, 6];
-  const asIsValues = months.map((month, index) => base * (0.72 + Math.sin(index * 1.35) * 0.16 + (index === 3 ? 0.34 : 0)));
-  const toBeValues = months.map((month, index) => target * (0.70 + Math.sin(index * 1.35) * 0.13 + (index === 3 ? 0.24 : 0)));
+  const labels = ["Mes 1", "Mes 2", "Mes 3", "Mes 4", "Mes 5", "Mes 6"];
+  const asIsValues = labels.map((month, index) => base * (0.72 + Math.sin(index * 1.35) * 0.16 + (index === 3 ? 0.34 : 0)));
+  const toBeValues = labels.map((month, index) => target * (0.70 + Math.sin(index * 1.35) * 0.13 + (index === 3 ? 0.24 : 0)));
+  return <CanvaTrendSvg labels={labels} asIsValues={asIsValues} toBeValues={toBeValues} />;
+}
+
+function CanvaTrendSvg({ labels = [], asIsValues = [], toBeValues = [] }) {
   const max = Math.max(...asIsValues, ...toBeValues, 1);
   const pathFor = (values) => values.map((value, index) => {
-    const x = 18 + index * 44;
+    const step = labels.length > 1 ? 220 / (labels.length - 1) : 44;
+    const x = 18 + index * step;
     const y = 142 - (value / max) * 100;
     return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
   }).join(" ");
@@ -985,7 +1035,10 @@ function CanvaTrendChart({ asIs = 0, toBe = 0, progress = 0 }) {
       {[0, 1, 2].map((line) => <line key={line} x1="14" x2="246" y1={48 + line * 42} y2={48 + line * 42} />)}
       <path d={pathFor(toBeValues)} className="toBe" />
       <path d={pathFor(asIsValues)} className="asIs" />
-      {months.map((month, index) => <text key={month} x={18 + index * 44} y="160">{month}</text>)}
+      {labels.map((month, index) => {
+        const step = labels.length > 1 ? 220 / (labels.length - 1) : 44;
+        return <text key={month} x={18 + index * step} y="160">{String(month).replace("Mes ", "")}</text>;
+      })}
       <text x="224" y="166">Mes</text>
     </svg>
   );
@@ -3414,7 +3467,7 @@ function App() {
       });
   }, []);
 
-  const { project, milestones, findings, pending, deliverables, updates, education, documents = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
+  const { project, milestones, findings, pending, deliverables, updates, education, meetings = [], documents = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
   const completedText = useMemo(() => {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
@@ -3466,6 +3519,7 @@ function App() {
               coeAsIs={coeAsIs}
               coeToBe={coeToBe}
               updates={updates}
+              meetings={meetings}
               setView={setView}
             />
           )}
