@@ -713,6 +713,188 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
   );
 }
 
+function AppTopbar({ project, pending = [], meetings = [], updates = [], milestones = [], findings = [], deliverables = [], documents = [], education = [], processesAsIs = [], processesToBe = [], setView, setSelectedHito, setSelectedDeliverable }) {
+  const [openPanel, setOpenPanel] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const meetUrl = safeUrl(project?.linkMeet);
+  const activePending = pending.filter(isPendingActive).length;
+
+  const meetingItems = [
+    ...meetings.map((item) => ({
+      title: item.title || "Reunion",
+      date: [item.date, item.time].filter(Boolean).join(" - ") || "Por definir",
+      link: safeUrl(item.link) || meetUrl,
+      status: item.status,
+    })),
+    {
+      title: project?.nextStep || "Proxima reunion",
+      date: project?.nextDate || "Por definir",
+      link: meetUrl,
+    },
+    ...updates
+      .filter((item) => normalizeSystemName(`${item.target || ""} ${item.title || ""} ${item.text || ""}`).includes("reunion"))
+      .slice(0, 3)
+      .map((item) => ({ title: item.title || "Reunion", date: item.text || "Por definir", link: meetUrl })),
+  ].filter((item) => item.title || item.date);
+
+  const pendingItems = pending.filter(isPendingActive).slice(0, 8);
+  const query = normalizeSystemName(searchTerm);
+  const searchResults = query ? [
+    ...milestones.map((item) => ({
+      type: "Hito",
+      title: item.title,
+      detail: [item.id, item.status, item.targetDate].filter(Boolean).join(" - "),
+      view: "ruta",
+      action: () => setSelectedHito?.(item.title || ""),
+      haystack: `${item.id} ${item.title} ${item.status} ${item.system} ${item.description}`,
+    })),
+    ...findings.map((item) => ({
+      type: "Hallazgo",
+      title: item.finding,
+      detail: [item.priority, item.status, item.management, item.areaDetail].filter(Boolean).join(" - "),
+      view: "hallazgos",
+      haystack: `${item.id} ${item.finding} ${item.description} ${item.priority} ${item.status} ${item.management} ${item.areaDetail}`,
+    })),
+    ...pending.map((item) => ({
+      type: "Pendiente",
+      title: item.request,
+      detail: [item.status, item.dueDate].filter(Boolean).join(" - "),
+      view: "pendientes",
+      haystack: `${item.request} ${item.status} ${item.owner} ${item.blocks} ${item.description}`,
+    })),
+    ...deliverables.map((item) => ({
+      type: "Entregable",
+      title: item.deliverable,
+      detail: [item.system, item.status, item.responsible].filter(Boolean).join(" - "),
+      view: "entregables",
+      action: () => setSelectedDeliverable?.(item.deliverable || ""),
+      haystack: `${item.deliverable} ${item.system} ${item.milestone} ${item.status} ${item.responsible}`,
+    })),
+    ...documents.map((item) => ({
+      type: "Documento",
+      title: item.item || item.title,
+      detail: [item.category, item.status].filter(Boolean).join(" - "),
+      view: "documentos",
+      haystack: `${item.title} ${item.item} ${item.category} ${item.status} ${item.detail}`,
+    })),
+    ...education.map((item) => ({
+      type: "Info",
+      title: item.deliverable,
+      detail: [item.system, item.status].filter(Boolean).join(" - "),
+      view: "educacion",
+      haystack: `${item.deliverable} ${item.system} ${item.milestone} ${item.whatIs} ${item.purpose}`,
+    })),
+    ...processesAsIs.map((item) => ({
+      type: "Proceso AS IS",
+      title: item.processName,
+      detail: [item.type, item.processCode].filter(Boolean).join(" - "),
+      view: "procesos",
+      haystack: `${item.processName} ${item.processCode} ${item.type} ${item.macroName} ${item.description}`,
+    })),
+    ...processesToBe.map((item) => ({
+      type: "Proceso TO BE",
+      title: item.processName,
+      detail: [item.type, item.status, item.processCode].filter(Boolean).join(" - "),
+      view: "procesos",
+      haystack: `${item.processName} ${item.processCode} ${item.type} ${item.status} ${item.macroName} ${item.changes}`,
+    })),
+  ]
+    .filter((item) => normalizeSystemName(item.haystack).includes(query))
+    .slice(0, 10) : [];
+
+  const goToResult = (item) => {
+    item.action?.();
+    setView?.(item.view);
+    setSearchTerm("");
+    setOpenPanel("");
+  };
+
+  return (
+    <div className="canvaTopbar appGlobalTopbar">
+      <div className="canvaActionWrap globalSearchWrap">
+        <label className="canvaSearch">
+          <Search size={18} />
+          <input
+            value={searchTerm}
+            onChange={(event) => {
+              setSearchTerm(event.target.value);
+              setOpenPanel(event.target.value ? "search" : "");
+            }}
+            onFocus={() => searchTerm && setOpenPanel("search")}
+            placeholder="Buscar"
+          />
+        </label>
+        {openPanel === "search" && (
+          <div className="canvaPopover canvaSearchResults">
+            <h4>Resultados</h4>
+            {searchResults.map((item, index) => (
+              <button className="canvaPopoverItem asButton" key={`${item.type}-${item.title}-${index}`} onClick={() => goToResult(item)}>
+                <Search size={16} />
+                <div>
+                  <strong>{item.title || "Sin titulo"}</strong>
+                  <span>{item.type}{item.detail ? ` - ${item.detail}` : ""}</span>
+                </div>
+              </button>
+            ))}
+            {!searchResults.length && <p className="canvaEmptyText">No hay resultados para esa busqueda.</p>}
+          </div>
+        )}
+      </div>
+
+      <div className="canvaTopActions">
+        <div className="canvaActionWrap">
+          <button className="canvaIconAction" onClick={() => setOpenPanel(openPanel === "meetings" ? "" : "meetings")} aria-label="Reuniones">
+            <Clock3 size={18} />
+            <span>Reuniones</span>
+          </button>
+          {openPanel === "meetings" && (
+            <div className="canvaPopover">
+              <h4>Reuniones</h4>
+              {meetingItems.map((item, index) => (
+                <div className="canvaPopoverItem" key={`${item.title}-${index}`}>
+                  <CalendarDays size={16} />
+                  <div>
+                    <strong>{item.title}</strong>
+                    <span>{item.date}</span>
+                    {item.status && <span>{item.status}</span>}
+                    {item.link && <a href={item.link} target="_blank" rel="noreferrer">Conectarse</a>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="canvaActionWrap">
+          <button className="canvaIconAction" onClick={() => setOpenPanel(openPanel === "pending" ? "" : "pending")} aria-label="Pendientes">
+            <Bell size={18} />
+            {activePending > 0 && <i>{activePending}</i>}
+            <span>Pendientes</span>
+          </button>
+          {openPanel === "pending" && (
+            <div className="canvaPopover right">
+              <h4>Pendientes</h4>
+              {pendingItems.map((item, index) => (
+                <button className="canvaPopoverItem asButton" key={`${item.request}-${index}`} onClick={() => setView?.("pendientes")}>
+                  <AlertTriangle size={16} />
+                  <div>
+                    <strong>{item.request}</strong>
+                    <span>{item.dueDate || "Por definir"} - {item.status || "Pendiente"}</span>
+                  </div>
+                </button>
+              ))}
+              {!pendingItems.length && <p className="canvaEmptyText">No hay pendientes activos.</p>}
+            </div>
+          )}
+        </div>
+
+        <Logo src={project?.logoClient} fallback={(project?.companyClient || project?.client || "CL").slice(0, 2)} className="canvaTopLogo" />
+        <span className="canvaUserName">{project?.contactName || project?.responsibleClient || "Cliente"}</span>
+      </div>
+    </div>
+  );
+}
+
 function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], deliverables = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], updates = [], meetings = [], setView }) {
   const [openPanel, setOpenPanel] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -748,8 +930,9 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
     if (explicit) return explicit === "si" || explicit === "sí" || explicit.includes("abierto") || explicit.includes("disponible");
     return index < 4 || isCompletedStatus(item.status);
   };
-  const allMilestones = Array.from({ length: Math.max(12, milestones.length || 0) }, (_, index) => {
-    const item = milestones[index] || {};
+  const routeSource = milestones.length > 12 ? [...milestones.slice(0, 6), ...milestones.slice(-6)] : milestones;
+  const allMilestones = Array.from({ length: 12 }, (_, index) => {
+    const item = routeSource[index] || {};
     const code = item.id || `E${index}`;
     const title = item.title || "Por definir";
     const status = item.status || (index < 4 ? "Abierto" : "Cerrado");
@@ -765,6 +948,7 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
     };
   });
   const unlockedCount = allMilestones.filter((item) => item.unlocked).length;
+  const visibleCompletedMilestones = allMilestones.filter((item) => isCompletedStatus(item.status)).length;
   const pinIndex = Math.max(0, allMilestones.findLastIndex((item) => item.unlocked));
 
   const totalCost = (rows = []) => rows.reduce((sum, item) => {
@@ -820,64 +1004,6 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
 
   return (
     <section className="canvaSummary">
-      <div className="canvaTopbar">
-        <label className="canvaSearch">
-          <Search size={16} />
-          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar" />
-        </label>
-
-        <div className="canvaTopActions">
-          <div className="canvaActionWrap">
-            <button className="canvaIconAction" onClick={() => setOpenPanel(openPanel === "meetings" ? "" : "meetings")} aria-label="Reuniones">
-              <Clock3 size={18} />
-              <span>Reuniones</span>
-            </button>
-            {openPanel === "meetings" && (
-              <div className="canvaPopover">
-                <h4>Reuniones</h4>
-                {meetingItems.map((item, index) => (
-                  <div className="canvaPopoverItem" key={`${item.title}-${index}`}>
-                    <CalendarDays size={16} />
-                    <div>
-                      <strong>{item.title}</strong>
-                      <span>{item.date}</span>
-                      {item.status && <span>{item.status}</span>}
-                      {item.link && <a href={item.link} target="_blank" rel="noreferrer">Conectarse</a>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="canvaActionWrap">
-            <button className="canvaIconAction" onClick={() => setOpenPanel(openPanel === "pending" ? "" : "pending")} aria-label="Pendientes">
-              <Bell size={18} />
-              {activePending > 0 && <i>{activePending}</i>}
-              <span>Pendientes</span>
-            </button>
-            {openPanel === "pending" && (
-              <div className="canvaPopover right">
-                <h4>Pendientes</h4>
-                {pendingItems.map((item, index) => (
-                  <button className="canvaPopoverItem asButton" key={`${item.request}-${index}`} onClick={() => setView?.("pendientes")}>
-                    <AlertTriangle size={16} />
-                    <div>
-                      <strong>{item.request}</strong>
-                      <span>{item.dueDate || "Por definir"} · {item.status || "Pendiente"}</span>
-                    </div>
-                  </button>
-                ))}
-                {!pendingItems.length && <p className="canvaEmptyText">No hay pendientes activos.</p>}
-              </div>
-            )}
-          </div>
-
-          <Logo src={project?.logoClient} fallback={(project?.companyClient || project?.client || "CL").slice(0, 2)} className="canvaTopLogo" />
-          <span className="canvaUserName">{project?.contactName || project?.responsibleClient || "Cliente"}</span>
-        </div>
-      </div>
-
       <div className="canvaWelcome">
         <h2>Hola, {project?.contactName || project?.companyClient || project?.client || "Nombre del Cliente"}</h2>
         <p>Bienvenido a tu Ruta de Implementación Visible (RIV)</p>
@@ -903,11 +1029,11 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
           <div className="canvaPanelHeader">
             <div>
               <h3>Hitos Completados</h3>
-              <strong>{completedMilestones}/{milestones.length || allMilestones.length}</strong>
+              <strong>{visibleCompletedMilestones}/{allMilestones.length}</strong>
             </div>
             <div>
               <span>Desbloqueado hasta</span>
-              <strong>E{Math.max(0, unlockedCount - 1)}/E12</strong>
+              <strong>E{Math.max(0, unlockedCount)}/E12</strong>
             </div>
           </div>
           <CanvaMilestonePath milestones={allMilestones} pinIndex={pinIndex} statusClass={statusClass} setView={setView} />
@@ -1051,23 +1177,39 @@ function CanvaTrendChart({ coeAsIs = [], coeToBe = [], asIs = 0, toBe = 0, progr
 
 function CanvaTrendSvg({ labels = [], asIsValues = [], toBeValues = [] }) {
   const max = Math.max(...asIsValues, ...toBeValues, 1);
+  const costLabel = (value) => {
+    if (value >= 1000) return `$${Math.round(value / 1000)}k`;
+    return `$${Math.round(value)}`;
+  };
   const pathFor = (values) => values.map((value, index) => {
     const step = labels.length > 1 ? 220 / (labels.length - 1) : 44;
-    const x = 18 + index * step;
+    const x = 42 + index * step;
     const y = 142 - (value / max) * 100;
     return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
   }).join(" ");
 
   return (
-    <svg className="canvaTrendChart" viewBox="0 0 260 170" role="img" aria-label="Tendencia COE de seis meses">
-      {[0, 1, 2].map((line) => <line key={line} x1="14" x2="246" y1={48 + line * 42} y2={48 + line * 42} />)}
+    <svg className="canvaTrendChart" viewBox="0 0 292 178" role="img" aria-label="Tendencia COE de seis meses">
+      <text className="axisTitle" x="8" y="18">Costo</text>
+      <line className="axisLine" x1="34" x2="34" y1="36" y2="144" />
+      <line className="axisLine" x1="34" x2="268" y1="144" y2="144" />
+      {[0, 1, 2].map((line) => {
+        const y = 48 + line * 42;
+        const value = max * (1 - (y - 42) / 100);
+        return (
+          <React.Fragment key={line}>
+            <line x1="34" x2="268" y1={y} y2={y} />
+            <text className="axisValue" x="4" y={y + 4}>{costLabel(Math.max(0, value))}</text>
+          </React.Fragment>
+        );
+      })}
       <path d={pathFor(toBeValues)} className="toBe" />
       <path d={pathFor(asIsValues)} className="asIs" />
       {labels.map((month, index) => {
         const step = labels.length > 1 ? 220 / (labels.length - 1) : 44;
-        return <text key={month} x={18 + index * step} y="160">{String(month).replace("Mes ", "")}</text>;
+        return <text key={month} x={42 + index * step} y="164">{String(month).replace("Mes ", "")}</text>;
       })}
-      <text x="224" y="166">Mes</text>
+      <text x="242" y="172">Mes</text>
     </svg>
   );
 }
@@ -3507,7 +3649,22 @@ function App() {
       <Sidebar view={view} setView={setView} project={project} />
 
       <main className="main">
-        {view !== "resumen" && <Header project={project} connected={connected} />}
+        <AppTopbar
+          project={project}
+          pending={pending}
+          meetings={meetings}
+          updates={updates}
+          milestones={milestones}
+          findings={findings}
+          deliverables={deliverables}
+          documents={documents}
+          education={education}
+          processesAsIs={processesAsIs}
+          processesToBe={processesToBe}
+          setView={setView}
+          setSelectedHito={setSelectedHito}
+          setSelectedDeliverable={setSelectedDeliverable}
+        />
 
         <div className="content">
           <div className="mobileTabs">
@@ -3530,8 +3687,6 @@ function App() {
           </div>
 
           {error && <div className="errorBox">{error}</div>}
-
-          {view !== "resumen" && <ProjectHero project={project} completedText={completedText} />}
 
           {view === "portal" && <PortalProject project={project} milestones={milestones} pending={pending} setView={setView} />}
 

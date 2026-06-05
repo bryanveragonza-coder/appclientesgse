@@ -13354,6 +13354,20 @@ body {
   min-height: 60px;
 }
 
+.appGlobalTopbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  margin: 0 0 24px;
+  padding: 14px 0 12px;
+  background: linear-gradient(180deg, rgba(247, 251, 250, 0.98) 0%, rgba(247, 251, 250, 0.90) 100%);
+  backdrop-filter: blur(14px);
+}
+
+.globalSearchWrap {
+  width: min(100%, 880px);
+}
+
 .canvaSearch {
   display: flex;
   align-items: center;
@@ -13372,6 +13386,27 @@ body {
   outline: 0;
   font: 500 0.9rem "Roboto", sans-serif;
   color: #102f37;
+}
+
+.appGlobalTopbar .canvaSearch {
+  min-height: 50px;
+  padding: 0 22px;
+  box-shadow: 0 16px 34px rgba(16, 47, 55, 0.09);
+}
+
+.appGlobalTopbar .canvaSearch input {
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.canvaSearchResults {
+  left: 0;
+  right: auto;
+  width: min(520px, calc(100vw - 360px));
+}
+
+.canvaSearchResults .canvaPopoverItem {
+  cursor: pointer;
 }
 
 .canvaTopActions {
@@ -13662,16 +13697,6 @@ body {
   pointer-events: none;
 }
 
-.canvaRoutePath .canvaRouteRow:nth-child(3)::after {
-  content: "";
-  position: absolute;
-  left: calc((100% / 6) * 0.5);
-  top: -28px;
-  height: 48px;
-  border-left: 3px dotted #141b1f;
-  pointer-events: none;
-}
-
 .canvaRoutePin {
   position: absolute;
   top: -43px;
@@ -13681,6 +13706,16 @@ body {
   fill: #00b8b5;
   stroke: #00b8b5;
   transform: translateX(-50%);
+}
+
+.canvaRoutePin path {
+  fill: #00b8b5;
+  stroke: #00b8b5;
+}
+
+.canvaRoutePin circle {
+  fill: #ffffff;
+  stroke: #ffffff;
 }
 
 .canvaRouteNode {
@@ -13772,6 +13807,25 @@ body {
 
 .canvaTrendChart line {
   stroke: rgba(16, 47, 55, 0.08);
+}
+
+.canvaTrendChart .axisLine {
+  stroke: rgba(16, 47, 55, 0.28);
+  stroke-width: 1.3;
+}
+
+.canvaTrendChart .axisTitle,
+.canvaTrendChart .axisValue {
+  fill: #102f37;
+  font-weight: 800;
+}
+
+.canvaTrendChart .axisTitle {
+  font-size: 0.62rem;
+}
+
+.canvaTrendChart .axisValue {
+  font-size: 0.5rem;
 }
 
 .canvaTrendChart path {
@@ -13927,8 +13981,7 @@ body {
   }
 
   .canvaRouteRow::before,
-  .canvaRouteRow::after,
-  .canvaRoutePath .canvaRouteRow:nth-child(3)::after {
+  .canvaRouteRow::after {
     display: none;
   }
 }
@@ -13942,6 +13995,16 @@ body {
 
   .canvaTopActions {
     justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .appGlobalTopbar {
+    position: relative;
+    padding-top: 0;
+  }
+
+  .canvaSearchResults {
+    width: min(100%, calc(100vw - 52px));
   }
 
   .canvaRouteRow {
