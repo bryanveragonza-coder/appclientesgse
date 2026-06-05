@@ -14325,12 +14325,12 @@ body {
 .content > :not(.canvaSummary) .portalHero {
   width: calc(100% - 32px) !important;
   max-width: 1320px !important;
-  min-height: 560px !important;
-  margin: 0 auto 12px !important;
-  padding: 44px 64px 38px !important;
+  min-height: 465px !important;
+  margin: 0 auto 10px !important;
+  padding: 34px 58px 28px !important;
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) 430px !important;
-  gap: 46px !important;
+  gap: 42px !important;
   align-items: stretch !important;
   background: #00b8b5 !important;
   box-shadow: 14px 16px 34px rgba(7, 59, 76, 0.16) !important;
@@ -14342,11 +14342,11 @@ body {
 
 .portalRivTitle,
 .portalHero h2 {
-  max-width: 620px !important;
-  margin-bottom: 24px !important;
+  max-width: 560px !important;
+  margin-bottom: 22px !important;
   color: #ffffff !important;
-  font-size: clamp(3rem, 4.45vw, 4.75rem) !important;
-  line-height: 1.03 !important;
+  font-size: clamp(2.35rem, 3.55vw, 3.85rem) !important;
+  line-height: 1.05 !important;
   font-weight: 800 !important;
 }
 
@@ -14355,21 +14355,21 @@ body {
 }
 
 .portalHero p {
-  max-width: 560px !important;
+  max-width: 540px !important;
   color: rgba(255, 255, 255, 0.88) !important;
-  font-size: 0.92rem !important;
-  line-height: 1.42 !important;
+  font-size: 0.88rem !important;
+  line-height: 1.35 !important;
 }
 
 .portalClientBox {
   grid-template-columns: repeat(2, minmax(0, 220px)) !important;
-  gap: 28px !important;
-  margin-top: 28px !important;
+  gap: 22px !important;
+  margin-top: 24px !important;
 }
 
 .portalClientBox > div {
-  min-height: 68px !important;
-  padding: 13px 16px !important;
+  min-height: 60px !important;
+  padding: 11px 15px !important;
   background: rgba(255, 255, 255, 0.16) !important;
   border: 0 !important;
   box-shadow: 10px 12px 18px rgba(7, 59, 76, 0.10) !important;
@@ -14385,33 +14385,33 @@ body {
 }
 
 .portalSignature {
-  margin: 28px 0 0 !important;
+  margin: 24px 0 0 !important;
   color: #ffffff !important;
-  font-size: 1rem !important;
+  font-size: 0.96rem !important;
   font-style: italic !important;
 }
 
 .portalMetrics {
   display: grid !important;
   align-content: center !important;
-  gap: 18px !important;
+  gap: 14px !important;
 }
 
 .portalMetricCard {
-  min-height: 98px !important;
+  min-height: 88px !important;
   display: grid !important;
   grid-template-columns: 1fr 54px !important;
   align-items: center !important;
   gap: 18px !important;
-  padding: 15px 14px !important;
+  padding: 12px 14px !important;
   background: #ffffff !important;
   box-shadow: 10px 14px 20px rgba(7, 59, 76, 0.12) !important;
 }
 
 .portalMetricCard > svg {
-  width: 54px !important;
-  height: 54px !important;
-  padding: 13px !important;
+  width: 50px !important;
+  height: 50px !important;
+  padding: 12px !important;
   background: #00b8b5 !important;
   color: #ffffff !important;
   stroke-width: 1.5 !important;
@@ -14419,17 +14419,17 @@ body {
 
 .portalMetricCard span {
   color: #00b8b5 !important;
-  font-size: 0.82rem !important;
+  font-size: 0.76rem !important;
   font-weight: 600 !important;
 }
 
 .portalMetricCard strong {
   position: relative !important;
   display: block !important;
-  margin: 4px 0 10px !important;
+  margin: 3px 0 8px !important;
   padding-left: 18px !important;
   color: #141b1f !important;
-  font-size: 1.78rem !important;
+  font-size: 1.55rem !important;
   line-height: 1 !important;
   font-weight: 500 !important;
 }
@@ -14461,11 +14461,11 @@ body {
   width: calc(100% - 32px) !important;
   max-width: 1320px !important;
   margin: 0 auto !important;
-  min-height: 76px !important;
+  min-height: 66px !important;
   display: grid !important;
   grid-template-columns: 1fr auto !important;
   align-items: center !important;
-  padding: 14px 42px !important;
+  padding: 10px 42px !important;
   background: #ffffff !important;
   box-shadow: 12px 14px 28px rgba(7, 59, 76, 0.12) !important;
 }

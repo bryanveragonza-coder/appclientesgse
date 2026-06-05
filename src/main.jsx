@@ -216,14 +216,24 @@ function Header({ project, connected }) {
 }
 
 function PortalProject({ project, milestones, pending, setView }) {
+  const cleanPortalText = (value = "") => String(value || "")
+    .replace(/Ã¡/g, "á")
+    .replace(/Ã©/g, "é")
+    .replace(/Ã­/g, "í")
+    .replace(/Ã³/g, "ó")
+    .replace(/Ãº/g, "ú")
+    .replace(/Ã±/g, "ñ")
+    .replace(/Â·/g, "·")
+    .replace(/â„¢/g, "™")
+    .replace(/Adminitrativa/gi, "Administrativa");
   const meetUrl = safeUrl(project.linkMeet);
   const company = project.companyClient || project.client;
   const contact = project.contactName || project.generalManager || project.responsibleClient;
-  const role = project.contactRole || "Responsable del proyecto";
+  const role = cleanPortalText(project.contactRole || "Responsable del proyecto");
   const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
   const completedPending = pending.filter(isPendingCompleted).length;
   const disorder = Math.max(0, 100 - (Number(project.progress) || 0));
-  const welcome = project.welcomeMessage || "Bienvenido a tu Ruta de Implementación Visible. Aquí podrás revisar el avance del proyecto, los hitos trabajados, los pendientes activos y los entregables construidos por GSE para ordenar tu empresa.";
+  const welcome = cleanPortalText(project.welcomeMessage || "Bienvenido a tu Ruta de Implementación Visible. Aquí podrás revisar el avance del proyecto, los hitos trabajados, los pendientes activos y los entregables construidos por GSE para ordenar tu empresa.");
 
   return (
     <div className="portalPage">
