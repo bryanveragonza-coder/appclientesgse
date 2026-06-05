@@ -1181,16 +1181,33 @@ function CanvaTrendSvg({ labels = [], asIsValues = [], toBeValues = [] }) {
     if (value >= 1000) return `$${Math.round(value / 1000)}k`;
     return `$${Math.round(value)}`;
   };
-  const pathFor = (values) => values.map((value, index) => {
+  const pointsFor = (values) => values.map((value, index) => {
     const step = labels.length > 1 ? 220 / (labels.length - 1) : 44;
     const x = 42 + index * step;
     const y = 142 - (value / max) * 100;
-    return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
-  }).join(" ");
+    return { x, y };
+  });
+  const pathFor = (values) => {
+    const points = pointsFor(values);
+    if (!points.length) return "";
+    if (points.length === 1) return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+    return points.reduce((path, point, index) => {
+      if (index === 0) return `M ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+      const previous = points[index - 1];
+      const previousControl = points[index - 2] || previous;
+      const nextControl = points[index + 1] || point;
+      const tension = 0.18;
+      const c1x = previous.x + (point.x - previousControl.x) * tension;
+      const c1y = previous.y + (point.y - previousControl.y) * tension;
+      const c2x = point.x - (nextControl.x - previous.x) * tension;
+      const c2y = point.y - (nextControl.y - previous.y) * tension;
+      return `${path} C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+    }, "");
+  };
 
   return (
     <svg className="canvaTrendChart" viewBox="0 0 292 178" role="img" aria-label="Tendencia COE de seis meses">
-      <text className="axisTitle" x="8" y="18">Costo</text>
+      <text className="axisTitle" x="8" y="18">CLI</text>
       <line className="axisLine" x1="34" x2="34" y1="36" y2="144" />
       <line className="axisLine" x1="34" x2="268" y1="144" y2="144" />
       {[0, 1, 2].map((line) => {

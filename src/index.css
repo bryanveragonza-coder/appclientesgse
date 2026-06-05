@@ -13360,7 +13360,7 @@ body {
   z-index: 30;
   margin: 0 0 24px;
   padding: 14px 0 12px;
-  background: linear-gradient(180deg, rgba(247, 251, 250, 0.98) 0%, rgba(247, 251, 250, 0.90) 100%);
+  background: linear-gradient(180deg, rgba(247, 251, 250, 0.72) 0%, rgba(247, 251, 250, 0.46) 100%);
   backdrop-filter: blur(14px);
 }
 
@@ -13373,11 +13373,12 @@ body {
   align-items: center;
   gap: 10px;
   min-height: 40px;
-  border: 1px solid rgba(16, 47, 55, 0.18);
+  border: 1px solid rgba(16, 47, 55, 0.14);
   border-radius: 999px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.66);
   padding: 0 16px;
-  box-shadow: 0 12px 26px rgba(16, 47, 55, 0.06);
+  box-shadow: 0 10px 24px rgba(16, 47, 55, 0.045);
+  backdrop-filter: blur(18px);
 }
 
 .canvaSearch input {
@@ -13391,7 +13392,8 @@ body {
 .appGlobalTopbar .canvaSearch {
   min-height: 50px;
   padding: 0 22px;
-  box-shadow: 0 16px 34px rgba(16, 47, 55, 0.09);
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.055);
 }
 
 .appGlobalTopbar .canvaSearch input {
@@ -13655,8 +13657,21 @@ body {
 
 .canvaPanelHeader strong {
   position: relative;
+  padding-left: 18px;
   color: #141b1f;
   font: 500 1rem "Roboto", sans-serif;
+}
+
+.canvaPanelHeader strong::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid #141b1f;
+  border-right: 2px solid #141b1f;
+  transform: translateY(-50%) rotate(45deg);
 }
 
 .canvaPanelHeader span {
@@ -13705,7 +13720,7 @@ body {
   color: #00b8b5;
   fill: #00b8b5;
   stroke: #00b8b5;
-  transform: translateX(-50%);
+  transform: translateX(-50%) rotate(0deg) !important;
 }
 
 .canvaRoutePin path {
@@ -13755,6 +13770,10 @@ body {
 .canvaRouteNode svg {
   transform: rotate(90deg);
   color: #141b1f;
+}
+
+.canvaRouteNode .canvaRoutePin {
+  transform: translateX(-50%) rotate(0deg) !important;
 }
 
 .canvaRouteNode strong {
