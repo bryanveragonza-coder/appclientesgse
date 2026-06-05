@@ -9,6 +9,7 @@ import {
   ArrowRight,
   BarChart3,
   Bell,
+  Brain,
   Building2,
   BookOpen,
   CalendarDays,
@@ -229,17 +230,6 @@ function PortalProject({ project, milestones, pending, setView }) {
         <div className="portalOverlay"></div>
 
         <div className="portalContent">
-          <div className="portalLogos">
-            <Logo src={project.logoGSE} fallback="GSE" />
-            <div className="portalDivider"></div>
-            <Logo src={project.logoClient} fallback={company?.slice(0, 2) || "CL"} />
-          </div>
-
-          <div className="portalEyebrow">
-            <Sparkles size={16} />
-            Portal privado del proyecto
-          </div>
-
           <h2>Bienvenido a tu Ruta de implementación visible.</h2>
           <p>{welcome}</p>
 
@@ -249,15 +239,12 @@ function PortalProject({ project, milestones, pending, setView }) {
               <strong>{company}</strong>
             </div>
             <div>
-              <span>Contacto principal</span>
+              <span>{role}</span>
               <strong>{contact || "Sin contacto definido"}</strong>
-              <small>{role}</small>
-            </div>
-            <div>
-              <span>Servicio</span>
-              <strong>{project.service}</strong>
             </div>
           </div>
+
+          <p className="portalSignature">Creado por GSE&CO</p>
 
           <div className="portalActions">
             <button className="primaryPortalButton" onClick={() => setView("resumen")}>
@@ -277,25 +264,39 @@ function PortalProject({ project, milestones, pending, setView }) {
 
         <div className="portalMetrics">
           <div className="portalMetricCard">
-            <span>Avance general</span>
-            <strong>{project.progress}%</strong>
-            <ProgressBar value={project.progress} status={project.status} />
+            <div>
+              <span>Avance General</span>
+              <strong>{project.progress}%</strong>
+              <ProgressBar value={project.progress} status={project.status} />
+            </div>
+            <Rocket size={28} />
           </div>
 
           <div className="portalMetricCard">
-            <span>Desorden restante</span>
-            <strong>{disorder}%</strong>
-            <ProgressBar value={disorder} status="Bloqueado" reverse />
+            <div>
+              <span>Desorden restante</span>
+              <strong>{disorder}%</strong>
+              <ProgressBar value={disorder} status="Bloqueado" reverse />
+            </div>
+            <Brain size={28} />
           </div>
 
           <div className="portalMetricCard">
-            <span>Hitos completados</span>
-            <strong>{completed}/{milestones.length}</strong>
+            <div>
+              <span>Hitos completados</span>
+              <strong>{completed}/{milestones.length}</strong>
+              <ProgressBar value={(completed / Math.max(1, milestones.length)) * 100} status="Finalizado" />
+            </div>
+            <Flag size={28} />
           </div>
 
           <div className="portalMetricCard">
-            <span>Pendientes activos</span>
-            <strong>{pending.length}</strong>
+            <div>
+              <span>Pendientes cliente</span>
+              <strong>{pending.length}/{pending.length}</strong>
+              <ProgressBar value={pending.length ? 65 : 0} status="En validación" />
+            </div>
+            <Hourglass size={28} />
           </div>
         </div>
       </section>

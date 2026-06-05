@@ -14314,3 +14314,155 @@ body {
 .content > :not(.canvaSummary) .coeBarFill {
   background-color: #00b8b5 !important;
 }
+
+/* PORTAL_PROJECT_CANVA_REFERENCE_V1 */
+.portalLogos,
+.portalEyebrow,
+.portalActions {
+  display: none !important;
+}
+
+.content > :not(.canvaSummary) .portalHero {
+  width: min(100%, 980px) !important;
+  min-height: 560px !important;
+  margin: 0 auto 22px !important;
+  padding: 58px 58px 42px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 330px !important;
+  gap: 58px !important;
+  align-items: center !important;
+  background: #00b8b5 !important;
+  box-shadow: 14px 16px 34px rgba(7, 59, 76, 0.16) !important;
+}
+
+.portalContent {
+  min-width: 0 !important;
+}
+
+.portalHero h2 {
+  max-width: 520px !important;
+  margin-bottom: 28px !important;
+  color: #ffffff !important;
+  font-size: clamp(3rem, 5vw, 4.6rem) !important;
+  line-height: 1.02 !important;
+  font-weight: 500 !important;
+}
+
+.portalHero h2 strong {
+  font-weight: 900 !important;
+}
+
+.portalHero p {
+  max-width: 560px !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+  font-size: 0.96rem !important;
+}
+
+.portalClientBox {
+  grid-template-columns: repeat(2, minmax(0, 220px)) !important;
+  gap: 28px !important;
+  margin-top: 34px !important;
+}
+
+.portalClientBox > div {
+  min-height: 68px !important;
+  padding: 13px 16px !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  border: 0 !important;
+  box-shadow: 10px 12px 18px rgba(7, 59, 76, 0.10) !important;
+}
+
+.portalClientBox span {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.portalClientBox strong {
+  color: #ffffff !important;
+  font-size: 1.05rem !important;
+}
+
+.portalSignature {
+  margin: 34px 0 0 !important;
+  color: #ffffff !important;
+  font-size: 1.05rem !important;
+  font-style: italic !important;
+}
+
+.portalMetrics {
+  display: grid !important;
+  gap: 26px !important;
+}
+
+.portalMetricCard {
+  min-height: 104px !important;
+  display: grid !important;
+  grid-template-columns: 1fr 54px !important;
+  align-items: center !important;
+  gap: 18px !important;
+  padding: 15px 14px !important;
+  background: #ffffff !important;
+  box-shadow: 10px 14px 20px rgba(7, 59, 76, 0.12) !important;
+}
+
+.portalMetricCard > svg {
+  width: 54px !important;
+  height: 54px !important;
+  padding: 13px !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  stroke-width: 1.5 !important;
+}
+
+.portalMetricCard span {
+  color: #00b8b5 !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+}
+
+.portalMetricCard strong {
+  position: relative !important;
+  display: block !important;
+  margin: 4px 0 10px !important;
+  padding-left: 18px !important;
+  color: #141b1f !important;
+  font-size: 2rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+}
+
+.portalMetricCard strong::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-top: 2px solid #141b1f;
+  border-right: 2px solid #141b1f;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.portalMetricCard .progress {
+  height: 10px !important;
+  margin-top: 0 !important;
+  background: #bfc7c9 !important;
+  border-radius: 0 !important;
+}
+
+.portalMetricCard .progressFill {
+  border-radius: 0 !important;
+}
+
+.portalNextStep {
+  width: min(100%, 980px) !important;
+  margin: 0 auto !important;
+  min-height: 88px !important;
+  background: #ffffff !important;
+  box-shadow: 12px 14px 28px rgba(7, 59, 76, 0.12) !important;
+}
+
+@media (max-width: 1100px) {
+  .content > :not(.canvaSummary) .portalHero {
+    grid-template-columns: 1fr !important;
+  }
+}
