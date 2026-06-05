@@ -14087,6 +14087,11 @@ body {
   display: contents !important;
 }
 
+.clientProfileTop span,
+.clientProfileLine svg {
+  display: none !important;
+}
+
 .clientProfile .clientMiniLogo,
 .clientProfile .logoImage,
 .clientProfile .logoFallback {
@@ -14146,9 +14151,9 @@ body {
   box-shadow: none !important;
   color: #ffffff !important;
   gap: 10px !important;
-  font-size: 0.72rem !important;
+  font-size: 0.82rem !important;
   line-height: 1.18 !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
 
 .premiumNav .navItem:hover,
