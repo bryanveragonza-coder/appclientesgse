@@ -8,8 +8,10 @@ import {
   AlertTriangle,
   ArrowRight,
   BarChart3,
+  Bell,
   Building2,
   BookOpen,
+  CalendarDays,
   CheckCircle2,
   ClipboardCheck,
   ChevronRight,
@@ -19,10 +21,13 @@ import {
   UploadCloud,
   FolderOpen,
   Flag,
+  Hourglass,
   Layers3,
   LockKeyhole,
   LogIn,
+  MapPin,
   Monitor,
+  Rocket,
   Search,
   ShieldCheck,
   Sparkles,
@@ -180,39 +185,23 @@ function Sidebar({ view, setView, project }) {
 
 function Header({ project, connected }) {
   const company = project.companyClient || project.client;
-  const clientName = project.contactName || project.generalManager || project.responsibleClient || "Nombre del Cliente";
-  const role = project.contactRole || "cargo de empresa";
 
   return (
-    <header className="rivHeader">
-      <div className="rivTopbar">
-        <div className="rivSearchBox">
-          <Search size={16} />
-          <span>Buscar</span>
+    <header className="unifiedProjectHeader header premiumHeader">
+      <div className="headerIdentity">
+        <div className="headerIcon unifiedHeaderIcon">
+          <Building2 size={22} />
         </div>
-
-        <div className="rivTopActions">
-          <button type="button" className="rivTopIconButton">
-            <Video size={17} />
-            <span>Reuniones</span>
-          </button>
-          <button type="button" className="rivTopIconButton notification">
-            <Clock3 size={17} />
-            <i>!</i>
-            <span>Pendientes</span>
-          </button>
-          <Logo src={project.logoClient} fallback={company?.slice(0, 2) || "CL"} className="rivHeaderLogo" />
-          <div className="rivUserMini">
-            <strong>{company}</strong>
-            <small>{connected ? "Conectado" : "Sin conexión"}</small>
-          </div>
+        <div className="headerText">
+          <div className="eyebrow">{project.service}</div>
+          <h1>{company}</h1>
+          <p>Seguimiento ejecutivo del proyecto · RIV · Ruta de Implementación Visible™</p>
         </div>
       </div>
 
-      <div className="rivWelcomeBlock">
-        <h1>Hola, {clientName}</h1>
-        <p>Bienvenido a tu Ruta de Implementación Visible™</p>
-        <span>{role}</span>
+      <div className="headerActions unifiedHeaderActions">
+        <Badge status={connected ? "Finalizado" : "Bloqueado"}>{connected ? "Google Sheets conectado" : "Sin conexión"}</Badge>
+        <Badge status={project.status}>Estado: {project.status}</Badge>
       </div>
     </header>
   );
@@ -721,6 +710,284 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
         <p>Lectura consolidada de AS IS y TO BE.</p>
       </article>
     </div>
+  );
+}
+
+function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], deliverables = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], updates = [], setView }) {
+  const [openPanel, setOpenPanel] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const projectProgress = Number(project?.progress) || 0;
+  const disorder = Math.max(0, 100 - projectProgress);
+  const completedMilestones = milestones.filter((item) => isCompletedStatus(item.status)).length;
+  const activePending = pending.filter(isPendingActive).length;
+  const meetUrl = safeUrl(project?.linkMeet);
+
+  const meetings = [
+    {
+      title: project?.nextStep || "Próxima reunión",
+      date: project?.nextDate || "Por definir",
+      link: meetUrl,
+    },
+    ...updates
+      .filter((item) => normalizeSystemName(`${item.target || ""} ${item.title || ""} ${item.text || ""}`).includes("reunion"))
+      .slice(0, 3)
+      .map((item) => ({ title: item.title || "Reunión", date: item.text || "Por definir", link: meetUrl })),
+  ].filter((item) => item.title || item.date);
+
+  const pendingItems = pending.filter(isPendingActive).slice(0, 8);
+  const allMilestones = Array.from({ length: Math.max(12, milestones.length || 0) }, (_, index) => {
+    const item = milestones[index] || {};
+    const code = item.id || `E${index}`;
+    const title = item.title || "Por definir";
+    const status = item.status || (index < 4 ? "Abierto" : "Cerrado");
+    const unlocked = index < 4 || isCompletedStatus(status);
+    return {
+      ...item,
+      id: code,
+      title,
+      status,
+      date: item.targetDate || item.date || "Fecha",
+      unlocked,
+      completed: isCompletedStatus(status),
+    };
+  });
+  const unlockedCount = allMilestones.filter((item) => item.unlocked).length;
+
+  const totalCost = (rows = []) => rows.reduce((sum, item) => {
+    const cost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"] ?? 0);
+    const frequency = parseNumericValue(item.frequency ?? item.frecuencia ?? item.FRECUENCIA ?? 1) || 1;
+    return sum + (cost * frequency);
+  }, 0);
+  const asIsCOE = totalCost(coeAsIs);
+  const toBeCOE = totalCost(coeToBe);
+  const coeDelta = asIsCOE - toBeCOE;
+  const coePercent = asIsCOE > 0 ? (coeDelta / asIsCOE) * 100 : 0;
+
+  const statusClass = (status = "") => {
+    const text = normalizeSystemName(status);
+    if (text.includes("cerrado")) return "closed";
+    if (isCompletedStatus(status)) return "done";
+    if (text.includes("desarrollo") || text.includes("proceso")) return "active";
+    return "pending";
+  };
+
+  const systemMetrics = [
+    {
+      label: "Hallazgos",
+      total: findings.length,
+      value: findings.filter((item) => isCompletedStatus(item.status)).length,
+      note: "Completado",
+    },
+    {
+      label: "Perfiles",
+      total: processesAsIs.length || deliverables.length,
+      value: deliverables.filter((item) => normalizeSystemName(item.deliverable).includes("perfil")).length || Math.min(7, deliverables.length),
+      note: "Liberados",
+    },
+    {
+      label: "Nivel de empleabilidad",
+      total: pending.length + deliverables.length,
+      value: pending.filter(isPendingCompleted).length + completedMilestones,
+      note: "Finalizado",
+    },
+    {
+      label: "Masa salarial",
+      total: processesToBe.length || deliverables.length,
+      value: processesToBe.filter((item) => normalizeSystemName(item.status || item.changes).includes("nuevo")).length || completedMilestones,
+      note: "Desempeño",
+    },
+  ];
+
+  const filteredDetail = milestones.filter((item) => {
+    const query = normalizeSystemName(searchTerm);
+    if (!query) return true;
+    return normalizeSystemName(`${item.id} ${item.title} ${item.status} ${item.system}`).includes(query);
+  });
+
+  return (
+    <section className="canvaSummary">
+      <div className="canvaTopbar">
+        <label className="canvaSearch">
+          <Search size={16} />
+          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar" />
+        </label>
+
+        <div className="canvaTopActions">
+          <div className="canvaActionWrap">
+            <button className="canvaIconAction" onClick={() => setOpenPanel(openPanel === "meetings" ? "" : "meetings")} aria-label="Reuniones">
+              <Clock3 size={18} />
+              <span>Reuniones</span>
+            </button>
+            {openPanel === "meetings" && (
+              <div className="canvaPopover">
+                <h4>Reuniones</h4>
+                {meetings.map((item, index) => (
+                  <div className="canvaPopoverItem" key={`${item.title}-${index}`}>
+                    <CalendarDays size={16} />
+                    <div>
+                      <strong>{item.title}</strong>
+                      <span>{item.date}</span>
+                      {item.link && <a href={item.link} target="_blank" rel="noreferrer">Conectarse</a>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="canvaActionWrap">
+            <button className="canvaIconAction" onClick={() => setOpenPanel(openPanel === "pending" ? "" : "pending")} aria-label="Pendientes">
+              <Bell size={18} />
+              {activePending > 0 && <i>{activePending}</i>}
+              <span>Pendientes</span>
+            </button>
+            {openPanel === "pending" && (
+              <div className="canvaPopover right">
+                <h4>Pendientes</h4>
+                {pendingItems.map((item, index) => (
+                  <button className="canvaPopoverItem asButton" key={`${item.request}-${index}`} onClick={() => setView?.("pendientes")}>
+                    <AlertTriangle size={16} />
+                    <div>
+                      <strong>{item.request}</strong>
+                      <span>{item.dueDate || "Por definir"} · {item.status || "Pendiente"}</span>
+                    </div>
+                  </button>
+                ))}
+                {!pendingItems.length && <p className="canvaEmptyText">No hay pendientes activos.</p>}
+              </div>
+            )}
+          </div>
+
+          <Logo src={project?.logoClient} fallback={(project?.companyClient || project?.client || "CL").slice(0, 2)} className="canvaTopLogo" />
+          <span className="canvaUserName">{project?.contactName || project?.responsibleClient || "Cliente"}</span>
+        </div>
+      </div>
+
+      <div className="canvaWelcome">
+        <h2>Hola, {project?.contactName || project?.companyClient || project?.client || "Nombre del Cliente"}</h2>
+        <p>Bienvenido a tu Ruta de Implementación Visible (RIV)</p>
+      </div>
+
+      <div className="canvaKpiRow">
+        <button className="canvaKpiCard" onClick={() => setView?.("ruta")}>
+          <div><span>Avance General</span><strong>{projectProgress}%</strong></div>
+          <Rocket size={30} />
+        </button>
+        <button className="canvaKpiCard">
+          <div><span>Desorden Operativo</span><strong>{disorder.toFixed(2)}%</strong></div>
+          <AlertTriangle size={30} />
+        </button>
+        <button className="canvaKpiCard" onClick={() => setView?.("pendientes")}>
+          <div><span>Pendientes Cliente</span><strong>{activePending}</strong></div>
+          <Hourglass size={30} />
+        </button>
+      </div>
+
+      <div className="canvaMainGrid">
+        <article className="canvaPanel canvaMilestonePanel">
+          <div className="canvaPanelHeader">
+            <div>
+              <h3>Hitos Completados</h3>
+              <strong>{completedMilestones}/{milestones.length || allMilestones.length}</strong>
+            </div>
+            <div>
+              <span>Desbloqueado hasta</span>
+              <strong>E{Math.max(0, unlockedCount - 1)}/E12</strong>
+            </div>
+          </div>
+          <div className="canvaRouteMap">
+            <MapPin className="canvaRoutePin" size={34} />
+            {allMilestones.map((item, index) => (
+              <button className={`canvaRouteNode ${statusClass(item.status)} ${item.unlocked ? "unlocked" : "locked"}`} key={`${item.id}-${index}`} onClick={() => setView?.("ruta")}>
+                <span>{String(item.id).replace(".0", "")}</span>
+                <ChevronRight size={13} />
+                <strong>{item.title}</strong>
+                <small>{item.date}</small>
+                <em>{item.unlocked ? "Abierto" : "Cerrado"}</em>
+              </button>
+            ))}
+          </div>
+        </article>
+
+        <article className="canvaPanel canvaCoePanel">
+          <div className="canvaPanelHeader">
+            <div>
+              <h3>COE</h3>
+              <strong>${formatCurrency(Math.abs(coeDelta))}</strong>
+              <strong>{Math.abs(coePercent).toFixed(0)}%</strong>
+            </div>
+            <div className="canvaLegend">
+              <span><i></i> COE AS IS</span>
+              <span><i className="muted"></i> COE TO BE</span>
+            </div>
+          </div>
+          <CanvaTrendChart asIs={asIsCOE} toBe={toBeCOE} progress={projectProgress} />
+        </article>
+
+        <article className="canvaPanel canvaSystemsPanel">
+          <h3>Avances por Sistema</h3>
+          <div className="canvaSystemGrid">
+            {systemMetrics.map((item) => (
+              <div className="canvaSystemMetric" key={item.label}>
+                <strong>{item.total}</strong>
+                <span>{item.label}</span>
+                <CanvaRing value={item.value} total={Math.max(item.total, item.value, 1)} />
+                <small>{item.note}</small>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="canvaPanel canvaDetailPanel">
+          <h3>Detalle de Avance Hitos</h3>
+          <div className="canvaDetailTable">
+            <div className="canvaDetailHead"><span>ID</span><span>Nombre</span><span>Estado</span><span>Avance</span></div>
+            {(filteredDetail.length ? filteredDetail : milestones).slice(0, 10).map((item, index) => (
+              <button className="canvaDetailRow" key={`${item.id}-${index}`} onClick={() => setView?.("ruta")}>
+                <span>{item.id}</span>
+                <span>{item.title}</span>
+                <em className={statusClass(item.status)}>{item.status || "Pendiente"}</em>
+                <strong>{Number(item.progress) || 0}%</strong>
+              </button>
+            ))}
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function CanvaRing({ value = 0, total = 1 }) {
+  const percent = Math.max(0, Math.min(100, (Number(value) / Math.max(1, Number(total))) * 100));
+  return (
+    <div className="canvaRing" style={{ "--ring": `${percent}%` }}>
+      <span>{value}</span>
+    </div>
+  );
+}
+
+function CanvaTrendChart({ asIs = 0, toBe = 0, progress = 0 }) {
+  const base = Number(asIs) || Math.max(40, 90 - progress);
+  const target = Number(toBe) || Math.max(15, base * 0.68);
+  const months = [1, 2, 3, 4, 5, 6];
+  const asIsValues = months.map((month, index) => base * (0.72 + Math.sin(index * 1.35) * 0.16 + (index === 3 ? 0.34 : 0)));
+  const toBeValues = months.map((month, index) => target * (0.70 + Math.sin(index * 1.35) * 0.13 + (index === 3 ? 0.24 : 0)));
+  const max = Math.max(...asIsValues, ...toBeValues, 1);
+  const pathFor = (values) => values.map((value, index) => {
+    const x = 18 + index * 44;
+    const y = 142 - (value / max) * 100;
+    return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+  }).join(" ");
+
+  return (
+    <svg className="canvaTrendChart" viewBox="0 0 260 170" role="img" aria-label="Tendencia COE de seis meses">
+      {[0, 1, 2].map((line) => <line key={line} x1="14" x2="246" y1={48 + line * 42} y2={48 + line * 42} />)}
+      <path d={pathFor(toBeValues)} className="toBe" />
+      <path d={pathFor(asIsValues)} className="asIs" />
+      {months.map((month, index) => <text key={month} x={18 + index * 44} y="160">{month}</text>)}
+      <text x="224" y="166">Mes</text>
+    </svg>
   );
 }
 
@@ -3126,7 +3393,7 @@ function DocumentsUpload({ documents = [], project }) {
 }
 
 function App() {
-  const [view, setView] = useState("resumen");
+  const [view, setView] = useState("portal");
   const [data, setData] = useState(demoData);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");
@@ -3159,7 +3426,7 @@ function App() {
       <Sidebar view={view} setView={setView} project={project} />
 
       <main className="main">
-        <Header project={project} connected={connected} />
+        {view !== "resumen" && <Header project={project} connected={connected} />}
 
         <div className="content">
           <div className="mobileTabs">
@@ -3183,44 +3450,24 @@ function App() {
 
           {error && <div className="errorBox">{error}</div>}
 
-          <ProjectHero project={project} completedText={completedText} />
+          {view !== "resumen" && <ProjectHero project={project} completedText={completedText} />}
 
           {view === "portal" && <PortalProject project={project} milestones={milestones} pending={pending} setView={setView} />}
 
           {view === "resumen" && (
-            <div className="summaryMirrorPage">
-              <KpiCards project={project} milestones={milestones} pending={pending} setView={setView} />
-
-              <div className="executiveSummaryLayout hitosFirst summaryTopMirrorGrid">
-                <section className="card summaryHitosCombinedCard">
-                  <div className="summaryHitosCombinedInner">
-                    <div className="executiveSummaryMain summaryHitosColumn">
-                      <MilestonesExecutive
-                        milestones={milestones}
-                        setView={setView}
-                        selectedHito={selectedHito}
-                        setSelectedHito={setSelectedHito}
-                      />
-                    </div>
-
-                    <HitosStatusMatrix milestones={milestones} setView={setView} setSelectedHito={setSelectedHito} />
-                  </div>
-                </section>
-
-                <UpdatesPanel project={project} updates={updates} pending={pending} setView={setView} />
-              </div>
-
-              <SummaryInsightCards
-                project={project}
-                milestones={milestones}
-                deliverables={deliverables}
-                findings={findings}
-                processesAsIs={processesAsIs}
-                processesToBe={processesToBe}
-                coeAsIs={coeAsIs}
-                coeToBe={coeToBe}
-              />
-            </div>
+            <SummaryCanvaDashboard
+              project={project}
+              milestones={milestones}
+              pending={pending}
+              findings={findings}
+              deliverables={deliverables}
+              processesAsIs={processesAsIs}
+              processesToBe={processesToBe}
+              coeAsIs={coeAsIs}
+              coeToBe={coeToBe}
+              updates={updates}
+              setView={setView}
+            />
           )}
 
           {view === "ruta" && <Timeline milestones={milestones} deliverables={deliverables} detailed setView={setView} setSelectedDeliverable={setSelectedDeliverable} selectedHito={selectedHito} setSelectedHito={setSelectedHito} />}
