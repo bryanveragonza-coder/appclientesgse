@@ -180,23 +180,39 @@ function Sidebar({ view, setView, project }) {
 
 function Header({ project, connected }) {
   const company = project.companyClient || project.client;
+  const clientName = project.contactName || project.generalManager || project.responsibleClient || "Nombre del Cliente";
+  const role = project.contactRole || "cargo de empresa";
 
   return (
-    <header className="unifiedProjectHeader header premiumHeader">
-      <div className="headerIdentity">
-        <div className="headerIcon unifiedHeaderIcon">
-          <Building2 size={22} />
+    <header className="rivHeader">
+      <div className="rivTopbar">
+        <div className="rivSearchBox">
+          <Search size={16} />
+          <span>Buscar</span>
         </div>
-        <div className="headerText">
-          <div className="eyebrow">{project.service}</div>
-          <h1>{company}</h1>
-          <p>Seguimiento ejecutivo del proyecto · RIV · Ruta de Implementación Visible™</p>
+
+        <div className="rivTopActions">
+          <button type="button" className="rivTopIconButton">
+            <Video size={17} />
+            <span>Reuniones</span>
+          </button>
+          <button type="button" className="rivTopIconButton notification">
+            <Clock3 size={17} />
+            <i>!</i>
+            <span>Pendientes</span>
+          </button>
+          <Logo src={project.logoClient} fallback={company?.slice(0, 2) || "CL"} className="rivHeaderLogo" />
+          <div className="rivUserMini">
+            <strong>{company}</strong>
+            <small>{connected ? "Conectado" : "Sin conexión"}</small>
+          </div>
         </div>
       </div>
 
-      <div className="headerActions unifiedHeaderActions">
-        <Badge status={connected ? "Finalizado" : "Bloqueado"}>{connected ? "Google Sheets conectado" : "Sin conexión"}</Badge>
-        <Badge status={project.status}>Estado: {project.status}</Badge>
+      <div className="rivWelcomeBlock">
+        <h1>Hola, {clientName}</h1>
+        <p>Bienvenido a tu Ruta de Implementación Visible™</p>
+        <span>{role}</span>
       </div>
     </header>
   );
@@ -3110,7 +3126,7 @@ function DocumentsUpload({ documents = [], project }) {
 }
 
 function App() {
-  const [view, setView] = useState("portal");
+  const [view, setView] = useState("resumen");
   const [data, setData] = useState(demoData);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");

@@ -13127,209 +13127,555 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 }
 
 /* ==========================================================
-   CODEXAPP_EDITORIAL_POLISH_V1
-   Ajuste visual para una experiencia mas limpia en Vercel.
+   RIV RESUMEN · REFERENCIA VISUAL TROYA MOTORS / GSE
+   Limpieza ejecutiva para construir el resto de pestañas desde esta base
    ========================================================== */
 :root {
-  --codex-ink: #123235;
-  --codex-muted: #5f7578;
-  --codex-line: rgba(20, 82, 85, 0.14);
-  --codex-panel: rgba(255, 255, 255, 0.92);
-  --codex-soft: #f5fbfa;
-  --codex-brand: #00a9a5;
-  --codex-brand-dark: #006d69;
-  --codex-accent: #f4c95d;
+  --riv-teal: #00b8b5;
+  --riv-teal-dark: #009997;
+  --riv-bg: #f7fbfb;
+  --riv-card: #ffffff;
+  --riv-text: #111827;
+  --riv-muted: #6b7280;
+  --riv-line: #edf2f2;
+  --riv-shadow: 0 18px 38px rgba(15, 23, 42, 0.06);
 }
 
 body {
-  background:
-    linear-gradient(180deg, #f7fbfa 0%, #eef7f6 42%, #f8fbfb 100%) !important;
-  color: var(--codex-ink) !important;
+  background: var(--riv-bg) !important;
+  color: var(--riv-text) !important;
 }
 
-.main {
-  padding: 22px 26px 34px !important;
+.app {
+  background: var(--riv-bg) !important;
 }
 
-.premiumSidebar {
-  width: 292px !important;
-  background:
-    linear-gradient(180deg, #063f3d 0%, #07534f 52%, #053735 100%) !important;
-  box-shadow: 18px 0 42px rgba(5, 55, 53, 0.16) !important;
+/* Sidebar tipo referencia */
+.sidebar.premiumSidebar {
+  width: 260px !important;
+  padding: 24px 22px !important;
+  background: var(--riv-teal) !important;
+  box-shadow: none !important;
+  border-right: 0 !important;
+}
+
+.premiumBrand {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 16px !important;
+  margin-bottom: 18px !important;
+}
+
+.premiumBrand .brandTitle {
+  color: #ffffff !important;
+  font-size: 18px !important;
+  line-height: 1.05 !important;
+  max-width: 150px !important;
+}
+
+.premiumBrand .brandSub {
+  color: rgba(255,255,255,0.88) !important;
+  font-size: 12px !important;
+  max-width: 175px !important;
+}
+
+.logoImage,
+.logoFallback,
+.clientMiniLogo {
+  background: #ffffff !important;
+  border-radius: 999px !important;
+  width: 72px !important;
+  height: 72px !important;
+  object-fit: contain !important;
+  padding: 8px !important;
+}
+
+.clientProfile {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 0 28px !important;
+}
+
+.clientProfileTop {
+  border-bottom: 0 !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 14px !important;
+}
+
+.clientProfile span,
+.clientProfile small,
+.clientProfile strong,
+.clientProfileLine {
+  color: rgba(255,255,255,0.92) !important;
+}
+
+.clientProfile strong { font-size: 13px !important; }
+.clientProfile small { font-size: 12px !important; }
+.clientProfileLine { padding: 4px 0 !important; }
+
+.premiumNav {
+  gap: 2px !important;
 }
 
 .premiumNav .navItem {
-  border-radius: 14px !important;
-  min-height: 44px !important;
-  font-size: 0.88rem !important;
+  color: #ffffff !important;
+  padding: 8px 4px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
 }
 
-.premiumNav .navItem.active {
-  background: linear-gradient(90deg, #e9fbf9 0%, #63e5df 100%) !important;
-  color: #073b39 !important;
-  border: 1px solid rgba(244, 201, 93, 0.85) !important;
-  box-shadow: 0 14px 30px rgba(0, 184, 181, 0.22) !important;
+.premiumNav .navItem svg {
+  width: 16px !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
-.premiumHeader,
-.appHeader {
-  min-height: 176px !important;
-  padding: 34px 42px !important;
-  border-radius: 30px !important;
-  background:
-    linear-gradient(135deg, rgba(0, 107, 104, 0.96), rgba(0, 169, 165, 0.90)),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.10) 1px, transparent 1px) !important;
-  background-size: auto, 62px 62px !important;
-  box-shadow: 0 24px 60px rgba(0, 99, 96, 0.16) !important;
+.premiumNav .navItem.active,
+.premiumNav .navItem:hover {
+  background: rgba(255,255,255,0.16) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
 }
 
-.premiumHeader h1,
-.appHeader h1 {
-  font-size: clamp(2.4rem, 5vw, 4.35rem) !important;
-  line-height: 0.96 !important;
-  letter-spacing: 0 !important;
-  max-width: 760px !important;
-  overflow-wrap: anywhere !important;
-}
-
-.premiumHeader p,
-.appHeader p {
-  max-width: 620px !important;
-  font-size: 1rem !important;
-  line-height: 1.45 !important;
-}
-
-.portalHero {
-  min-height: auto !important;
-  padding: 44px !important;
-  border-radius: 28px !important;
-  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr) !important;
-  background:
-    radial-gradient(circle at 80% 10%, rgba(244, 201, 93, 0.16), transparent 28rem),
-    linear-gradient(135deg, #064d49 0%, #007b77 58%, #0aa7a2 100%) !important;
-}
-
-.portalContent h2 {
-  font-size: clamp(3rem, 5.6vw, 5.45rem) !important;
-  line-height: 0.96 !important;
-  letter-spacing: 0 !important;
-  max-width: 760px !important;
-}
-
-.portalContent p {
-  max-width: 720px !important;
-  font-size: 1rem !important;
-}
-
-.portalMetrics {
-  gap: 14px !important;
-}
-
-.portalMetricCard,
-.card,
-.premiumSectionCard,
-.findingsSummaryCard,
-.findingsDeliverableTotalCard,
-.findingsDeliverableBreakdownCard,
-.summaryBottomCard,
-.premiumKpi {
+.sidebarCard.premiumSidebarCard {
+  background: rgba(255,255,255,0.13) !important;
+  border: 1px solid rgba(255,255,255,0.22) !important;
   border-radius: 18px !important;
-  border: 1px solid var(--codex-line) !important;
-  background: var(--codex-panel) !important;
-  box-shadow: 0 18px 46px rgba(20, 82, 85, 0.09) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
 }
 
-.sectionHeader h2,
-.card h2,
-.card h3 {
-  color: var(--codex-ink) !important;
+.sidebarCard.premiumSidebarCard * { color: #ffffff !important; }
+
+/* Header de referencia: buscador + acciones */
+.rivHeader {
+  background: transparent !important;
+  border: 0 !important;
+  margin: 0 !important;
+  padding: 28px 32px 0 !important;
+  box-shadow: none !important;
+}
+
+.rivTopbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.rivSearchBox {
+  height: 38px;
+  max-width: 760px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  background: #ffffff;
+  border: 1px solid #e7eeee;
+  border-radius: 999px;
+  color: #374151;
+  box-shadow: 0 10px 24px rgba(15,23,42,0.03);
+  font-size: 13px;
+}
+
+.rivSearchBox svg { color: #6b7280; stroke: #6b7280; }
+
+.rivTopActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.rivTopIconButton {
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: #111827;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 0;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.rivTopIconButton svg { color: #111827; stroke: #111827; }
+.rivTopIconButton i {
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.rivHeaderLogo {
+  width: 42px !important;
+  height: 42px !important;
+  padding: 4px !important;
+  border-radius: 999px !important;
+}
+
+.rivUserMini strong {
+  display: block;
+  color: #111827;
+  font-size: 12px;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rivUserMini small {
+  display: block;
+  color: var(--riv-muted);
+  font-size: 10px;
+}
+
+.rivWelcomeBlock {
+  padding: 34px 20px 18px;
+}
+
+.rivWelcomeBlock h1 {
+  margin: 0 0 4px;
+  color: #111827 !important;
+  font-family: "Roboto", sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 400 !important;
   letter-spacing: 0 !important;
+  line-height: 1.2 !important;
 }
 
-.filters,
-.premiumFilters {
-  gap: 14px !important;
+.rivWelcomeBlock p {
+  margin: 0;
+  color: #111827 !important;
+  font-size: 15px;
 }
 
-.filter span,
-.searchFilter > span {
-  color: #4d676a !important;
-  letter-spacing: 0.04em !important;
+.rivWelcomeBlock span {
+  display: none;
 }
 
-.filters input,
-.filters select,
-.filter select,
-.searchInputWrap {
-  border-radius: 13px !important;
-  border: 1px solid rgba(18, 50, 53, 0.16) !important;
+.content {
+  padding: 0 32px 42px !important;
+}
+
+/* Resumen: estructura limpia como dashboard de referencia */
+.summaryMirrorPage {
+  display: grid !important;
+  gap: 20px !important;
+}
+
+.dashboardKpiGrid.fourCards {
+  gap: 22px !important;
+  margin-bottom: 0 !important;
+}
+
+.dashboardWidgetCard {
+  min-height: 112px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
   background: #ffffff !important;
-  box-shadow: 0 10px 24px rgba(20, 82, 85, 0.06) !important;
+  color: #111827 !important;
+  box-shadow: var(--riv-shadow) !important;
+  padding: 22px 64px 18px 22px !important;
+  position: relative !important;
+  overflow: visible !important;
 }
 
-.findingsGridWhite {
-  gap: 18px !important;
+.dashboardWidgetCard::after {
+  content: "";
+  position: absolute;
+  top: 22px;
+  right: -18px;
+  width: 62px;
+  height: 62px;
+  background: var(--riv-teal);
+  border-radius: 0;
 }
 
-.findingWhiteCard {
-  min-height: 246px !important;
-  border-radius: 18px !important;
-  border: 1px solid rgba(20, 82, 85, 0.14) !important;
-  box-shadow: 0 18px 42px rgba(20, 82, 85, 0.08) !important;
+.dashboardWidgetCard::before {
+  content: "›";
+  position: absolute;
+  left: 18px;
+  bottom: 23px;
+  z-index: 2;
+  color: #111827;
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 200;
 }
 
-.findingWhiteHeader {
-  padding: 24px 26px !important;
+.dashboardWidgetHeader span {
+  color: #111827 !important;
+  font-family: "Roboto", sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
 }
 
-.findingWhiteHeader h3 {
-  color: #142f33 !important;
-  font-weight: 760 !important;
+.dashboardWidgetValue {
+  color: #111827 !important;
+  font-family: "Roboto", sans-serif !important;
+  font-size: 17px !important;
+  font-weight: 400 !important;
+  padding-left: 24px;
+  margin-top: 8px;
 }
 
-.findingMetaLine span {
-  background: #e7f6f4 !important;
-  color: #2b6365 !important;
+.dashboardWidgetFooter,
+.dashboardWidgetGraphic {
+  display: none !important;
 }
 
+.executiveSummaryLayout.summaryTopMirrorGrid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 330px !important;
+  gap: 20px !important;
+  align-items: start !important;
+}
+
+.summaryHitosCombinedCard {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  box-shadow: var(--riv-shadow) !important;
+  padding: 22px !important;
+}
+
+.summaryHitosCombinedCard::before,
+.card::before,
+.premiumSectionCard::before {
+  display: none !important;
+}
+
+.summaryHitosCombinedInner {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 330px !important;
+  gap: 22px !important;
+  align-items: stretch !important;
+}
+
+.hitosProgressCard,
+.hitosNamesCard,
+.summaryHitosStatusCard,
+.executiveSideCard,
+.summaryBottomCard {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  box-shadow: none !important;
+}
+
+.hitosProgressCard { padding: 0 !important; }
+.hitosProgressLayout { grid-template-columns: 1fr !important; gap: 10px !important; }
+.hitosProgressStat { display: none !important; }
+.hitosProgressHeader h2,
+.summaryHitosStatusHeader h3,
+.summaryBottomHeader h3 {
+  color: #111827 !important;
+  font-family: "Roboto", sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+.hitosProgressHeader p,
+.hitosProgressHelp { display: none !important; }
+.hitosProgressHeader { margin-bottom: 18px !important; }
+.hitosProgressHeader .badge { display: none !important; }
+
+.hitosNamesScroller {
+  overflow-x: visible !important;
+  padding: 10px 0 4px !important;
+}
+
+.hitosTrackLabelsNamed {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(86px, 1fr)) !important;
+  gap: 12px 10px !important;
+  min-width: 0 !important;
+}
+
+.hitosTrackLabel.named {
+  min-height: 66px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.hitoCode {
+  width: 22px !important;
+  height: 22px !important;
+  border: 1px solid #111827 !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  font-size: 10px !important;
+}
+
+.hitosTrackLabel.completed .hitoCode,
+.hitosTrackLabel.selected .hitoCode {
+  background: var(--riv-teal) !important;
+  color: #ffffff !important;
+  border-color: var(--riv-teal) !important;
+}
+
+.hitoName {
+  color: #111827 !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
+  line-height: 1.15 !important;
+  max-width: 86px !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+.hitosLineWrap.namedLine {
+  margin: 4px 0 0 !important;
+  min-width: 0 !important;
+  height: 34px !important;
+}
+
+.hitosLineBase { background: #111827 !important; height: 2px !important; }
+.hitosLineFill { background: var(--riv-teal) !important; height: 3px !important; }
+.hitosDot { width: 12px !important; height: 12px !important; border: 2px solid #111827 !important; box-shadow: 0 0 0 3px #fff !important; }
+.hitosDot.done { background: var(--riv-teal) !important; border-color: var(--riv-teal) !important; }
+
+.summaryHitosStatusCard {
+  padding: 0 !important;
+  max-height: 315px;
+  overflow: hidden;
+}
+
+.summaryHitosStatusTableWrap {
+  max-height: 270px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.summaryHitosStatusTable th {
+  color: #111827 !important;
+  background: transparent !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+
+.summaryHitosStatusTable td {
+  color: #111827 !important;
+  font-size: 12px !important;
+  border-color: #eef2f2 !important;
+}
+
+.summaryHitoStatusPill,
 .badge,
 [class*="badge"] {
-  letter-spacing: 0 !important;
+  min-width: auto !important;
+  max-width: none !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--riv-teal) !important;
+  color: #ffffff !important;
+  font-size: 10px !important;
+  box-shadow: none !important;
 }
 
-.primaryPortalButton,
-.secondaryPortalButton,
-.secondaryLink,
-.sideMeetButton,
-.sideLinkButton {
-  border-radius: 12px !important;
+.executiveRightPanel {
+  position: static !important;
+  gap: 20px !important;
+}
+
+.executiveSideCard {
+  box-shadow: var(--riv-shadow) !important;
+  padding: 22px !important;
+  min-height: 150px;
+}
+
+.executiveSideCard h3 {
+  color: #111827 !important;
+  font-size: 18px !important;
+  font-weight: 400 !important;
+}
+.executiveSideCard p,
+.sidePendingMeta,
+.sidePendingMeta * { color: #111827 !important; }
+.sideCardIconLine { color: #111827 !important; }
+.sideIcon { background: var(--riv-teal) !important; color: #fff !important; border-radius: 0 !important; }
+.sideIcon svg { stroke: #fff !important; }
+
+.summaryBottomGrid.fourCards {
+  display: grid !important;
+  grid-template-columns: 1.2fr .9fr .9fr .9fr !important;
+  gap: 20px !important;
+}
+
+.summaryBottomCard {
+  box-shadow: var(--riv-shadow) !important;
+  padding: 22px !important;
+  min-height: 220px;
+}
+
+.summaryBottomCard * { color: #111827 !important; }
+.summaryRadarMini { max-height: 180px; overflow: hidden; }
+.summaryBigNumber,
+.summaryCOEValue { color: #111827 !important; font-size: 34px !important; }
+.summaryMiniTrack,
+.summaryActivityLine { background: #e5eeee !important; }
+.summaryMiniTrack i,
+.summaryActivityLine i { background: var(--riv-teal) !important; }
+
+/* Íconos decorativos tipo tarjetas superiores */
+.dashboardWidgetCard:nth-child(1)::after { background: var(--riv-teal); }
+.dashboardWidgetCard:nth-child(2)::after { background: var(--riv-teal); }
+.dashboardWidgetCard:nth-child(3)::after { background: var(--riv-teal); }
+.dashboardWidgetCard:nth-child(4)::after { background: var(--riv-teal); }
+
+/* Responsive */
+@media (max-width: 1280px) {
+  .executiveSummaryLayout.summaryTopMirrorGrid,
+  .summaryHitosCombinedInner {
+    grid-template-columns: 1fr !important;
+  }
+  .summaryBottomGrid.fourCards {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
 
 @media (max-width: 1180px) {
-  .portalHero {
-    grid-template-columns: 1fr !important;
-    padding: 34px !important;
-  }
-
-  .portalContent h2 {
-    font-size: clamp(2.6rem, 8vw, 4.5rem) !important;
+  .dashboardKpiGrid.fourCards {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
 @media (max-width: 900px) {
-  .main {
-    padding: 16px !important;
-  }
+  .sidebar.premiumSidebar { display: none !important; }
+  .rivHeader { padding: 18px 16px 0 !important; }
+  .rivTopbar { grid-template-columns: 1fr !important; }
+  .rivTopActions { justify-content: flex-start !important; flex-wrap: wrap !important; }
+  .content { padding: 0 16px 32px !important; }
+  .mobileTabs { display: flex !important; }
+}
 
-  .premiumHeader,
-  .appHeader {
-    min-height: auto !important;
-    padding: 26px !important;
-    border-radius: 22px !important;
+@media (max-width: 680px) {
+  .dashboardKpiGrid.fourCards,
+  .summaryBottomGrid.fourCards {
+    grid-template-columns: 1fr !important;
   }
-
-  .portalHero {
-    padding: 26px !important;
-    border-radius: 22px !important;
-  }
+  .hitosTrackLabelsNamed { grid-template-columns: repeat(3, minmax(78px, 1fr)) !important; }
 }
