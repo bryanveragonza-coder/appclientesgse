@@ -319,7 +319,7 @@ function PortalProject({ project, milestones, pending, setView }) {
 
       <section className="portalNextStep">
         <div>
-          <div className="eyebrow">PrÃ³ximo paso</div>
+          <div className="eyebrow">Próximo paso</div>
           <h3>{project.nextStep}</h3>
           <p>{project.nextDate}</p>
         </div>

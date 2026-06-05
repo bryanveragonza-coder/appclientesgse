@@ -14461,19 +14461,21 @@ body {
   width: calc(100% - 32px) !important;
   max-width: 1320px !important;
   margin: 0 auto !important;
-  min-height: 66px !important;
+  min-height: 68px !important;
   display: grid !important;
   grid-template-columns: 1fr auto !important;
   align-items: center !important;
-  padding: 10px 42px !important;
+  padding: 12px 38px !important;
+  border-radius: 0 !important;
+  border: 0 !important;
   background: #ffffff !important;
-  box-shadow: 12px 14px 28px rgba(7, 59, 76, 0.12) !important;
+  box-shadow: 10px 12px 22px rgba(7, 59, 76, 0.14) !important;
 }
 
 .portalNextStep .eyebrow {
   margin: 0 0 3px !important;
   color: #141b1f !important;
-  font-size: 0.86rem !important;
+  font-size: 0.78rem !important;
   font-weight: 500 !important;
   text-transform: none !important;
 }
@@ -14481,18 +14483,35 @@ body {
 .portalNextStep h3 {
   margin: 0 !important;
   color: #141b1f !important;
-  font-size: 1.22rem !important;
+  font-size: 1.08rem !important;
   line-height: 1.1 !important;
+  font-weight: 800 !important;
 }
 
 .portalNextStep p {
   margin: 2px 0 0 !important;
   color: #141b1f !important;
+  font-size: 0.78rem !important;
 }
 
 .plainPortalAction {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   color: #141b1f !important;
-  font-size: 1.05rem !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.plainPortalAction svg {
+  width: 30px !important;
+  height: 30px !important;
+  stroke-width: 1.9 !important;
 }
 
 @media (max-width: 1100px) {
