@@ -221,6 +221,7 @@ function PortalProject({ project, milestones, pending, setView }) {
   const contact = project.contactName || project.generalManager || project.responsibleClient;
   const role = project.contactRole || "Responsable del proyecto";
   const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
+  const completedPending = pending.filter(isPendingCompleted).length;
   const disorder = Math.max(0, 100 - (Number(project.progress) || 0));
   const welcome = project.welcomeMessage || "Bienvenido a tu Ruta de Implementación Visible. Aquí podrás revisar el avance del proyecto, los hitos trabajados, los pendientes activos y los entregables construidos por GSE para ordenar tu empresa.";
 
@@ -298,8 +299,8 @@ function PortalProject({ project, milestones, pending, setView }) {
           <div className="portalMetricCard">
             <div>
               <span>Pendientes cliente</span>
-              <strong>{pending.length}/{pending.length}</strong>
-              <ProgressBar value={pending.length ? 65 : 0} status="En validación" />
+              <strong>{completedPending}/{pending.length}</strong>
+              <ProgressBar value={(completedPending / Math.max(1, pending.length)) * 100} status="En validación" />
             </div>
             <Hourglass size={28} />
           </div>

@@ -14325,12 +14325,12 @@ body {
 .content > :not(.canvaSummary) .portalHero {
   width: calc(100% - 32px) !important;
   max-width: 1320px !important;
-  min-height: 660px !important;
-  margin: 0 auto 18px !important;
-  padding: 68px 72px 58px !important;
+  min-height: 560px !important;
+  margin: 0 auto 12px !important;
+  padding: 44px 64px 38px !important;
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) 430px !important;
-  gap: 54px !important;
+  gap: 46px !important;
   align-items: stretch !important;
   background: #00b8b5 !important;
   box-shadow: 14px 16px 34px rgba(7, 59, 76, 0.16) !important;
@@ -14342,11 +14342,11 @@ body {
 
 .portalRivTitle,
 .portalHero h2 {
-  max-width: 720px !important;
-  margin-bottom: 30px !important;
+  max-width: 620px !important;
+  margin-bottom: 24px !important;
   color: #ffffff !important;
-  font-size: clamp(3.8rem, 5.8vw, 6.2rem) !important;
-  line-height: 0.98 !important;
+  font-size: clamp(3rem, 4.45vw, 4.75rem) !important;
+  line-height: 1.03 !important;
   font-weight: 800 !important;
 }
 
@@ -14357,13 +14357,14 @@ body {
 .portalHero p {
   max-width: 560px !important;
   color: rgba(255, 255, 255, 0.88) !important;
-  font-size: 0.96rem !important;
+  font-size: 0.92rem !important;
+  line-height: 1.42 !important;
 }
 
 .portalClientBox {
   grid-template-columns: repeat(2, minmax(0, 220px)) !important;
   gap: 28px !important;
-  margin-top: 34px !important;
+  margin-top: 28px !important;
 }
 
 .portalClientBox > div {
@@ -14384,20 +14385,20 @@ body {
 }
 
 .portalSignature {
-  margin: 34px 0 0 !important;
+  margin: 28px 0 0 !important;
   color: #ffffff !important;
-  font-size: 1.05rem !important;
+  font-size: 1rem !important;
   font-style: italic !important;
 }
 
 .portalMetrics {
   display: grid !important;
   align-content: center !important;
-  gap: 24px !important;
+  gap: 18px !important;
 }
 
 .portalMetricCard {
-  min-height: 112px !important;
+  min-height: 98px !important;
   display: grid !important;
   grid-template-columns: 1fr 54px !important;
   align-items: center !important;
@@ -14428,7 +14429,7 @@ body {
   margin: 4px 0 10px !important;
   padding-left: 18px !important;
   color: #141b1f !important;
-  font-size: 2rem !important;
+  font-size: 1.78rem !important;
   line-height: 1 !important;
   font-weight: 500 !important;
 }
@@ -14446,7 +14447,7 @@ body {
 }
 
 .portalMetricCard .progress {
-  height: 10px !important;
+  height: 8px !important;
   margin-top: 0 !important;
   background: #bfc7c9 !important;
   border-radius: 0 !important;
@@ -14460,11 +14461,11 @@ body {
   width: calc(100% - 32px) !important;
   max-width: 1320px !important;
   margin: 0 auto !important;
-  min-height: 86px !important;
+  min-height: 76px !important;
   display: grid !important;
   grid-template-columns: 1fr auto !important;
   align-items: center !important;
-  padding: 18px 42px !important;
+  padding: 14px 42px !important;
   background: #ffffff !important;
   box-shadow: 12px 14px 28px rgba(7, 59, 76, 0.12) !important;
 }
