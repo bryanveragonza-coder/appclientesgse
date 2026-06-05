@@ -13682,12 +13682,12 @@ body {
 
 .canvaRoutePath {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 78px;
+  grid-template-columns: minmax(0, 1fr) 150px;
   grid-template-areas:
     "top side"
     "bottom side";
   gap: 22px 0;
-  padding: 20px 8px 8px;
+  padding: 20px 2px 8px 0;
 }
 
 .canvaRouteRow {
@@ -13722,9 +13722,9 @@ body {
 .canvaRouteRow.bottom::after {
   content: "";
   position: absolute;
-  right: -40px;
+  right: -58px;
   top: 11px;
-  width: 40px;
+  width: calc((100% / 6) * 0.5 + 58px);
   border-top: 3px dotted #141b1f;
   pointer-events: none;
 }
@@ -13734,8 +13734,11 @@ body {
   position: absolute;
   top: 11px;
   bottom: 11px;
-  left: 50%;
-  border-left: 3px dotted #141b1f;
+  left: -58px;
+  right: 58px;
+  border: 3px dotted #141b1f;
+  border-left: 0;
+  border-radius: 0 58px 58px 0;
   pointer-events: none;
 }
 
@@ -13804,8 +13807,13 @@ body {
 }
 
 .canvaRouteNode.side {
-  align-self: center;
-  transform: translateY(-3px);
+  position: absolute;
+  top: 50%;
+  left: calc(100% - 58px);
+  width: 126px;
+  min-height: 92px;
+  transform: translate(-50%, -50%);
+  align-content: start;
 }
 
 .canvaRouteNode.side > svg:not(.canvaRoutePin) {
@@ -13815,8 +13823,16 @@ body {
 .canvaRouteNode.side strong,
 .canvaRouteNode.side small,
 .canvaRouteNode.side em {
-  transform: translateX(48px);
+  justify-self: start;
+  margin-left: 76px;
+  max-width: 86px;
+  transform: translateY(-39px);
   text-align: left;
+}
+
+.canvaRouteNode.side > svg:not(.canvaRoutePin) {
+  justify-self: start;
+  margin-left: 50px;
 }
 
 .canvaRouteNode.side span,
