@@ -14323,14 +14323,15 @@ body {
 }
 
 .content > :not(.canvaSummary) .portalHero {
-  width: min(100%, 980px) !important;
-  min-height: 560px !important;
-  margin: 0 auto 22px !important;
-  padding: 58px 58px 42px !important;
+  width: calc(100% - 32px) !important;
+  max-width: 1320px !important;
+  min-height: 660px !important;
+  margin: 0 auto 18px !important;
+  padding: 68px 72px 58px !important;
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) 330px !important;
-  gap: 58px !important;
-  align-items: center !important;
+  grid-template-columns: minmax(0, 1fr) 430px !important;
+  gap: 54px !important;
+  align-items: stretch !important;
   background: #00b8b5 !important;
   box-shadow: 14px 16px 34px rgba(7, 59, 76, 0.16) !important;
 }
@@ -14339,17 +14340,18 @@ body {
   min-width: 0 !important;
 }
 
+.portalRivTitle,
 .portalHero h2 {
-  max-width: 520px !important;
-  margin-bottom: 28px !important;
+  max-width: 720px !important;
+  margin-bottom: 30px !important;
   color: #ffffff !important;
-  font-size: clamp(3rem, 5vw, 4.6rem) !important;
-  line-height: 1.02 !important;
-  font-weight: 500 !important;
+  font-size: clamp(3.8rem, 5.8vw, 6.2rem) !important;
+  line-height: 0.98 !important;
+  font-weight: 800 !important;
 }
 
-.portalHero h2 strong {
-  font-weight: 900 !important;
+.portalRivTitle span {
+  display: block;
 }
 
 .portalHero p {
@@ -14390,11 +14392,12 @@ body {
 
 .portalMetrics {
   display: grid !important;
-  gap: 26px !important;
+  align-content: center !important;
+  gap: 24px !important;
 }
 
 .portalMetricCard {
-  min-height: 104px !important;
+  min-height: 112px !important;
   display: grid !important;
   grid-template-columns: 1fr 54px !important;
   align-items: center !important;
@@ -14454,11 +14457,41 @@ body {
 }
 
 .portalNextStep {
-  width: min(100%, 980px) !important;
+  width: calc(100% - 32px) !important;
+  max-width: 1320px !important;
   margin: 0 auto !important;
-  min-height: 88px !important;
+  min-height: 86px !important;
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  align-items: center !important;
+  padding: 18px 42px !important;
   background: #ffffff !important;
   box-shadow: 12px 14px 28px rgba(7, 59, 76, 0.12) !important;
+}
+
+.portalNextStep .eyebrow {
+  margin: 0 0 3px !important;
+  color: #141b1f !important;
+  font-size: 0.86rem !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+}
+
+.portalNextStep h3 {
+  margin: 0 !important;
+  color: #141b1f !important;
+  font-size: 1.22rem !important;
+  line-height: 1.1 !important;
+}
+
+.portalNextStep p {
+  margin: 2px 0 0 !important;
+  color: #141b1f !important;
+}
+
+.plainPortalAction {
+  color: #141b1f !important;
+  font-size: 1.05rem !important;
 }
 
 @media (max-width: 1100px) {

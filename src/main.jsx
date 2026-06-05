@@ -222,7 +222,7 @@ function PortalProject({ project, milestones, pending, setView }) {
   const role = project.contactRole || "Responsable del proyecto";
   const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
   const disorder = Math.max(0, 100 - (Number(project.progress) || 0));
-  const welcome = project.welcomeMessage || "Bienvenido a tu RIV Â· Ruta de ImplementaciÃ³n Visibleâ„¢. AquÃ­ podrÃ¡s revisar el avance del proyecto, los hitos trabajados, los pendientes activos y los entregables construidos por GSE para ordenar tu empresa.";
+  const welcome = project.welcomeMessage || "Bienvenido a tu Ruta de Implementación Visible. Aquí podrás revisar el avance del proyecto, los hitos trabajados, los pendientes activos y los entregables construidos por GSE para ordenar tu empresa.";
 
   return (
     <div className="portalPage">
@@ -230,7 +230,12 @@ function PortalProject({ project, milestones, pending, setView }) {
         <div className="portalOverlay"></div>
 
         <div className="portalContent">
-          <h2>Bienvenido a tu Ruta de implementación visible.</h2>
+          <h2 className="portalRivTitle">
+            <span>Bienvenido a tu</span>
+            <span>Ruta de</span>
+            <span>Implementación</span>
+            <span>Visible</span>
+          </h2>
           <p>{welcome}</p>
 
           <div className="portalClientBox">
