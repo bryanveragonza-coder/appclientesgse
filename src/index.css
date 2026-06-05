@@ -13573,6 +13573,7 @@ body {
   box-shadow: 0 18px 38px rgba(16, 47, 55, 0.10);
   text-align: left;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .canvaKpiCard div {
@@ -13604,9 +13605,9 @@ body {
 
 .canvaKpiCard svg {
   flex: 0 0 auto;
-  width: 54px;
-  height: 54px;
-  padding: 12px;
+  width: 50px;
+  height: 50px;
+  padding: 11px;
   border-radius: 0;
   background: #00b8b5;
   color: #ffffff;
@@ -13681,7 +13682,11 @@ body {
 
 .canvaRoutePath {
   display: grid;
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) 78px;
+  grid-template-areas:
+    "top side"
+    "bottom side";
+  gap: 22px 0;
   padding: 20px 8px 8px;
 }
 
@@ -13692,23 +13697,45 @@ body {
   gap: 10px;
 }
 
+.canvaRouteRow.top { grid-area: top; }
+.canvaRouteRow.bottom { grid-area: bottom; }
+
+.canvaRouteSide {
+  grid-area: side;
+  position: relative;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+}
+
 .canvaRouteRow::before {
   content: "";
   position: absolute;
   left: calc((100% / 6) * 0.5);
   right: calc((100% / 6) * 0.5);
-  top: 20px;
+  top: 11px;
   border-top: 3px dotted #141b1f;
   pointer-events: none;
 }
 
-.canvaRouteRow.reverse::after {
+.canvaRouteRow.top::after,
+.canvaRouteRow.bottom::after {
   content: "";
   position: absolute;
-  right: calc((100% / 6) * 0.5);
-  top: -28px;
-  height: 48px;
-  border-right: 3px dotted #141b1f;
+  right: -40px;
+  top: 11px;
+  width: 40px;
+  border-top: 3px dotted #141b1f;
+  pointer-events: none;
+}
+
+.canvaRouteSide::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  bottom: 11px;
+  left: 50%;
+  border-left: 3px dotted #141b1f;
   pointer-events: none;
 }
 
@@ -13774,6 +13801,31 @@ body {
 
 .canvaRouteNode .canvaRoutePin {
   transform: translateX(-50%) rotate(0deg) !important;
+}
+
+.canvaRouteNode.side {
+  align-self: center;
+  transform: translateY(-3px);
+}
+
+.canvaRouteNode.side > svg:not(.canvaRoutePin) {
+  transform: rotate(180deg);
+}
+
+.canvaRouteNode.side strong,
+.canvaRouteNode.side small,
+.canvaRouteNode.side em {
+  transform: translateX(48px);
+  text-align: left;
+}
+
+.canvaRouteNode.side span,
+.canvaRouteNode.side > svg {
+  z-index: 3;
+}
+
+.canvaRouteNode.side span {
+  background: #ffffff;
 }
 
 .canvaRouteNode strong {
@@ -13917,7 +13969,7 @@ body {
 
 .canvaDetailTable {
   margin-top: 18px;
-  max-height: 222px;
+  max-height: 198px;
   overflow: auto;
   padding-right: 8px;
 }
@@ -14286,7 +14338,7 @@ body {
 }
 
 .canvaDetailTable {
-  max-height: 390px !important;
+  max-height: 198px !important;
 }
 
 .content > :not(.canvaSummary) * {
