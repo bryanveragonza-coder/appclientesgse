@@ -14035,3 +14035,277 @@ body {
     grid-template-columns: 34px minmax(90px, 1fr) 80px 46px;
   }
 }
+
+/* CODEXAPP_BRAND_FLAT_LAYOUT_V2 */
+body {
+  background: #eef7f6 !important;
+}
+
+.premiumSidebar,
+.sidebar {
+  width: 255px !important;
+  padding: 28px 22px 18px !important;
+  background: #00b8b5 !important;
+  box-shadow: 12px 0 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+.premiumBrand {
+  display: block !important;
+  margin: 0 0 18px !important;
+  text-align: center !important;
+}
+
+.premiumBrand .logoImage,
+.premiumBrand .logoFallback,
+.premiumBrand .brandSub {
+  display: none !important;
+}
+
+.premiumBrand .brandTitle {
+  max-width: 150px;
+  margin: 0 auto;
+  color: #ffffff !important;
+  font-size: 0.8rem !important;
+  line-height: 1.16 !important;
+  letter-spacing: 0 !important;
+}
+
+.clientProfile {
+  display: grid !important;
+  justify-items: center !important;
+  gap: 4px !important;
+  margin: 0 0 26px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  text-align: center !important;
+}
+
+.clientProfileTop,
+.clientProfileLine {
+  display: contents !important;
+}
+
+.clientProfile .clientMiniLogo,
+.clientProfile .logoImage,
+.clientProfile .logoFallback {
+  display: grid !important;
+  width: 68px !important;
+  height: 68px !important;
+  margin: 0 auto 8px !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  padding: 8px !important;
+}
+
+.clientProfile span,
+.clientProfile strong,
+.clientProfile small {
+  color: #ffffff !important;
+}
+
+.clientProfile span,
+.clientProfile small {
+  font-size: 0.72rem !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+}
+
+.clientProfile strong {
+  max-width: 150px;
+  font-size: 0.76rem !important;
+  line-height: 1.15 !important;
+  font-weight: 700 !important;
+}
+
+.premiumNav,
+.nav {
+  gap: 17px !important;
+}
+
+.navGroup {
+  display: grid;
+  gap: 6px;
+}
+
+.navGroupTitle {
+  display: block;
+  margin: 8px 0 2px;
+  color: #ffffff;
+  font-size: 0.73rem;
+  font-weight: 700;
+}
+
+.premiumNav .navItem,
+.navItem {
+  min-height: 27px !important;
+  padding: 3px 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  gap: 10px !important;
+  font-size: 0.72rem !important;
+  line-height: 1.18 !important;
+  font-weight: 600 !important;
+}
+
+.premiumNav .navItem:hover,
+.premiumNav .navItem.active,
+.navItem:hover,
+.navItem.active {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: none !important;
+}
+
+.premiumNav .navItem svg,
+.navItem svg {
+  width: 15px !important;
+  height: 15px !important;
+  color: #e9ffff !important;
+}
+
+.premiumSidebarCard {
+  min-height: 86px !important;
+  margin-top: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding: 14px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.34) !important;
+  color: #003f3e !important;
+}
+
+.premiumSidebarCard .sidebarCardTitle,
+.premiumSidebarCard p {
+  display: none !important;
+}
+
+.premiumSidebarCard .logoImage,
+.premiumSidebarCard .logoFallback {
+  width: 74px !important;
+  height: 42px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.premiumSidebarCard::after {
+  content: "V0.1";
+  color: #003f3e;
+  font-size: 0.76rem;
+}
+
+.content > :not(.canvaSummary) .card,
+.content > :not(.canvaSummary) .heroCard,
+.content > :not(.canvaSummary) .portalHero,
+.content > :not(.canvaSummary) .portalMetricCard,
+.content > :not(.canvaSummary) .portalClientBox > div,
+.content > :not(.canvaSummary) .portalNextStep,
+.content > :not(.canvaSummary) .deliverableCard,
+.content > :not(.canvaSummary) .milestone,
+.content > :not(.canvaSummary) .processTableCard,
+.content > :not(.canvaSummary) .processSummaryCard,
+.content > :not(.canvaSummary) .findingItem,
+.content > :not(.canvaSummary) .pendingCard,
+.content > :not(.canvaSummary) .educationCard,
+.content > :not(.canvaSummary) .table,
+.content > :not(.canvaSummary) .responsible,
+.content > :not(.canvaSummary) .iconBox,
+.content > :not(.canvaSummary) .meetButton,
+.content > :not(.canvaSummary) .tealButton,
+.content > :not(.canvaSummary) .primaryPortalButton,
+.content > :not(.canvaSummary) .secondaryPortalButton {
+  border-radius: 0 !important;
+}
+
+.content > :not(.canvaSummary) .portalHero {
+  min-height: 620px !important;
+  overflow: hidden !important;
+  background: #00b8b5 !important;
+}
+
+.content > :not(.canvaSummary) .portalHero::before,
+.content > :not(.canvaSummary) .portalOverlay {
+  display: none !important;
+}
+
+.portalHero h2 {
+  max-width: 660px !important;
+  font-size: clamp(3.2rem, 5.5vw, 5.9rem) !important;
+  line-height: 1.02 !important;
+  letter-spacing: 0 !important;
+  overflow-wrap: normal !important;
+}
+
+.portalHero p {
+  max-width: 700px !important;
+}
+
+.portalMetricCard {
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: #073b4c !important;
+}
+
+.portalMetricCard span {
+  color: #00b8b5 !important;
+}
+
+.portalMetricCard strong {
+  color: #073b4c !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+.progressFill,
+.dashboardGaugeProgressArc,
+.paintedGauge .dashboardGaugeProgressArc,
+.summaryActivityLine i,
+.processProgressFill,
+.coeBarFill {
+  background: #00b8b5 !important;
+  stroke: #00b8b5 !important;
+}
+
+.canvaTrendChart path {
+  stroke-width: 3.2;
+}
+
+.canvaTrendChart path.toBe {
+  stroke-width: 2;
+}
+
+.canvaDetailTable {
+  max-height: 390px !important;
+}
+
+.content > :not(.canvaSummary) * {
+  background-image: none !important;
+}
+
+.content > :not(.canvaSummary) .premiumSectionCard,
+.content > :not(.canvaSummary) .card,
+.content > :not(.canvaSummary) .heroCard,
+.content > :not(.canvaSummary) .processTableCard,
+.content > :not(.canvaSummary) .processSummaryCard,
+.content > :not(.canvaSummary) .findingItem,
+.content > :not(.canvaSummary) .pendingCard,
+.content > :not(.canvaSummary) .deliverableCard,
+.content > :not(.canvaSummary) .educationCard,
+.content > :not(.canvaSummary) .table {
+  background-color: #ffffff !important;
+}
+
+.content > :not(.canvaSummary) .meetButton,
+.content > :not(.canvaSummary) .tealButton,
+.content > :not(.canvaSummary) .primaryPortalButton,
+.content > :not(.canvaSummary) .progressFill,
+.content > :not(.canvaSummary) .processProgressFill,
+.content > :not(.canvaSummary) .coeBarFill {
+  background-color: #00b8b5 !important;
+}
