@@ -13682,7 +13682,7 @@ body {
 
 .canvaRoutePath {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 150px;
+  grid-template-columns: minmax(0, 1fr) 118px;
   grid-template-areas:
     "top side"
     "bottom side";
@@ -13722,9 +13722,9 @@ body {
 .canvaRouteRow.bottom::after {
   content: "";
   position: absolute;
-  right: -58px;
+  right: -42px;
   top: 11px;
-  width: calc((100% / 6) * 0.5 + 58px);
+  width: calc((100% / 6) * 0.5 + 42px);
   border-top: 3px dotted #141b1f;
   pointer-events: none;
 }
@@ -13734,11 +13734,11 @@ body {
   position: absolute;
   top: 11px;
   bottom: 11px;
-  left: -58px;
-  right: 58px;
+  left: -42px;
+  right: 65px;
   border: 3px dotted #141b1f;
   border-left: 0;
-  border-radius: 0 58px 58px 0;
+  border-radius: 0 36px 36px 0;
   pointer-events: none;
 }
 
@@ -13809,10 +13809,10 @@ body {
 .canvaRouteNode.side {
   position: absolute;
   top: 50%;
-  left: calc(100% - 58px);
-  width: 126px;
+  left: -6px;
+  width: 118px;
   min-height: 92px;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%);
   align-content: start;
 }
 
@@ -13824,15 +13824,15 @@ body {
 .canvaRouteNode.side small,
 .canvaRouteNode.side em {
   justify-self: start;
-  margin-left: 76px;
-  max-width: 86px;
-  transform: translateY(-39px);
+  margin-left: 52px;
+  max-width: 74px;
+  transform: translateY(-38px);
   text-align: left;
 }
 
 .canvaRouteNode.side > svg:not(.canvaRoutePin) {
   justify-self: start;
-  margin-left: 50px;
+  margin-left: 26px;
 }
 
 .canvaRouteNode.side span,
