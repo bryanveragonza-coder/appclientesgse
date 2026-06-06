@@ -1787,7 +1787,6 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
               <div className="milestoneContent">
                 <h3>{m.id ? `E${m.id}: ` : ""}{m.title}</h3>
                 <div className="badgeRow">
-                  {m.system && <Badge status="En validación">{m.system}</Badge>}
                   <Badge status={m.status}>{m.status}</Badge>
                 </div>
                 {m.targetDate && (

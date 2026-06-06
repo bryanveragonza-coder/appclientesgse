@@ -14775,6 +14775,38 @@ body {
   border-radius: 0 !important;
 }
 
+.routeProjectSection .timelineDetailed .premiumMilestone,
+.routeProjectSection .timelineDetailed .milestone,
+.routeProjectSection .timelineDetailed article,
+.routeProjectSection .timelineDetailed > * {
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 0 !important;
+  outline: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+}
+
+.routeProjectSection .timelineDetailed .routeAccordionHeader {
+  min-height: 28px !important;
+  padding: 3px 0 !important;
+  line-height: 1.15 !important;
+}
+
+.routeProjectSection .timelineDetailed .routeAccordionItem {
+  margin: 0 !important;
+}
+
+.routeProjectSection .timelineDetailed .routeAccordionCompact {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.routeProjectSection .timelineDetailed .routeAccordionHeader span {
+  font-size: 0.88rem !important;
+  line-height: 1.15 !important;
+}
+
 /* PORTAL_PROJECT_CANVA_REFERENCE_V1 */
 .portalLogos,
 .portalEyebrow,
