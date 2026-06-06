@@ -13720,7 +13720,7 @@ body {
   stroke: #141b1f;
   stroke-width: 3;
   stroke-linecap: butt;
-  stroke-linejoin: round;
+  stroke-linejoin: miter;
   stroke-dasharray: 1 5;
 }
 
