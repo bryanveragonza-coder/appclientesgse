@@ -14448,6 +14448,13 @@ body {
   font-weight: 500 !important;
 }
 
+.routeSummaryCard > strong,
+.routeStatusSummaryCard strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-weight: 500 !important;
+}
+
 .routeSummaryCard p,
 .routeStatusSummaryCard p {
   display: none !important;
@@ -14537,10 +14544,10 @@ body {
   border: 0 !important;
   border-radius: 999px !important;
   padding: 5px 12px !important;
-  background: rgba(0, 184, 181, 0.10) !important;
-  color: #007f80 !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
   font-size: 0.68rem !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
 }
 
 .timelineDetailed .badge.success,
@@ -14574,6 +14581,10 @@ body {
   color: #53676b !important;
   font-size: 0.88rem !important;
   font-weight: 400 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 .timelineDetailed .routeAccordionDetails,
@@ -14600,7 +14611,7 @@ body {
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-  color: #007f80 !important;
+  color: #102f37 !important;
   font-size: 0.82rem !important;
   font-weight: 400 !important;
 }
@@ -14616,6 +14627,8 @@ body {
   padding: 8px 0 12px !important;
   border: 0 !important;
   background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .timelineDetailed .routeAccordionBody p,
@@ -14623,6 +14636,82 @@ body {
   color: #53676b !important;
   font-size: 0.84rem !important;
   line-height: 1.45 !important;
+}
+
+.routeProjectSection .routeSummaryCard > strong,
+.routeProjectSection .routeStatusSummaryCard strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+}
+
+.routeProjectSection .routeMiniTrack i,
+.routeProjectSection .routeMiniTrack.pending i,
+.routeProjectSection .routeMiniTrack.development i,
+.routeProjectSection .progressFill {
+  background: #00b8b5 !important;
+}
+
+.routeProjectSection .routeMiniTrack,
+.routeProjectSection .progress {
+  background: #d8eceb !important;
+  border-radius: 0 !important;
+}
+
+.routeProjectSection .badge,
+.routeProjectSection [class*="badge"] {
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+}
+
+.timelineDetailed .routeAccordionCompact,
+.timelineDetailed .routeAccordionDetails,
+.timelineDetailed .routeAccordionDetails.routeAccordionCompact,
+.timelineDetailed .routeDetailTextBlock,
+.timelineDetailed .routeMiniListFixed,
+.timelineDetailed .milestoneDetails,
+.timelineDetailed .milestoneDetails.alwaysVisible,
+.timelineDetailed .detailBlock,
+.timelineDetailed .detailBox,
+.timelineDetailed .milestoneDetail {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.timelineDetailed .routeAccordionHeader,
+.timelineDetailed .routeMiniListItemFixed,
+.timelineDetailed .routeSecondaryLinkFixed,
+.timelineDetailed .secondaryLink {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #102f37 !important;
+  -webkit-text-fill-color: #102f37 !important;
+  font-weight: 400 !important;
+}
+
+.timelineDetailed .routeAccordionHeader span,
+.timelineDetailed .routeAccordionCompact .routeAccordionHeader span {
+  font-weight: 400 !important;
+}
+
+.timelineDetailed .progressText,
+.timelineDetailed .milestoneContent .progressText {
+  display: block !important;
+  width: auto !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: -6px 0 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 /* PORTAL_PROJECT_CANVA_REFERENCE_V1 */

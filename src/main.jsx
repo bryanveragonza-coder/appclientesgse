@@ -53,7 +53,7 @@ function formatSheetText(value = "") {
 function getStatusType(status = "") {
   const normalized = String(status).toLowerCase();
   if (normalized.includes("finalizado") || normalized.includes("aprobado") || normalized.includes("disponible")) return "success";
-  if (normalized.includes("validaciÃ³n") || normalized.includes("validacion") || normalized.includes("revision") || normalized.includes("revisiÃ³n")) return "warning";
+  if (normalized.includes("validación") || normalized.includes("validacion") || normalized.includes("revision") || normalized.includes("revisión")) return "warning";
   if (normalized.includes("bloqueado")) return "danger";
   if (normalized.includes("desarrollo")) return "info";
   return "neutral";
@@ -203,12 +203,12 @@ function Header({ project, connected }) {
         <div className="headerText">
           <div className="eyebrow">{project.service}</div>
           <h1>{company}</h1>
-          <p>Seguimiento ejecutivo del proyecto Â· RIV Â· Ruta de ImplementaciÃ³n Visibleâ„¢</p>
+          <p>Seguimiento ejecutivo del proyecto · RIV · Ruta de Implementación Visible™</p>
         </div>
       </div>
 
       <div className="headerActions unifiedHeaderActions">
-        <Badge status={connected ? "Finalizado" : "Bloqueado"}>{connected ? "Google Sheets conectado" : "Sin conexiÃ³n"}</Badge>
+        <Badge status={connected ? "Finalizado" : "Bloqueado"}>{connected ? "Google Sheets conectado" : "Sin conexión"}</Badge>
         <Badge status={project.status}>Estado: {project.status}</Badge>
       </div>
     </header>
@@ -217,14 +217,14 @@ function Header({ project, connected }) {
 
 function PortalProject({ project, milestones, pending, setView }) {
   const cleanPortalText = (value = "") => String(value || "")
-    .replace(/Ã¡/g, "á")
-    .replace(/Ã©/g, "é")
-    .replace(/Ã­/g, "í")
-    .replace(/Ã³/g, "ó")
-    .replace(/Ãº/g, "ú")
-    .replace(/Ã±/g, "ñ")
-    .replace(/Â·/g, "·")
-    .replace(/â„¢/g, "™")
+    .replace(/á/g, "á")
+    .replace(/é/g, "é")
+    .replace(/í/g, "í")
+    .replace(/ó/g, "ó")
+    .replace(/ú/g, "ú")
+    .replace(/ñ/g, "ñ")
+    .replace(/·/g, "·")
+    .replace(/™/g, "™")
     .replace(/Adminitrativa/gi, "Administrativa");
   const meetUrl = safeUrl(project.linkMeet);
   const company = project.companyClient || project.client;
@@ -272,7 +272,7 @@ function PortalProject({ project, milestones, pending, setView }) {
             {meetUrl && (
               <a className="secondaryPortalButton" href={meetUrl} target="_blank" rel="noreferrer">
                 <Video size={18} />
-                Conectarse a reuniÃ³n
+                Conectarse a reunión
               </a>
             )}
           </div>
@@ -364,7 +364,7 @@ function DashboardMiniThermometer({ value = 0 }) {
         <div className="thermoMarker" style={{ bottom: `calc(${safe}% - 5px)` }} />
       </div>
       <div className="thermoLegend">
-        <span><i className="swatch danger"></i>CrÃ­tico</span>
+        <span><i className="swatch danger"></i>Crítico</span>
         <span><i className="swatch warning"></i>Seguimiento</span>
         <span><i className="swatch success"></i>Controlado</span>
       </div>
@@ -411,7 +411,7 @@ function DashboardMiniPending({ pending = 0, done = 0 }) {
 
 function DashboardMiniBlockers({ blocked = 0 }) {
   const safeBlocked = Math.max(0, Number(blocked) || 0);
-  const mood = safeBlocked > 0 ? "AtenciÃ³n" : "All Good";
+  const mood = safeBlocked > 0 ? "Atención" : "All Good";
   const linePoints = safeBlocked > 0
     ? "0,20 18,19 36,18 54,17 72,15 90,18 108,21 120,23"
     : "0,22 18,22 36,22 54,20 72,20 90,13 108,11 120,8";
@@ -424,7 +424,7 @@ function DashboardMiniBlockers({ blocked = 0 }) {
         <strong>{mood}</strong>
       </div>
       <div className="miniSparkline">
-        <span className={`sparkCheck ${safeBlocked > 0 ? "alert" : "ok"}`}>{safeBlocked > 0 ? "!" : "âœ“"}</span>
+        <span className={`sparkCheck ${safeBlocked > 0 ? "alert" : "ok"}`}>{safeBlocked > 0 ? "!" : "✓"}</span>
         <svg viewBox="0 0 120 26" preserveAspectRatio="none">
           <polyline points={linePoints} fill="none" stroke="var(--brand)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
           <circle cx={markerLeft} cy={safeBlocked > 0 ? 18 : 20} r="3.2" fill="var(--brand)" />
@@ -447,8 +447,8 @@ function normalizeSystemName(value = "") {
 const BUSINESS_POWER_SYSTEMS = [
   {
     short: "S1",
-    label: "OperaciÃ³n sin Caos",
-    keys: ["operacion sin caos", "operaciÃ³n sin caos", "procesos", "sistema 1"],
+    label: "Operación sin Caos",
+    keys: ["operacion sin caos", "operación sin caos", "procesos", "sistema 1"],
     fallback: 0,
   },
   {
@@ -460,13 +460,13 @@ const BUSINESS_POWER_SYSTEMS = [
   {
     short: "S3",
     label: "Salarios Justos que Retienen",
-    keys: ["salarios justos que retienen", "salarios", "salarial", "remuneracion", "remuneraciÃ³n", "sistema 3"],
+    keys: ["salarios justos que retienen", "salarios", "salarial", "remuneracion", "remuneración", "sistema 3"],
     fallback: 0,
   },
   {
     short: "S4",
-    label: "DesempeÃ±o que Optimiza la Estructura",
-    keys: ["desempeno que optimiza la estructura", "desempeÃ±o que optimiza la estructura", "desempeno", "desempeÃ±o", "evaluacion", "evaluaciÃ³n", "sistema 4"],
+    label: "Desempeño que Optimiza la Estructura",
+    keys: ["desempeno que optimiza la estructura", "desempeño que optimiza la estructura", "desempeno", "desempeño", "evaluacion", "evaluación", "sistema 4"],
     fallback: 0,
   },
   {
@@ -625,7 +625,7 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
 
   const summarizeStatus = (rows = []) => {
     return rows.reduce((acc, item) => {
-      const status = normalizeSystemName(item.status || item.estado || item.observation || item.observacion || item["OBSERVACIÃ“N"] || "");
+      const status = normalizeSystemName(item.status || item.estado || item.observation || item.observacion || item["OBSERVACIÓN"] || "");
       if (status.includes("completado") || status.includes("finalizado") || status.includes("terminado") || status.includes("solucionado")) {
         acc.completed += 1;
       } else if (status.includes("proceso") || status.includes("desarrollo") || status.includes("desarollo") || status.includes("revision")) {
@@ -640,7 +640,7 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
   const summarizeActivityStatus = (rows = []) => {
     const hasText = (value, words) => words.some((word) => normalizeSystemName(value).includes(word));
     return rows.reduce((acc, item) => {
-      const status = item.status || item.estado || item.observation || item.observacion || item["OBSERVACIÃ“N"] || "";
+      const status = item.status || item.estado || item.observation || item.observacion || item["OBSERVACIÓN"] || "";
       if (hasText(status, ["mantiene", "mantenido", "mantenida", "mantener", "se mantiene"])) acc.maintained += 1;
       else if (hasText(status, ["elimina", "eliminado", "eliminada", "eliminar"])) acc.deleted += 1;
       else if (hasText(status, ["agrega", "agregado", "agregada", "agregar", "nuevo", "nueva"])) acc.added += 1;
@@ -692,7 +692,7 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
             <strong>{findingsStatus.completed}</strong>
           </div>
         </div>
-        <p>ClasificaciÃ³n segÃºn la columna Estado.</p>
+        <p>Clasificación según la columna Estado.</p>
       </article>
 
       <article className="summaryBottomCard summaryCOECard">
@@ -703,7 +703,7 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
         </div>
         <strong className="summaryCOEValue">${formatCurrency(Math.abs(coeDelta))}</strong>
         <div className="summaryCOEPill">{Math.abs(coePercent).toFixed(1)}%</div>
-        <p>{coeDelta >= 0 ? "ReducciÃ³n estimada frente al AS IS." : "Incremento estimado frente al AS IS."}</p>
+        <p>{coeDelta >= 0 ? "Reducción estimada frente al AS IS." : "Incremento estimado frente al AS IS."}</p>
       </article>
 
       <article className="summaryBottomCard summaryActivitiesCard">
@@ -931,27 +931,27 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
 
   const meetingItems = [
     ...meetings.map((item) => ({
-      title: item.title || "ReuniÃƒÂ³n",
-      date: [item.date, item.time].filter(Boolean).join(" Ã‚Â· ") || "Por definir",
+      title: item.title || "Reunión",
+      date: [item.date, item.time].filter(Boolean).join(" · ") || "Por definir",
       link: safeUrl(item.link) || meetUrl,
       status: item.status,
       observation: item.observation,
     })),
     {
-      title: project?.nextStep || "PrÃ³xima reuniÃ³n",
+      title: project?.nextStep || "Próxima reunión",
       date: project?.nextDate || "Por definir",
       link: meetUrl,
     },
     ...updates
       .filter((item) => normalizeSystemName(`${item.target || ""} ${item.title || ""} ${item.text || ""}`).includes("reunion"))
       .slice(0, 3)
-      .map((item) => ({ title: item.title || "ReuniÃ³n", date: item.text || "Por definir", link: meetUrl })),
+      .map((item) => ({ title: item.title || "Reunión", date: item.text || "Por definir", link: meetUrl })),
   ].filter((item) => item.title || item.date);
 
   const pendingItems = pending.filter(isPendingActive).slice(0, 8);
   const isMilestoneOpen = (item = {}, index = 0) => {
     const explicit = normalizeSystemName(item.open || item.abierto || "");
-    if (explicit) return explicit === "si" || explicit === "sÃ­" || explicit.includes("abierto") || explicit.includes("disponible");
+    if (explicit) return explicit === "si" || explicit === "sí" || explicit.includes("abierto") || explicit.includes("disponible");
     return index < 4 || isCompletedStatus(item.status);
   };
   const routeSource = milestones.slice(0, 13);
@@ -1311,7 +1311,7 @@ function KpiCards({ project, milestones, pending, setView }) {
     {
       label: "Avance general",
       value: `${project.progress}%`,
-      note: "HistÃ³rico de progreso",
+      note: "Histórico de progreso",
       target: "ruta",
       widget: <DashboardMiniGauge value={Number(project.progress) || 0} />,
     },
@@ -1331,7 +1331,7 @@ function KpiCards({ project, milestones, pending, setView }) {
     {
       label: "Bloqueos",
       value: blocked,
-      note: blocked ? "Requieren atenciÃ³n" : "OperaciÃ³n controlada",
+      note: blocked ? "Requieren atención" : "Operación controlada",
       target: "pendientes",
       widget: <DashboardMiniBlockers blocked={blocked} />,
     },
@@ -1372,7 +1372,7 @@ function MilestonesExecutive({ milestones, setView, selectedHito = "", setSelect
           <div className="hitosMiniAccent" />
           <div className="hitosProgressValue">{completed}/{total}</div>
           <div className="hitosProgressLabel">HITOS CUMPLIDOS</div>
-          <p className="hitosProgressSubcopy">Avance visible segÃºn los hitos finalizados, aprobados o completados.</p>
+          <p className="hitosProgressSubcopy">Avance visible según los hitos finalizados, aprobados o completados.</p>
         </div>
 
         <div className="hitosProgressMain">
@@ -1381,7 +1381,7 @@ function MilestonesExecutive({ milestones, setView, selectedHito = "", setSelect
               <h2>Hitos completados</h2>
               <p>La barra se pinta conforme se completan los hitos del proyecto.</p>
             </div>
-            <Badge status="En validaciÃ³n">{completed} de {total} completados</Badge>
+            <Badge status="En validación">{completed} de {total} completados</Badge>
           </div>
 
           <div className="hitosNamesScroller">
@@ -1422,14 +1422,14 @@ function MilestonesExecutive({ milestones, setView, selectedHito = "", setSelect
                       setView?.("ruta");
                     }}
                     aria-label={`${m.id ? `E${m.id}` : `E${index + 1}`} ${m.title}`}
-                    title={`${m.title} Â· ${m.status || "Sin estado"}`}
+                    title={`${m.title} · ${m.status || "Sin estado"}`}
                   />
                 );
               })}
             </div>
           </div>
 
-          <div className="hitosProgressHelp">Haz clic en cualquier hito para revisar su descripciÃ³n, quÃ© incluye y enlace dentro de la Ruta del proyecto.</div>
+          <div className="hitosProgressHelp">Haz clic en cualquier hito para revisar su descripción, qué incluye y enlace dentro de la Ruta del proyecto.</div>
         </div>
       </div>
     </section>
@@ -1450,7 +1450,7 @@ function HitosStatusMatrix({ milestones = [], setView, setSelectedHito }) {
     <section className="card summaryHitosStatusCard">
       <div className="summaryHitosStatusHeader">
         <h3>Detalle de estado de hitos del proyecto</h3>
-        <Badge status="En validaciÃ³n">{milestones.length} hitos</Badge>
+        <Badge status="En validación">{milestones.length} hitos</Badge>
       </div>
 
       <div className="summaryHitosStatusTableWrap">
@@ -1497,7 +1497,7 @@ function DisorderInsightsCard({ project, milestones = [], deliverables = [] }) {
       <div className="sectionHeader executiveHeader compact">
         <div>
           <h2>Radar de avance por sistemas</h2>
-          <p>Lectura visual del avance en los 5 sistemas de Business Power: procesos, talento, salarios, desempeÃ±o y K&ZEN.</p>
+          <p>Lectura visual del avance en los 5 sistemas de Business Power: procesos, talento, salarios, desempeño y K&ZEN.</p>
         </div>
       </div>
       <DashboardDisorderVisual project={project} milestones={milestones} deliverables={deliverables} />
@@ -1509,7 +1509,7 @@ function DisorderCard({ project, milestones = [], pending = [] }) {
   const progress = Number(project.progress) || 0;
   const disorder = Math.max(0, 100 - progress);
   const blocked = pending.filter((p) => String(p.status).toLowerCase().includes("bloqueado")).length;
-  const status = disorder > 60 ? "Bloqueado" : disorder > 30 ? "En validaciÃ³n" : "Finalizado";
+  const status = disorder > 60 ? "Bloqueado" : disorder > 30 ? "En validación" : "Finalizado";
 
   return (
     <section className="card executiveDisorderCard">
@@ -1538,7 +1538,7 @@ function DisorderCard({ project, milestones = [], pending = [] }) {
       <DashboardDisorderVisual progress={progress} />
 
       <div className="disorderNote executiveNote">
-        Avance general: <strong>{progress}%</strong> Â· Desorden estimado: <strong>{disorder}%</strong> Â· Hitos: <strong>{milestones.length}</strong>
+        Avance general: <strong>{progress}%</strong> · Desorden estimado: <strong>{disorder}%</strong> · Hitos: <strong>{milestones.length}</strong>
       </div>
     </section>
   );
@@ -1610,7 +1610,7 @@ function ProjectHero({ project, completedText }) {
     <div className="heroCard mobileStaticHero premiumHeroCard hideDuplicatedProjectCard">
       <div>
         <div className="eyebrow">Tablero conectado</div>
-        <h2>{project.service} Â· {project.client}</h2>
+        <h2>{project.service} · {project.client}</h2>
         <p>{project.projectPhrase || completedText}</p>
       </div>
 
@@ -1618,7 +1618,7 @@ function ProjectHero({ project, completedText }) {
         <div className="responsible">
           <Users size={22} />
           <div>
-            <span>Gerente general / dueÃ±o</span>
+            <span>Gerente general / dueño</span>
             <strong>{project.generalManager}</strong>
           </div>
         </div>
@@ -1632,7 +1632,7 @@ function ProjectHero({ project, completedText }) {
         {meetUrl && (
           <a className="meetButton" href={meetUrl} target="_blank" rel="noreferrer">
             <Video size={18} />
-            Conectarse a la reuniÃ³n
+            Conectarse a la reunión
           </a>
         )}
       </div>
@@ -1706,7 +1706,7 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
           <h2>Ruta del proyecto</h2>
           <p>Cada tarjeta muestra el detalle del hito, lo que incluye y el enlace relacionado.</p>
         </div>
-        {detailed && <Badge status="En validaciÃ³n">{filteredMilestones.length} visibles</Badge>}
+        {detailed && <Badge status="En validación">{filteredMilestones.length} visibles</Badge>}
       </div>
 
       {detailed && (
@@ -1737,7 +1737,7 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
                   <strong>{statusCounts.development}</strong>
                 </div>
               </div>
-              <p>SegÃºn el estado registrado para cada hito.</p>
+              <p>Según el estado registrado para cada hito.</p>
             </article>
           </div>
 
@@ -1787,7 +1787,7 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
               <div className="milestoneContent">
                 <h3>{m.id ? `E${m.id}: ` : ""}{m.title}</h3>
                 <div className="badgeRow">
-                  {m.system && <Badge status="En validaciÃ³n">{m.system}</Badge>}
+                  {m.system && <Badge status="En validación">{m.system}</Badge>}
                   <Badge status={m.status}>{m.status}</Badge>
                 </div>
                 {m.targetDate && (
@@ -1809,7 +1809,7 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
                           toggleRouteSection(descriptionKey);
                         }}
                       >
-                        <span>DescripciÃ³n</span>
+                        <span>Descripción</span>
                         <ChevronRight className={openRouteSections[descriptionKey] ? "open" : ""} size={18} />
                       </button>
                       {openRouteSections[descriptionKey] && (
@@ -1910,7 +1910,7 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
 
                   {!descriptionText && !includesGSEText && !includesClientText && !safeUrl(m.link) && relatedDeliverables.length === 0 && (
                     <p className="muted">
-                      Agrega Descripcion, QueIncluyeGSE, QueIncluyeCliente, Link o entregables relacionados para mostrar el detalle de este hito.
+                      Agrega Descripción, QueIncluyeGSE, QueIncluyeCliente, Link o entregables relacionados para mostrar el detalle de este hito.
                     </p>
                   )}
                 </div>
@@ -1975,23 +1975,23 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
           <h3>{title}</h3>
           <p>{subtitle}</p>
         </div>
-        <Badge status="En validaciÃ³n">{rows.length} visibles</Badge>
+        <Badge status="En validación">{rows.length} visibles</Badge>
       </div>
 
       <div className="processTableWrap individualMatrixScroll">
         <table className="processTable fixedMatrixTable">
           <thead>
             <tr>
-              <th>NÂ°</th>
+              <th>N°</th>
               <th>Tipo</th>
-              <th>CÃ³d. Macro</th>
+              <th>Cód. Macro</th>
               <th>Macroproceso</th>
-              <th>CÃ³d. Proceso</th>
+              <th>Cód. Proceso</th>
               <th>Proceso</th>
-              {variant === "asis" ? <th>DescripciÃ³n</th> : <th>Cambios / Observaciones</th>}
+              {variant === "asis" ? <th>Descripción</th> : <th>Cambios / Observaciones</th>}
               {variant === "tobe" && <th>Status</th>}
               <th>Imagen Proceso</th>
-              <th>Ficha TÃ©cnica</th>
+              <th>Ficha Técnica</th>
             </tr>
           </thead>
           <tbody>
@@ -2038,7 +2038,7 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
       <div className="sectionHeader">
         <div>
           <h2>Lista Maestra de Procesos</h2>
-          <p>Consulta integrada de procesos AS IS y TO BE, con bÃºsqueda y filtros por tipo, macroproceso y status.</p>
+          <p>Consulta integrada de procesos AS IS y TO BE, con búsqueda y filtros por tipo, macroproceso y status.</p>
         </div>
       </div>
 
@@ -2046,7 +2046,7 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
         <article className="processSummaryCard">
           <span>Total procesos AS IS</span>
           <strong>{processesAsIs.length}</strong>
-          <p>Procesos levantados en situaciÃ³n actual.</p>
+          <p>Procesos levantados en situación actual.</p>
         </article>
         <article className="processSummaryCard">
           <span>Total procesos TO BE</span>
@@ -2063,7 +2063,7 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar por cÃ³digo, proceso, macroproceso, descripciÃ³n o cambios"
+              placeholder="Buscar por código, proceso, macroproceso, descripción o cambios"
             />
           </div>
         </label>
@@ -2075,13 +2075,13 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
       <div className="processTablesStack">
         <ProcessTable
           title="Procesos AS IS"
-          subtitle="SituaciÃ³n actual documentada en la lista maestra."
+          subtitle="Situación actual documentada en la lista maestra."
           rows={filteredAsIs}
           variant="asis"
         />
         <ProcessTable
           title="Procesos TO BE"
-          subtitle="Procesos propuestos, modificados o diseÃ±ados para la operaciÃ³n objetivo."
+          subtitle="Procesos propuestos, modificados o diseñados para la operación objetivo."
           rows={filteredToBe}
           variant="tobe"
         />
@@ -2193,7 +2193,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
   const summarizeNav = (rows) => {
     const isValue = (value) => {
       const text = normalizeSystemName(value);
-      return text.includes("si") || text.includes("sÃ­") || text.includes("genera") || text.includes("valor") || text.includes("agrega");
+      return text.includes("si") || text.includes("sí") || text.includes("genera") || text.includes("valor") || text.includes("agrega");
     };
     const isNoValue = (value) => {
       const text = normalizeSystemName(value);
@@ -2253,7 +2253,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
           <h3>{title}</h3>
           <p>{subtitle}</p>
         </div>
-        <Badge status="En validaciÃ³n">{badge}</Badge>
+        <Badge status="En validación">{badge}</Badge>
       </div>
       <div className="coeProcessScrollList fixedProcessList">
         {rows.map((item, index) => (
@@ -2279,18 +2279,18 @@ function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
           <h3>{title}</h3>
           <p>{subtitle}</p>
         </div>
-        <Badge status="En validaciÃ³n">{rows.length} visibles</Badge>
+        <Badge status="En validación">{rows.length} visibles</Badge>
       </div>
       <div className="processTableWrap coeTableWrap coeMatrixInternalScroll">
         <table className="processTable coeTable matrixInternalScrollTable">
           <thead>
             <tr>
-              <th>CÃ“DIGO</th>
+              <th>CÓDIGO</th>
               <th>PROCESO</th>
               <th>TIPO</th>
               <th>ACTIVIDAD</th>
               <th>INTERVINIENTE</th>
-              <th>OBSERVACIÃ“N / STATUS</th>
+              <th>OBSERVACIÓN / STATUS</th>
               <th>NAV</th>
               <th>TIEMPO (xmin)</th>
               <th>COSTO (xmin)</th>
@@ -2334,18 +2334,18 @@ function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
         <article className="coeExecutiveCard coeCostCard">
           <span>Costo procesos AS IS</span>
           <strong>${formatCurrency(asIsTotal)}</strong>
-          <p>Total mensual estimado de la situaciÃ³n actual.</p>
+          <p>Total mensual estimado de la situación actual.</p>
         </article>
         <article className="coeExecutiveCard coeDifferenceCard difference">
           <span>COE mensual</span>
           <strong>${formatCurrency(Math.abs(difference))}</strong>
           <em>{Math.abs(reductionPercent).toFixed(1)}%</em>
-          <p>{difference >= 0 ? "ReducciÃ³n estimada frente al AS IS." : "Incremento estimado frente al AS IS."}</p>
+          <p>{difference >= 0 ? "Reducción estimada frente al AS IS." : "Incremento estimado frente al AS IS."}</p>
         </article>
         <article className="coeExecutiveCard coeCostCard">
           <span>Costo procesos TO BE</span>
           <strong>${formatCurrency(toBeTotal)}</strong>
-          <p>Total mensual estimado de la operaciÃ³n objetivo.</p>
+          <p>Total mensual estimado de la operación objetivo.</p>
         </article>
       </div>
 
@@ -2354,14 +2354,14 @@ function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
           <span>Actividades</span>
           <ActivitySummaryRow title="Actividades AS IS" summary={asIsActivityStatusSummary} />
           <ActivitySummaryRow title="Actividades TO BE" summary={toBeActivityStatusSummary} />
-          <p>SegÃºn la columna ObservaciÃ³n.</p>
+          <p>Según la columna Observación.</p>
         </article>
 
         <article className="coeInsightCard coeNavCard">
           <span>NAV</span>
           <NavSummaryRow title="NAV AS IS" summary={asIsNavSummary} />
           <NavSummaryRow title="NAV TO BE" summary={toBeNavSummary} />
-          <p>ClasificaciÃ³n de actividades que generan o no generan valor.</p>
+          <p>Clasificación de actividades que generan o no generan valor.</p>
         </article>
       </div>
 
@@ -2378,7 +2378,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar por cÃ³digo, proceso o actividad"
+              placeholder="Buscar por código, proceso o actividad"
             />
           </div>
         </label>
@@ -2389,8 +2389,8 @@ function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
       </div>
 
       <div className="processTablesStack coeTablesStack">
-        <COETable title="Matriz COE AS IS" subtitle="Actividades levantadas en la situaciÃ³n actual." rows={filteredAsIs} />
-        <COETable title="Matriz COE TO BE" subtitle="Actividades propuestas para la operaciÃ³n objetivo." rows={filteredToBe} />
+        <COETable title="Matriz COE AS IS" subtitle="Actividades levantadas en la situación actual." rows={filteredAsIs} />
+        <COETable title="Matriz COE TO BE" subtitle="Actividades propuestas para la operación objetivo." rows={filteredToBe} />
       </div>
     </section>
   );
@@ -2414,17 +2414,17 @@ function Findings({ findings = [] }) {
   };
 
   const categories = [
-    { key: "politica", label: "PolÃ­tica", words: ["politica", "politicas", "polÃ­tica", "polÃ­ticas"] },
+    { key: "politica", label: "Política", words: ["politica", "politicas", "política", "políticas"] },
     { key: "procedimiento", label: "Procedimiento", words: ["procedimiento", "procedimientos", "manual", "manuales", "instructivo", "instructivos"] },
-    { key: "indicador", label: "Indicador", words: ["indicador", "indicadores", "kpi", "kpÃ­s", "kpis"] },
+    { key: "indicador", label: "Indicador", words: ["indicador", "indicadores", "kpi", "kpís", "kpis"] },
     { key: "perfiles", label: "Perfiles", words: ["perfil", "perfiles", "cargo", "cargos"] },
-    { key: "rediseno", label: "RediseÃ±o de procesos", words: ["rediseno", "rediseÃ±o", "redisenio", "rediseÃ±ar", "redisenar", "rediseÃ±o de procesos"] },
+    { key: "rediseno", label: "Rediseño de procesos", words: ["rediseno", "rediseño", "redisenio", "rediseñar", "redisenar", "rediseño de procesos"] },
     { key: "dimensionamiento", label: "Dimensionamiento", words: ["dimensionamiento", "dimensionar", "dimension"] },
   ];
 
   const cleanOptionValue = (value = "") => {
     const text = String(value || "").trim();
-    if (!text || text === "-" || text === "â€”" || text.toLowerCase() === "n/a") return "";
+    if (!text || text === "-" || text === "—" || text.toLowerCase() === "n/a") return "";
     return text;
   };
 
@@ -2592,16 +2592,16 @@ function Findings({ findings = [] }) {
       <div className="sectionHeader">
         <div>
           <h2>Hallazgos encontrados</h2>
-          <p>Busca, filtra y revisa los hallazgos crÃ­ticos de la matriz tÃ©cnica.</p>
+          <p>Busca, filtra y revisa los hallazgos críticos de la matriz técnica.</p>
         </div>
-        <Badge status="En validaciÃ³n">{filteredFindings.length} visibles</Badge>
+        <Badge status="En validación">{filteredFindings.length} visibles</Badge>
       </div>
 
       <div className="findingsSummaryGrid">
         <article className="findingsSummaryCard">
           <span>Hallazgos totales</span>
           <strong>{filteredFindings.length}</strong>
-          <p>Total visible segÃºn los filtros activos.</p>
+          <p>Total visible según los filtros activos.</p>
         </article>
 
         <article className="findingsSummaryCard">
@@ -2671,7 +2671,7 @@ function Findings({ findings = [] }) {
         <FilterSelect label="Tipo de entregable" value={deliverableTypeFilter} onChange={setDeliverableTypeFilter} options={deliverableTypes} />
         <FilterSelect label="Prioridad" value={priorityFilter} onChange={setPriorityFilter} options={priorities} />
         <FilterSelect label="Gerencia" value={managementFilter} onChange={setManagementFilter} options={managements} />
-        <FilterSelect label="Ãrea" value={areaFilter} onChange={setAreaFilter} options={areas} />
+        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areas} />
         <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statuses} />
       </div>
 
@@ -2694,10 +2694,10 @@ function Findings({ findings = [] }) {
                     <span>ID {item.id}</span>
                     <span>{process}</span>
                   </div>
-                  <h3>{item.finding || "Hallazgo sin tÃ­tulo"}</h3>
+                  <h3>{item.finding || "Hallazgo sin título"}</h3>
                   {deliveryDate && <p className="findingDeliveryDate">Fecha de entrega: {deliveryDate}</p>}
                   <div className="badgeRow findingBadgesCompactOnly">
-                    {item.priority && <Badge status={item.priority === "Alta" ? "Bloqueado" : "En validaciÃ³n"}>Prioridad: {item.priority}</Badge>}
+                    {item.priority && <Badge status={item.priority === "Alta" ? "Bloqueado" : "En validación"}>Prioridad: {item.priority}</Badge>}
                     <Badge status={status}>{status}</Badge>
                   </div>
                 </div>
@@ -2715,26 +2715,26 @@ function Findings({ findings = [] }) {
                   <div className="findingFixedScroll">
                     {item.description && (
                       <div className="findingDetailBlock">
-                        <strong>DescripciÃ³n tÃ©cnica del hallazgo</strong>
+                        <strong>Descripción técnica del hallazgo</strong>
                         <p>{item.description}</p>
                       </div>
                     )}
                     {recommendation && (
                       <div className="findingDetailBlock">
-                        <strong>RecomendaciÃ³n tÃ©cnica</strong>
+                        <strong>Recomendación técnica</strong>
                         <p>{recommendation}</p>
                       </div>
                     )}
                     <div className="findingDetailGrid">
                       {solutionType && (
                         <div>
-                          <strong>Tipo de soluciÃ³n</strong>
+                          <strong>Tipo de solución</strong>
                           <span>{solutionType}</span>
                         </div>
                       )}
                     </div>
                     {!item.description && !recommendation && !solutionType && !link && (
-                      <p className="muted">Agrega descripciÃ³n, recomendaciÃ³n o link en la pestaÃ±a Hallazgos para mostrar mÃ¡s detalle.</p>
+                      <p className="muted">Agrega descripción, recomendación o link en la pestaña Hallazgos para mostrar más detalle.</p>
                     )}
                   </div>
                 </div>
@@ -2840,7 +2840,7 @@ function PendingClient({ pending, compact = false, setView }) {
       setSavingValidation((current) => ({ ...current, [key]: false }));
       setValidationMessage((current) => ({
         ...current,
-        [key]: "Falta configurar el webhook para guardar esta validaciÃ³n."
+        [key]: "Falta configurar el webhook para guardar esta validación."
       }));
       return;
     }
@@ -2873,7 +2873,7 @@ function PendingClient({ pending, compact = false, setView }) {
       }
 
       if (!response.ok || result.ok === false) {
-        throw new Error(result.message || "No se pudo registrar la validaciÃ³n.");
+        throw new Error(result.message || "No se pudo registrar la validación.");
       }
 
       setValidationMessage((current) => ({ ...current, [key]: "Registrado" }));
@@ -2894,9 +2894,9 @@ function PendingClient({ pending, compact = false, setView }) {
       <div className="sectionHeader">
         <div>
           <h2>Pendientes del cliente</h2>
-          <p>Acciones necesarias para avanzar sin retrasos. Haz clic para ver descripciÃ³n y enlace de aprobaciÃ³n.</p>
+          <p>Acciones necesarias para avanzar sin retrasos. Haz clic para ver descripción y enlace de aprobación.</p>
         </div>
-        {!compact && <Badge status="En validaciÃ³n">{filteredPending.length} visibles</Badge>}
+        {!compact && <Badge status="En validación">{filteredPending.length} visibles</Badge>}
       </div>
 
       {!compact && (
@@ -2927,11 +2927,11 @@ function PendingClient({ pending, compact = false, setView }) {
                   <strong>{summary.finalized}</strong>
                 </div>
               </div>
-              <p>SegÃºn el estado del pendiente.</p>
+              <p>Según el estado del pendiente.</p>
             </article>
 
             <article className="pendingSummaryCard">
-              <span>ValidaciÃ³n del cliente</span>
+              <span>Validación del cliente</span>
               <div className="pendingMiniRows">
                 <div>
                   <span>Completado</span>
@@ -2944,7 +2944,7 @@ function PendingClient({ pending, compact = false, setView }) {
                   <strong>{summary.pendingValidation}</strong>
                 </div>
               </div>
-              <p>SegÃºn la columna ValidacionDeCliente.</p>
+              <p>Según la columna ValidacionDeCliente.</p>
             </article>
           </div>
 
@@ -3025,19 +3025,19 @@ function PendingClient({ pending, compact = false, setView }) {
                 <div className="pendingDetails" onClick={(e) => e.stopPropagation()}>
                   {item.description && (
                     <div className="detailBlock routeDetailTextBlock">
-                      <strong>DescripciÃ³n</strong>
+                      <strong>Descripción</strong>
                       <p>{item.description}</p>
                     </div>
                   )}
 
                   {link && (
                     <a className="secondaryLink routeSecondaryLinkFixed" href={link} target="_blank" rel="noreferrer">
-                      Abrir documento para aprobaciÃ³n <ExternalLink size={15} />
+                      Abrir documento para aprobación <ExternalLink size={15} />
                     </a>
                   )}
 
                   {!item.description && !link && (
-                    <p className="muted">Agrega Descripcion y Link en la pestaÃ±a PendientesCliente para mostrar mÃ¡s detalle.</p>
+                    <p className="muted">Agrega Descripcion y Link en la pestaña PendientesCliente para mostrar más detalle.</p>
                   )}
                 </div>
               )}
@@ -3119,7 +3119,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
       <div className="sectionHeader">
         <div>
           <h2>{compact ? "Entregables principales" : "Entregables"}</h2>
-          <p>Vista por sistema e hito, con acceso al documento cuando estÃ© disponible.</p>
+          <p>Vista por sistema e hito, con acceso al documento cuando esté disponible.</p>
         </div>
       </div>
 
@@ -3146,7 +3146,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
                   <strong>{summary.client}</strong>
                 </div>
               </div>
-              <p>SegÃºn la columna Responsable.</p>
+              <p>Según la columna Responsable.</p>
             </article>
 
             <article className="deliverablesSummaryCard">
@@ -3168,7 +3168,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
                   <strong>{summary.finalized}</strong>
                 </div>
               </div>
-              <p>SegÃºn el estado del entregable.</p>
+              <p>Según el estado del entregable.</p>
             </article>
           </div>
 
@@ -3242,7 +3242,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
 }
 
 function UpdatesPanel({ project, updates, setView, pending = [] }) {
-  const safeUpdates = updates.length ? updates : [{ title: "PrÃ³ximo paso", text: project.nextStep, target: "ruta" }];
+  const safeUpdates = updates.length ? updates : [{ title: "Próximo paso", text: project.nextStep, target: "ruta" }];
   const meetUrl = safeUrl(project.linkMeet);
   const mainPending = pending[0];
 
@@ -3251,9 +3251,9 @@ function UpdatesPanel({ project, updates, setView, pending = [] }) {
       <div className="executiveSideCard nextStepWhiteCard">
         <div className="sideCardIconLine">
           <div className="sideIcon"><Flag size={18} /></div>
-          <span>PrÃ³ximo paso</span>
+          <span>Próximo paso</span>
         </div>
-        <h3>{project.nextStep || "PrÃ³ximo paso pendiente"}</h3>
+        <h3>{project.nextStep || "Próximo paso pendiente"}</h3>
         <p>{project.nextDate || "Fecha por confirmar"}</p>
         {meetUrl && (
           <a className="sideMeetButton" href={meetUrl} target="_blank" rel="noreferrer">
@@ -3312,10 +3312,10 @@ function Education({ education = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const systemOrder = [
-    "Sistema 1: OperaciÃ³n sin Caos",
+    "Sistema 1: Operación sin Caos",
     "Sistema 2: Talento en el Rol Correcto",
     "Sistema 3: Salarios Justos que Retienen",
-    "Sistema 4: DesempeÃ±o que Optimiza la Estructura",
+    "Sistema 4: Desempeño que Optimiza la Estructura",
     "Sistema 5: K&ZEN Interno Permanente",
   ];
 
@@ -3372,13 +3372,13 @@ function Education({ education = [] }) {
           <h3>{item.deliverable}</h3>
 
           <div className="badgeRow">
-            {item.milestone && <Badge status="En validaciÃ³n">Hito: {item.milestone}</Badge>}
+            {item.milestone && <Badge status="En validación">Hito: {item.milestone}</Badge>}
             {item.status && <Badge status={item.status}>{item.status}</Badge>}
           </div>
 
-          {item.whatIs && <p><strong>Â¿QuÃ© es?</strong><br />{item.whatIs}</p>}
-          {item.purpose && <p><strong>Â¿Para quÃ© sirve?</strong><br />{item.purpose}</p>}
-          {item.howToRead && <p><strong>Â¿CÃ³mo leerlo?</strong><br />{item.howToRead}</p>}
+          {item.whatIs && <p><strong>¿Qué es?</strong><br />{item.whatIs}</p>}
+          {item.purpose && <p><strong>¿Para qué sirve?</strong><br />{item.purpose}</p>}
+          {item.howToRead && <p><strong>¿Cómo leerlo?</strong><br />{item.howToRead}</p>}
 
           {link && (
             <a className="secondaryLink routeSecondaryLinkFixed" href={link} target="_blank" rel="noreferrer">
@@ -3396,14 +3396,14 @@ function Education({ education = [] }) {
         <div>
           <h2>Lo que vas a recibir</h2>
           <p>
-            AquÃ­ encontrarÃ¡s una guÃ­a clara de los entregables que estamos construyendo, quÃ© significa cada uno,
-            para quÃ© sirve y cÃ³mo debes leerlo.
+            Aquí encontrarás una guía clara de los entregables que estamos construyendo, qué significa cada uno,
+            para qué sirve y cómo debes leerlo.
           </p>
         </div>
       </div>
 
       <p className="sectionIntro">
-        La informaciÃ³n estÃ¡ organizada por sistemas para que puedas entender cÃ³mo cada entregable aporta al orden,
+        La información está organizada por sistemas para que puedas entender cómo cada entregable aporta al orden,
         control y sostenibilidad de tu empresa.
       </p>
 
@@ -3415,7 +3415,7 @@ function Education({ education = [] }) {
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar entregable, sistema o explicaciÃ³n..."
+              placeholder="Buscar entregable, sistema o explicación..."
             />
           </div>
         </label>
@@ -3476,12 +3476,12 @@ function DocumentsUpload({ documents = [], project }) {
   const title = documents.find((item) => item.title)?.title || "Carga de documentos iniciales";
   const description =
     documents.find((item) => item.description)?.description ||
-    "Para iniciar el diagnÃ³stico, revisa quÃ© documentos tiene tu empresa y sÃºbelos en la carpeta compartida.";
+    "Para iniciar el diagnóstico, revisa qué documentos tiene tu empresa y súbelos en la carpeta compartida.";
 
   const getCurrentResponse = (item) => responses[item.id] ?? item.responseClient ?? "";
   const getCurrentStatus = (item) => {
     const response = getCurrentResponse(item);
-    if (response === "SÃ­ tengo") return "Por subir";
+    if (response === "Sí tengo") return "Por subir";
     if (response === "No tengo") return "No disponible";
     return item.status || "Pendiente";
   };
@@ -3510,7 +3510,7 @@ function DocumentsUpload({ documents = [], project }) {
           id: item.id,
           categoria: item.category,
           respuesta,
-          estado: respuesta === "SÃ­ tengo" ? "Por subir" : "No disponible",
+          estado: respuesta === "Sí tengo" ? "Por subir" : "No disponible",
           fecha: new Date().toISOString(),
         }),
       });
@@ -3544,15 +3544,15 @@ function DocumentsUpload({ documents = [], project }) {
   }));
   const ungrouped = documents.filter((item) => !item.category);
 
-  const answered = documents.filter((item) => ["SÃ­ tengo", "No tengo"].includes(getCurrentResponse(item))).length;
-  const yesHave = documents.filter((item) => getCurrentResponse(item) === "SÃ­ tengo").length;
+  const answered = documents.filter((item) => ["Sí tengo", "No tengo"].includes(getCurrentResponse(item))).length;
+  const yesHave = documents.filter((item) => getCurrentResponse(item) === "Sí tengo").length;
   const required = documents.filter((item) => String(item.required || "").toLowerCase().startsWith("s")).length;
 
   const renderDocumentItem = (item, index) => {
     const key = item.id || item.item || String(index);
     const currentResponse = getCurrentResponse(item);
     const currentStatus = getCurrentStatus(item);
-    const isDone = currentResponse === "SÃ­ tengo" || String(currentStatus || "").toLowerCase().includes("cargado") || String(currentStatus || "").toLowerCase().includes("validado");
+    const isDone = currentResponse === "Sí tengo" || String(currentStatus || "").toLowerCase().includes("cargado") || String(currentStatus || "").toLowerCase().includes("validado");
 
     return (
       <article className="documentChecklistItem" key={`${item.category || "general"}-${item.item}-${index}`}>
@@ -3572,7 +3572,7 @@ function DocumentsUpload({ documents = [], project }) {
           {item.detail && <p>{item.detail}</p>}
 
           <div className="documentResponseBox">
-            <label htmlFor={`doc-response-${key}`}>Â¿Tienes este documento?</label>
+            <label htmlFor={`doc-response-${key}`}>¿Tienes este documento?</label>
             <select
               id={`doc-response-${key}`}
               value={currentResponse}
@@ -3580,14 +3580,14 @@ function DocumentsUpload({ documents = [], project }) {
               disabled={Boolean(saving[key])}
             >
               <option value="">Seleccionar</option>
-              <option value="SÃ­ tengo">SÃ­ tengo</option>
+              <option value="Sí tengo">Sí tengo</option>
               <option value="No tengo">No tengo</option>
             </select>
             {saveMessage[key] && <span className="documentSaveMessage">{saveMessage[key]}</span>}
           </div>
 
           {item.observation && <div className="documentObservation">{item.observation}</div>}
-          {item.responseDate && <div className="documentResponseDate">Ãšltima respuesta: {item.responseDate}</div>}
+          {item.responseDate && <div className="documentResponseDate">Última respuesta: {item.responseDate}</div>}
         </div>
       </article>
     );
@@ -3621,18 +3621,18 @@ function DocumentsUpload({ documents = [], project }) {
 
             <button className="secondaryPortalButton documentsSecondaryButton" type="button">
               <FolderOpen size={18} />
-              {documents.length} Ã­tems solicitados
+              {documents.length} ítems solicitados
             </button>
           </div>
         </div>
 
         <div className="documentsHeroMetrics">
           <div className="portalMetricCard">
-            <span>Ãtems respondidos</span>
+            <span>Ítems respondidos</span>
             <strong>{answered}/{documents.length}</strong>
           </div>
           <div className="portalMetricCard">
-            <span>SÃ­ tiene</span>
+            <span>Sí tiene</span>
             <strong>{yesHave}</strong>
           </div>
           <div className="portalMetricCard">
@@ -3648,18 +3648,18 @@ function DocumentsUpload({ documents = [], project }) {
             <div className="documentCategoryHeader">
               <div>
                 <span>Checklist pendiente</span>
-                <h3>No se encontraron Ã­tems en Google Sheet</h3>
+                <h3>No se encontraron ítems en Google Sheet</h3>
               </div>
-              <Badge status="Pendiente">Revisar pestaÃ±a Documentos</Badge>
+              <Badge status="Pendiente">Revisar pestaña Documentos</Badge>
             </div>
             <div className="documentItemsGrid">
               <article className="documentChecklistItem">
                 <div className="documentCheckIcon"><ClipboardCheck size={19} /></div>
                 <div className="documentChecklistContent">
                   <div className="documentItemTop">
-                    <h3>Revisa el nombre de la pestaÃ±a y los encabezados</h3>
+                    <h3>Revisa el nombre de la pestaña y los encabezados</h3>
                   </div>
-                  <p>La app busca una pestaÃ±a llamada Documentos con columnas como Titulo, Descripcion, Categoria, Item, Detalle, Obligatorio, RespuestaCliente, Estado, Observacion y FechaRespuesta.</p>
+                  <p>La app busca una pestaña llamada Documentos con columnas como Titulo, Descripcion, Categoria, Item, Detalle, Obligatorio, RespuestaCliente, Estado, Observacion y FechaRespuesta.</p>
                 </div>
               </article>
             </div>
@@ -3670,7 +3670,7 @@ function DocumentsUpload({ documents = [], project }) {
           <div className="documentCategoryBlock" key={group.category}>
             <div className="documentCategoryHeader">
               <div>
-                <span>CategorÃ­a</span>
+                <span>Categoría</span>
                 <h3>{group.category}</h3>
               </div>
               <Badge status="Disponible">{group.items.length} documentos</Badge>
@@ -3686,7 +3686,7 @@ function DocumentsUpload({ documents = [], project }) {
           <div className="documentCategoryBlock">
             <div className="documentCategoryHeader">
               <div>
-                <span>CategorÃ­a</span>
+                <span>Categoría</span>
                 <h3>Documentos generales</h3>
               </div>
               <Badge status="Disponible">{ungrouped.length} documentos</Badge>
@@ -3720,7 +3720,7 @@ function App() {
       .catch((err) => {
         console.error(err);
         setConnected(false);
-        setError("No se pudo conectar con Google Sheets. Revisa publicaciÃ³n, permisos o nombres de pestaÃ±as.");
+        setError("No se pudo conectar con Google Sheets. Revisa publicación, permisos o nombres de pestañas.");
       });
   }, []);
 
