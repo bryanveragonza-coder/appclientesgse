@@ -13736,9 +13736,9 @@ body {
 .canvaRouteU {
   position: absolute;
   left: -42px;
-  top: 0;
-  width: 120px;
-  height: 100%;
+  top: 11px;
+  width: 71px;
+  height: 102px;
   overflow: visible;
   pointer-events: none;
 }
@@ -13818,11 +13818,11 @@ body {
 
 .canvaRouteNode.side {
   position: absolute;
-  top: 50%;
+  top: 62px;
   left: -28px;
   width: 118px;
   min-height: 92px;
-  transform: translateY(-50%);
+  transform: none;
   align-content: start;
 }
 
