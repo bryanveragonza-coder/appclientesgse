@@ -1713,13 +1713,21 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
         <>
           <div className="routeSummaryGrid">
             <article className="routeSummaryCard">
-              <span>Total de hitos</span>
-              <strong>{milestones.length}</strong>
+              <div>
+                <span>Total de Hitos</span>
+                <strong>{milestones.length}</strong>
+              </div>
+              <div className="routeSummaryIcon" aria-hidden="true">
+                <MapPin size={18} />
+                <MapPin size={18} />
+                <MapPin size={18} />
+                <Flag size={28} />
+              </div>
               <p>Hitos cargados en la ruta de avance.</p>
             </article>
 
             <article className="routeSummaryCard routeStatusSummaryCard">
-              <span>Estado de hitos</span>
+              <span>Estado de Hitos</span>
               <div className="routeMiniStatusRows threeStatus">
                 <div>
                   <span>Finalizado</span>

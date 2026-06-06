@@ -14821,6 +14821,129 @@ body {
   font-weight: 400 !important;
 }
 
+.routeProjectSection .routeSummaryGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+}
+
+.routeProjectSection .routeSummaryCard {
+  min-height: 150px !important;
+  padding: 34px 34px 30px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 24px !important;
+  overflow: visible !important;
+}
+
+.routeProjectSection .routeSummaryCard > div:first-child {
+  display: grid !important;
+  gap: 24px !important;
+}
+
+.routeProjectSection .routeSummaryCard > div:first-child > span,
+.routeProjectSection .routeStatusSummaryCard > span {
+  color: #11181c !important;
+  font-size: 1.05rem !important;
+  font-weight: 400 !important;
+}
+
+.routeProjectSection .routeSummaryCard > div:first-child > strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 4rem !important;
+  line-height: 0.9 !important;
+  font-weight: 500 !important;
+}
+
+.routeProjectSection .routeSummaryIcon {
+  width: 122px !important;
+  height: 122px !important;
+  margin-right: -34px !important;
+  display: grid !important;
+  place-items: center !important;
+  position: relative !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+}
+
+.routeProjectSection .routeSummaryIcon::before {
+  content: "";
+  width: 76px;
+  height: 76px;
+  position: absolute;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+}
+
+.routeProjectSection .routeSummaryIcon svg {
+  position: absolute;
+  stroke-width: 1.8;
+}
+
+.routeProjectSection .routeSummaryIcon svg:nth-child(1) {
+  left: 34px;
+  bottom: 31px;
+}
+
+.routeProjectSection .routeSummaryIcon svg:nth-child(2) {
+  left: 46px;
+  top: 43px;
+}
+
+.routeProjectSection .routeSummaryIcon svg:nth-child(3) {
+  right: 34px;
+  bottom: 39px;
+}
+
+.routeProjectSection .routeSummaryIcon svg:nth-child(4) {
+  right: 28px;
+  top: 27px;
+}
+
+.routeProjectSection .routeStatusSummaryCard {
+  grid-template-columns: 1fr !important;
+  align-content: center !important;
+  gap: 26px !important;
+}
+
+.routeProjectSection .routeMiniStatusRows.threeStatus {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.routeProjectSection .routeMiniStatusRows.threeStatus > div {
+  display: grid !important;
+  grid-template-columns: 96px minmax(160px, 1fr) 34px !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+.routeProjectSection .routeMiniStatusRows.threeStatus span {
+  color: #11181c !important;
+  font-size: 0.88rem !important;
+  font-weight: 400 !important;
+}
+
+.routeProjectSection .routeMiniStatusRows.threeStatus strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 1rem !important;
+  text-align: right !important;
+  font-weight: 400 !important;
+}
+
+.routeProjectSection .routeMiniStatusRows.threeStatus .routeMiniTrack {
+  height: 11px !important;
+  background: #d8eceb !important;
+}
+
+.routeProjectSection .routeMiniStatusRows.threeStatus .routeMiniTrack i {
+  height: 100% !important;
+  display: block !important;
+  background: #00b8b5 !important;
+}
+
 /* PORTAL_PROJECT_CANVA_REFERENCE_V1 */
 .portalLogos,
 .portalEyebrow,
