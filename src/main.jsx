@@ -1122,8 +1122,7 @@ function CanvaRing({ value = 0, total = 1 }) {
 
 function CanvaMilestonePath({ milestones = [], pinIndex = 0, statusClass, setView }) {
   const topRow = milestones.slice(0, 6);
-  const sideItem = milestones[6];
-  const bottomRow = milestones.slice(7, 13).reverse();
+  const bottomRow = milestones.slice(6, 13).reverse();
   const renderNode = (item, originalIndex, extraClass = "") => (
     <button
       className={`canvaRouteNode ${extraClass} ${statusClass(item.status)} ${item.unlocked ? "unlocked" : "locked"} ${originalIndex === pinIndex ? "current" : ""}`}
@@ -1144,15 +1143,8 @@ function CanvaMilestonePath({ milestones = [], pinIndex = 0, statusClass, setVie
       <div className="canvaRouteRow top">
         {topRow.map((item, index) => renderNode(item, index))}
       </div>
-      {sideItem && (
-        <div className="canvaRouteSide">
-          <svg className="canvaRouteU" viewBox="0 0 12 102" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M6 0 V102" />
-          </svg>
-          {renderNode(sideItem, 6, "side")}
-        </div>
-      )}
-      <div className="canvaRouteRow bottom reverse">
+      <div className="canvaRouteTurn" aria-hidden="true"></div>
+      <div className="canvaRouteRow bottom">
         {bottomRow.map((item) => renderNode(item, milestones.indexOf(item)))}
       </div>
     </div>

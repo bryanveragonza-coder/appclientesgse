@@ -13681,12 +13681,13 @@ body {
 }
 
 .canvaRoutePath {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 118px;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    "top side"
-    "bottom side";
-  gap: 22px 0;
+    "top"
+    "bottom";
+  gap: 28px;
   padding: 20px 2px 8px 0;
 }
 
@@ -13698,14 +13699,22 @@ body {
 }
 
 .canvaRouteRow.top { grid-area: top; }
-.canvaRouteRow.bottom { grid-area: bottom; }
+.canvaRouteRow.bottom {
+  grid-area: bottom;
+  grid-template-columns: repeat(7, minmax(68px, 1fr));
+}
 
-.canvaRouteSide {
-  grid-area: side;
-  position: relative;
-  display: grid;
-  align-items: center;
-  justify-items: center;
+.canvaRouteTurn {
+  grid-area: top;
+  position: absolute;
+  inset: 0 0 auto auto;
+  width: 92px;
+  height: 118px;
+  transform: translate(16px, 11px);
+  border: 3px dotted #141b1f;
+  border-left: 0;
+  border-radius: 0 56px 56px 0;
+  pointer-events: none;
 }
 
 .canvaRouteRow::before {
@@ -13718,38 +13727,19 @@ body {
   pointer-events: none;
 }
 
-.canvaRouteRow.top::after,
-.canvaRouteRow.bottom::after {
+.canvaRouteRow.top::after {
   content: "";
   position: absolute;
-  right: -64px;
+  right: -16px;
   top: 11px;
-  width: calc((100% / 6) * 0.5 + 64px);
+  width: calc((100% / 6) * 0.5 + 16px);
   border-top: 3px dotted #141b1f;
   pointer-events: none;
 }
 
-.canvaRouteSide::before {
-  display: none;
-}
-
-.canvaRouteU {
-  position: absolute;
-  left: 58px;
-  top: 11px;
-  width: 12px;
-  height: 102px;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.canvaRouteU path {
-  fill: none;
-  stroke: #141b1f;
-  stroke-width: 3;
-  stroke-linecap: butt;
-  stroke-linejoin: miter;
-  stroke-dasharray: 1 5;
+.canvaRouteRow.bottom::before {
+  left: calc((100% / 7) * 0.5);
+  right: calc((100% / 7) * 0.5);
 }
 
 .canvaRoutePin {
@@ -13816,46 +13806,6 @@ body {
   transform: translateX(-50%) rotate(0deg) !important;
 }
 
-.canvaRouteNode.side {
-  position: absolute;
-  top: 102px;
-  left: 15px;
-  width: 118px;
-  min-height: 92px;
-  transform: none;
-  align-content: start;
-}
-
-.canvaRouteNode.side > svg:not(.canvaRoutePin) {
-  transform: rotate(180deg);
-}
-
-.canvaRouteNode.side strong,
-.canvaRouteNode.side small,
-.canvaRouteNode.side em {
-  justify-self: start;
-  margin-left: 118px;
-  max-width: 92px;
-  transform: translateY(-38px);
-  text-align: left;
-}
-
-.canvaRouteNode.side > svg:not(.canvaRoutePin) {
-  justify-self: start;
-  margin-left: 84px;
-  transform: rotate(180deg);
-}
-
-.canvaRouteNode.side span,
-.canvaRouteNode.side > svg {
-  z-index: 3;
-}
-
-.canvaRouteNode.side span {
-  background: #ffffff;
-  justify-self: start;
-  margin-left: 38px;
-}
 
 .canvaRouteNode strong {
   max-width: 92px;
