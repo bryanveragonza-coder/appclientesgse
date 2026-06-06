@@ -1143,9 +1143,7 @@ function CanvaMilestonePath({ milestones = [], pinIndex = 0, statusClass, setVie
       <div className="canvaRouteRow top">
         {topRow.map((item, index) => renderNode(item, index))}
       </div>
-      <svg className="canvaRouteTurn" viewBox="0 0 35 108" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M17.5 0 V108" />
-      </svg>
+      <div className="canvaRouteTurn" aria-hidden="true"></div>
       <div className="canvaRouteRow bottom">
         {bottomRow.map((item) => renderNode(item, milestones.indexOf(item)))}
       </div>

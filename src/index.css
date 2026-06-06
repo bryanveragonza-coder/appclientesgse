@@ -13707,21 +13707,12 @@ body {
 .canvaRouteTurn {
   grid-area: top;
   position: absolute;
-  inset: 0 0 auto auto;
-  width: 35px;
+  right: 0;
+  top: 11px;
+  width: 0;
   height: 108px;
-  transform: translate(8px, 11px);
-  overflow: visible;
+  border-left: 3px dotted #141b1f;
   pointer-events: none;
-}
-
-.canvaRouteTurn path {
-  fill: none;
-  stroke: #141b1f;
-  stroke-width: 3;
-  stroke-linecap: butt;
-  stroke-linejoin: miter;
-  stroke-dasharray: 1 5;
 }
 
 .canvaRouteRow::before {
