@@ -13735,7 +13735,7 @@ body {
 
 .canvaRouteU {
   position: absolute;
-  left: 18px;
+  left: 49px;
   top: 11px;
   width: 12px;
   height: 102px;
@@ -13746,10 +13746,10 @@ body {
 .canvaRouteU path {
   fill: none;
   stroke: #141b1f;
-  stroke-width: 3;
+  stroke-width: 4;
   stroke-linecap: butt;
   stroke-linejoin: miter;
-  stroke-dasharray: 1 5;
+  stroke-dasharray: 4 6;
 }
 
 .canvaRoutePin {
@@ -13819,7 +13819,7 @@ body {
 .canvaRouteNode.side {
   position: absolute;
   top: 62px;
-  left: -28px;
+  left: 15px;
   width: 118px;
   min-height: 92px;
   transform: none;
@@ -13834,7 +13834,7 @@ body {
 .canvaRouteNode.side small,
 .canvaRouteNode.side em {
   justify-self: start;
-  margin-left: 96px;
+  margin-left: 118px;
   max-width: 92px;
   transform: translateY(-38px);
   text-align: left;
@@ -13842,7 +13842,8 @@ body {
 
 .canvaRouteNode.side > svg:not(.canvaRoutePin) {
   justify-self: start;
-  margin-left: 50px;
+  margin-left: 84px;
+  transform: rotate(180deg);
 }
 
 .canvaRouteNode.side span,
@@ -13853,7 +13854,7 @@ body {
 .canvaRouteNode.side span {
   background: #ffffff;
   justify-self: start;
-  margin-left: 54px;
+  margin-left: 38px;
 }
 
 .canvaRouteNode strong {
