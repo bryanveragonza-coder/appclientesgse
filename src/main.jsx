@@ -998,7 +998,17 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
       const label = item.status || "Sin estado";
       buckets.set(label, (buckets.get(label) || 0) + 1);
     });
-    return Array.from(buckets.entries()).map(([label, value]) => ({ label, value }));
+    return Array.from(buckets.entries()).map(([label, value]) => {
+      const text = normalizeSystemName(label);
+      const color = text.includes("complet") || text.includes("finaliz") || text.includes("aprob")
+        ? "#00b8b5"
+        : text.includes("desarrollo") || text.includes("proceso")
+          ? "#53676b"
+          : text.includes("pendiente")
+            ? "#b9c4c6"
+            : "#102f37";
+      return { label, value, color };
+    });
   };
 
   const systemMetrics = [
@@ -1105,7 +1115,6 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
                 <strong>{item.total}</strong>
                 <span>{item.label}</span>
                 <CanvaRing value={item.value} total={Math.max(item.total, item.value, 1)} segments={item.segments} />
-                <small>{item.note}</small>
               </div>
             ))}
           </div>
@@ -1132,34 +1141,34 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
 
 function CanvaRing({ value = 0, total = 1, segments = [] }) {
   const [activeSegment, setActiveSegment] = useState(null);
-  const palette = ["#00b8b5", "#53676b", "#b9c4c6", "#102f37", "#7fdedb"];
   const cleanSegments = segments.filter((item) => item.value > 0);
   const totalSegments = cleanSegments.reduce((sum, item) => sum + item.value, 0);
-  const active = activeSegment || (cleanSegments.length ? cleanSegments[0] : null);
+  const active = activeSegment || cleanSegments.find((item) => normalizeSystemName(item.label).includes("complet") || normalizeSystemName(item.label).includes("finaliz") || normalizeSystemName(item.label).includes("aprob")) || (cleanSegments.length ? cleanSegments[0] : null);
   let cursor = 0;
   const segmentGradient = cleanSegments.map((item, index) => {
     const start = cursor;
     const end = cursor + (item.value / Math.max(1, totalSegments)) * 100;
     cursor = end;
-    return `${palette[index % palette.length]} ${start}% ${end}%`;
+    return `${item.color || "#b9c4c6"} ${start}% ${end}%`;
   }).join(", ");
   const percent = Math.max(0, Math.min(100, (Number(value) / Math.max(1, Number(total))) * 100));
   return (
-    <div
-      className={`canvaRing ${cleanSegments.length ? "interactive" : "empty"}`}
-      style={{ "--ring": `${percent}%`, "--segments": segmentGradient || "#dfe7e7 0% 100%" }}
-      onMouseLeave={() => setActiveSegment(null)}
-    >
-      {cleanSegments.map((item) => (
-        <button
-          type="button"
-          key={item.label}
-          aria-label={`${item.label}: ${item.value}`}
-          onMouseEnter={() => setActiveSegment(item)}
-        />
-      ))}
-      <span>{active ? active.value : value}</span>
-      <small>{active ? active.label : cleanSegments.length ? "Estado" : "Sin datos"}</small>
+    <div className={`canvaRingWrap ${cleanSegments.length ? "interactive" : "empty"}`}>
+      <div
+        className="canvaRing"
+        style={{ "--ring": `${percent}%`, "--segments": segmentGradient || "#dfe7e7 0% 100%" }}
+      >
+        {cleanSegments.map((item) => (
+          <button
+            type="button"
+            key={item.label}
+            aria-label={`${item.label}: ${item.value}`}
+            onClick={() => setActiveSegment(item)}
+          />
+        ))}
+        <span>{active ? active.value : value}</span>
+      </div>
+      <small className="canvaRingLabel">{active ? active.label : cleanSegments.length ? "Estado" : "Pendiente de datos"}</small>
     </div>
   );
 }

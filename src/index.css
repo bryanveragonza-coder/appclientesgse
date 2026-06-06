@@ -13911,8 +13911,8 @@ body {
 
 .canvaSystemGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
   margin-top: 20px;
 }
 
@@ -13953,6 +13953,12 @@ body {
     conic-gradient(var(--segments));
 }
 
+.canvaRingWrap {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
 .canvaRing span {
   grid-area: 1 / 1;
   color: #141b1f;
@@ -13960,16 +13966,13 @@ body {
   z-index: 2;
 }
 
-.canvaRing small {
-  grid-area: 1 / 1;
-  align-self: end;
-  margin-bottom: 24px;
-  max-width: 58px;
+.canvaRingLabel {
+  min-height: 28px;
+  max-width: 96px;
   color: #141b1f;
-  font-size: 0.46rem;
-  line-height: 1.05;
+  font-size: 0.72rem;
+  line-height: 1.15;
   text-align: center;
-  z-index: 2;
 }
 
 .canvaRing button {
@@ -13987,7 +13990,7 @@ body {
 .canvaRing button:nth-of-type(4) { clip-path: polygon(50% 50%, 0 100%, 0 0); }
 .canvaRing button:nth-of-type(5) { clip-path: polygon(50% 50%, 0 0, 100% 0); }
 
-.canvaRing.empty {
+.canvaRingWrap.empty {
   opacity: 0.72;
 }
 
