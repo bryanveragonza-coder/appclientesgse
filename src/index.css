@@ -13730,16 +13730,26 @@ body {
 }
 
 .canvaRouteSide::before {
-  content: "";
+  display: none;
+}
+
+.canvaRouteU {
   position: absolute;
-  top: 11px;
-  bottom: 11px;
   left: -42px;
-  right: 65px;
-  border: 3px dotted #141b1f;
-  border-left: 0;
-  border-radius: 0 36px 36px 0;
+  top: 0;
+  width: 120px;
+  height: 100%;
+  overflow: visible;
   pointer-events: none;
+}
+
+.canvaRouteU path {
+  fill: none;
+  stroke: #141b1f;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1 5;
 }
 
 .canvaRoutePin {
@@ -13824,15 +13834,15 @@ body {
 .canvaRouteNode.side small,
 .canvaRouteNode.side em {
   justify-self: start;
-  margin-left: 52px;
-  max-width: 74px;
+  margin-left: 88px;
+  max-width: 92px;
   transform: translateY(-38px);
   text-align: left;
 }
 
 .canvaRouteNode.side > svg:not(.canvaRoutePin) {
   justify-self: start;
-  margin-left: 26px;
+  margin-left: 42px;
 }
 
 .canvaRouteNode.side span,
@@ -13842,6 +13852,8 @@ body {
 
 .canvaRouteNode.side span {
   background: #ffffff;
+  justify-self: start;
+  margin-left: 32px;
 }
 
 .canvaRouteNode strong {
