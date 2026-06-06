@@ -14952,6 +14952,338 @@ body {
   background: #00b8b5 !important;
 }
 
+/* COE_UNIFIED_BRAND_STYLE_V1 */
+.coeSection {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #11181c !important;
+}
+
+.coeSection .sectionHeader {
+  margin-bottom: 22px !important;
+  padding: 0 !important;
+}
+
+.coeSection .sectionHeader h2 {
+  margin: 0 !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.55rem !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.coeSection .sectionHeader p {
+  margin-top: 12px !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.94rem !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  margin-bottom: 20px !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard,
+.coeSection .coeInsightCard,
+.coeSection .coeProcessListCard,
+.coeSection .coeTableCard {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: initial !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard {
+  min-height: 170px !important;
+  padding: 30px 32px !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 20px !important;
+  overflow: visible !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard > span,
+.coeSection .coeInsightCard > span,
+.coeSection .coeInsightRow > span,
+.coeSection .coeChartHeader h3,
+.coeSection .processTableHeader h3 {
+  margin: 0 !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-family: inherit !important;
+  font-size: 1.05rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard > strong,
+.coeSection .coeExecutiveGrid.threeCards .coeDifferenceCard > strong,
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard.difference > strong {
+  margin: 0 !important;
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-family: inherit !important;
+  font-size: clamp(2rem, 2.7vw, 3rem) !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards .coeDifferenceCard,
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard.difference {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #11181c !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards .coeDifferenceCard *,
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard.difference * {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards .coeDifferenceCard > span,
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard.difference > span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards .coeDifferenceCard > strong,
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard.difference > strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards .coeDifferenceCard > em,
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard.difference > em {
+  width: max-content !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-family: inherit !important;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+}
+
+.coeSection .coeExecutiveGrid.threeCards .coeExecutiveCard > p,
+.coeSection .coeInsightCard > p,
+.coeSection .coeChartHeader p,
+.coeSection .processTableHeader p {
+  margin: 0 !important;
+  max-width: none !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.88rem !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+}
+
+.coeSection .coeInsightGrid,
+.coeSection .coeChartsGrid.coeProcessListsGrid,
+.coeSection .processTablesStack.coeTablesStack {
+  gap: 20px !important;
+  margin-bottom: 20px !important;
+}
+
+.coeSection .coeInsightCard {
+  min-height: 0 !important;
+  padding: 28px 30px !important;
+  display: grid !important;
+  gap: 18px !important;
+}
+
+.coeSection .coeMiniCounterGrid > div {
+  padding: 12px 10px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #eef6f6 !important;
+  box-shadow: none !important;
+}
+
+.coeSection .coeMiniCounterGrid strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-family: inherit !important;
+  font-size: 1.55rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.coeSection .coeMiniCounterGrid small {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.72rem !important;
+  line-height: 1.15 !important;
+  font-weight: 400 !important;
+}
+
+.coeSection .coeProcessListCard {
+  min-height: 0 !important;
+  padding: 28px 30px !important;
+}
+
+.coeSection .coeChartHeader,
+.coeSection .processTableHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  margin-bottom: 18px !important;
+}
+
+.coeSection .badge,
+.coeSection .coeProcessListCard .badge,
+.coeSection .coeTableCard .badge {
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  font-size: 0.72rem !important;
+  font-weight: 500 !important;
+}
+
+.coeSection .coeBarInfo span,
+.coeSection .coeBarInfo strong {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.86rem !important;
+  font-weight: 400 !important;
+}
+
+.coeSection .coeBarInfo strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+}
+
+.coeSection .coeBarTrack {
+  height: 8px !important;
+  border-radius: 0 !important;
+  background: #d8eceb !important;
+}
+
+.coeSection .coeBarFill {
+  border-radius: 0 !important;
+  background: #00b8b5 !important;
+}
+
+.coeSection .premiumFilters.coeFiltersOneLine,
+.coeSection .processFilters.coeFiltersOneLine {
+  margin: 0 0 20px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  gap: 14px !important;
+}
+
+.coeSection .coeFiltersOneLine .searchInputWrap,
+.coeSection .coeFiltersOneLine .searchInputWrap.compact,
+.coeSection .coeFiltersOneLine .filter select {
+  min-height: 46px !important;
+  border: 1px solid rgba(16, 47, 55, 0.12) !important;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  box-shadow: none !important;
+}
+
+.coeSection .coeFiltersOneLine .filter span,
+.coeSection .coeFiltersOneLine .searchFilter > span {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.76rem !important;
+  font-weight: 400 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+.coeSection .coeTableCard {
+  padding: 28px 30px !important;
+}
+
+.coeSection .coeTableWrap,
+.coeSection .processTableWrap.coeTableWrap,
+.coeSection .coeMatrixInternalScroll {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.coeSection .coeTable th {
+  background: #eef6f6 !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  border-bottom: 1px solid #d8eceb !important;
+  font-size: 0.72rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.coeSection .coeTable td {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  border-bottom: 1px solid #edf3f3 !important;
+  font-size: 0.82rem !important;
+  font-weight: 400 !important;
+}
+
+.coeSection .coeTable td strong {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-weight: 500 !important;
+}
+
+.coeSection .coeProcessScrollList::-webkit-scrollbar,
+.coeSection .coeTableWrap::-webkit-scrollbar,
+.coeSection div:has(> table.coeTable)::-webkit-scrollbar {
+  width: 5px !important;
+  height: 5px !important;
+}
+
+.coeSection .coeProcessScrollList::-webkit-scrollbar-thumb,
+.coeSection .coeTableWrap::-webkit-scrollbar-thumb,
+.coeSection div:has(> table.coeTable)::-webkit-scrollbar-thumb {
+  background: rgba(0, 184, 181, 0.45) !important;
+  border-radius: 999px !important;
+}
+
+.coeSection .coeProcessScrollList::-webkit-scrollbar-track,
+.coeSection .coeTableWrap::-webkit-scrollbar-track,
+.coeSection div:has(> table.coeTable)::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+@media (max-width: 1100px) {
+  .coeSection .coeExecutiveGrid.threeCards,
+  .coeSection .coeInsightGrid,
+  .coeSection .coeChartsGrid.coeProcessListsGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* PORTAL_PROJECT_CANVA_REFERENCE_V1 */
 .portalLogos,
 .portalEyebrow,
