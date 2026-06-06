@@ -13747,8 +13747,8 @@ body {
   fill: none;
   stroke: #141b1f;
   stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
   stroke-dasharray: 1 5;
 }
 
