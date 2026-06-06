@@ -13819,7 +13819,7 @@ body {
 .canvaRouteNode.side {
   position: absolute;
   top: 50%;
-  left: -6px;
+  left: -28px;
   width: 118px;
   min-height: 92px;
   transform: translateY(-50%);
@@ -13834,7 +13834,7 @@ body {
 .canvaRouteNode.side small,
 .canvaRouteNode.side em {
   justify-self: start;
-  margin-left: 88px;
+  margin-left: 96px;
   max-width: 92px;
   transform: translateY(-38px);
   text-align: left;
@@ -13842,7 +13842,7 @@ body {
 
 .canvaRouteNode.side > svg:not(.canvaRoutePin) {
   justify-self: start;
-  margin-left: 42px;
+  margin-left: 50px;
 }
 
 .canvaRouteNode.side span,
@@ -13853,7 +13853,7 @@ body {
 .canvaRouteNode.side span {
   background: #ffffff;
   justify-self: start;
-  margin-left: 32px;
+  margin-left: 54px;
 }
 
 .canvaRouteNode strong {

@@ -1147,7 +1147,7 @@ function CanvaMilestonePath({ milestones = [], pinIndex = 0, statusClass, setVie
       {sideItem && (
         <div className="canvaRouteSide">
           <svg className="canvaRouteU" viewBox="0 0 120 116" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0 11 H84 V105 H0" />
+            <path d="M0 11 H62 V86 H0" />
           </svg>
           {renderNode(sideItem, 6, "side")}
         </div>
