@@ -14846,7 +14846,13 @@ body {
 .routeProjectSection .routeStatusSummaryCard > span {
   color: #11181c !important;
   font-size: 1.05rem !important;
+  font-family: inherit !important;
   font-weight: 400 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  margin: 0 !important;
+  -webkit-text-fill-color: #11181c !important;
 }
 
 .routeProjectSection .routeSummaryCard > div:first-child > strong {
