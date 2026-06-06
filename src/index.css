@@ -13722,9 +13722,9 @@ body {
 .canvaRouteRow.bottom::after {
   content: "";
   position: absolute;
-  right: -42px;
+  right: -64px;
   top: 11px;
-  width: calc((100% / 6) * 0.5 + 42px);
+  width: calc((100% / 6) * 0.5 + 64px);
   border-top: 3px dotted #141b1f;
   pointer-events: none;
 }
@@ -13735,7 +13735,7 @@ body {
 
 .canvaRouteU {
   position: absolute;
-  left: 49px;
+  left: 58px;
   top: 11px;
   width: 12px;
   height: 102px;
@@ -13746,10 +13746,10 @@ body {
 .canvaRouteU path {
   fill: none;
   stroke: #141b1f;
-  stroke-width: 4;
+  stroke-width: 3;
   stroke-linecap: butt;
   stroke-linejoin: miter;
-  stroke-dasharray: 4 6;
+  stroke-dasharray: 1 5;
 }
 
 .canvaRoutePin {
