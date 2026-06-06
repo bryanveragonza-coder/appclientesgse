@@ -992,6 +992,14 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
     if (text.includes("desarrollo") || text.includes("proceso")) return "active";
     return "pending";
   };
+  const countByStatus = (rows = []) => {
+    const buckets = new Map();
+    rows.forEach((item) => {
+      const label = item.status || "Sin estado";
+      buckets.set(label, (buckets.get(label) || 0) + 1);
+    });
+    return Array.from(buckets.entries()).map(([label, value]) => ({ label, value }));
+  };
 
   const systemMetrics = [
     {
@@ -999,24 +1007,35 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
       total: findings.length,
       value: findings.filter((item) => isCompletedStatus(item.status)).length,
       note: "Completado",
+      segments: countByStatus(findings),
     },
     {
       label: "Perfiles",
-      total: processesAsIs.length || deliverables.length,
-      value: deliverables.filter((item) => normalizeSystemName(item.deliverable).includes("perfil")).length || Math.min(7, deliverables.length),
-      note: "Liberados",
+      total: 0,
+      value: 0,
+      note: "Pendiente de datos",
+      segments: [],
     },
     {
       label: "Nivel de empleabilidad",
-      total: pending.length + deliverables.length,
-      value: pending.filter(isPendingCompleted).length + completedMilestones,
-      note: "Finalizado",
+      total: 0,
+      value: 0,
+      note: "Pendiente de datos",
+      segments: [],
     },
     {
-      label: "Masa salarial",
-      total: processesToBe.length || deliverables.length,
-      value: processesToBe.filter((item) => normalizeSystemName(item.status || item.changes).includes("nuevo")).length || completedMilestones,
-      note: "DesempeÃ±o",
+      label: "Desempeño",
+      total: 0,
+      value: 0,
+      note: "Pendiente de datos",
+      segments: [],
+    },
+    {
+      label: "Masa Salarial",
+      total: 0,
+      value: 0,
+      note: "Pendiente de datos",
+      segments: [],
     },
   ];
 
@@ -1085,7 +1104,7 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
               <div className="canvaSystemMetric" key={item.label}>
                 <strong>{item.total}</strong>
                 <span>{item.label}</span>
-                <CanvaRing value={item.value} total={Math.max(item.total, item.value, 1)} />
+                <CanvaRing value={item.value} total={Math.max(item.total, item.value, 1)} segments={item.segments} />
                 <small>{item.note}</small>
               </div>
             ))}
@@ -1111,11 +1130,36 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
   );
 }
 
-function CanvaRing({ value = 0, total = 1 }) {
+function CanvaRing({ value = 0, total = 1, segments = [] }) {
+  const [activeSegment, setActiveSegment] = useState(null);
+  const palette = ["#00b8b5", "#53676b", "#b9c4c6", "#102f37", "#7fdedb"];
+  const cleanSegments = segments.filter((item) => item.value > 0);
+  const totalSegments = cleanSegments.reduce((sum, item) => sum + item.value, 0);
+  const active = activeSegment || (cleanSegments.length ? cleanSegments[0] : null);
+  let cursor = 0;
+  const segmentGradient = cleanSegments.map((item, index) => {
+    const start = cursor;
+    const end = cursor + (item.value / Math.max(1, totalSegments)) * 100;
+    cursor = end;
+    return `${palette[index % palette.length]} ${start}% ${end}%`;
+  }).join(", ");
   const percent = Math.max(0, Math.min(100, (Number(value) / Math.max(1, Number(total))) * 100));
   return (
-    <div className="canvaRing" style={{ "--ring": `${percent}%` }}>
-      <span>{value}</span>
+    <div
+      className={`canvaRing ${cleanSegments.length ? "interactive" : "empty"}`}
+      style={{ "--ring": `${percent}%`, "--segments": segmentGradient || "#dfe7e7 0% 100%" }}
+      onMouseLeave={() => setActiveSegment(null)}
+    >
+      {cleanSegments.map((item) => (
+        <button
+          type="button"
+          key={item.label}
+          aria-label={`${item.label}: ${item.value}`}
+          onMouseEnter={() => setActiveSegment(item)}
+        />
+      ))}
+      <span>{active ? active.value : value}</span>
+      <small>{active ? active.label : cleanSegments.length ? "Estado" : "Sin datos"}</small>
     </div>
   );
 }
