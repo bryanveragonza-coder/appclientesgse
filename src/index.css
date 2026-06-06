@@ -13708,9 +13708,9 @@ body {
   grid-area: top;
   position: absolute;
   inset: 0 0 auto auto;
-  width: 72px;
-  height: 118px;
-  transform: translate(0, 11px);
+  width: 35px;
+  height: 108px;
+  transform: translate(8px, 11px);
   overflow: visible;
   pointer-events: none;
 }
