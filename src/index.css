@@ -14831,14 +14831,15 @@ body {
   padding: 34px 34px 30px !important;
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) auto !important;
-  align-items: center !important;
+  align-items: start !important;
   gap: 24px !important;
   overflow: visible !important;
 }
 
 .routeProjectSection .routeSummaryCard > div:first-child {
   display: grid !important;
-  gap: 24px !important;
+  gap: 30px !important;
+  align-content: start !important;
 }
 
 .routeProjectSection .routeSummaryCard > div:first-child > span,
@@ -14863,6 +14864,7 @@ body {
   display: grid !important;
   place-items: center !important;
   position: relative !important;
+  align-self: center !important;
   background: #00b8b5 !important;
   color: #ffffff !important;
 }
@@ -14903,8 +14905,8 @@ body {
 
 .routeProjectSection .routeStatusSummaryCard {
   grid-template-columns: 1fr !important;
-  align-content: center !important;
-  gap: 26px !important;
+  align-content: start !important;
+  gap: 30px !important;
 }
 
 .routeProjectSection .routeMiniStatusRows.threeStatus {
