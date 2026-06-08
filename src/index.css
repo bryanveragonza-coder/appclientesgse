@@ -17765,3 +17765,330 @@ body {
     padding: 38px 30px !important;
   }
 }
+
+/* ==========================================================
+   EDUCATION_RECEIVE_UNIFIED_BRAND_STYLE_V1
+   Lo que vas a recibir con resumen, filtros y tarjetas homogéneas
+   ========================================================== */
+.educationSection.premiumSectionCard {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.educationSection .sectionHeader {
+  margin-bottom: 16px !important;
+}
+
+.educationSection .sectionHeader h2 {
+  color: #001f2a !important;
+  font-size: 1.95rem !important;
+  line-height: 1.1 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+}
+
+.educationSection .sectionHeader p,
+.educationSection .sectionIntro {
+  max-width: 860px !important;
+  color: #405d62 !important;
+  font-size: 0.98rem !important;
+  line-height: 1.55 !important;
+  font-weight: 400 !important;
+}
+
+.educationSummaryGrid {
+  display: grid !important;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr) !important;
+  gap: 22px !important;
+  margin: 26px 0 26px !important;
+}
+
+.educationTotalCard,
+.educationStatusCard {
+  min-height: 205px !important;
+  padding: 32px 34px !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 14px 28px rgba(0, 88, 86, 0.07) !important;
+}
+
+.educationTotalCard {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 24px !important;
+}
+
+.educationTotalCard h3,
+.educationStatusCard h3 {
+  margin: 0 !important;
+  color: #001f2a !important;
+  font-size: 1.05rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+}
+
+.educationTotalCard strong {
+  display: block !important;
+  margin-top: 24px !important;
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: clamp(3.4rem, 6vw, 5.4rem) !important;
+  line-height: 0.86 !important;
+  font-weight: 500 !important;
+}
+
+.educationSummaryIcon {
+  width: 132px !important;
+  height: 132px !important;
+  flex: 0 0 132px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+}
+
+.educationSummaryIcon svg {
+  stroke-width: 1.35 !important;
+}
+
+.educationStatusRows {
+  display: grid !important;
+  gap: 16px !important;
+  margin-top: 30px !important;
+}
+
+.educationStatusRow {
+  display: grid !important;
+  grid-template-columns: 128px minmax(120px, 1fr) 34px !important;
+  gap: 18px !important;
+  align-items: center !important;
+}
+
+.educationStatusRow span,
+.educationStatusRow strong {
+  color: #001f2a !important;
+  -webkit-text-fill-color: #001f2a !important;
+  font-size: 0.92rem !important;
+  line-height: 1.1 !important;
+  font-weight: 400 !important;
+}
+
+.educationStatusRow strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  text-align: right !important;
+}
+
+.educationStatusTrack {
+  height: 10px !important;
+  background: #dceeee !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+}
+
+.educationStatusTrack div {
+  height: 100% !important;
+  background: #00b8b5 !important;
+}
+
+.educationFilters {
+  display: grid !important;
+  grid-template-columns: minmax(260px, 1.25fr) repeat(3, minmax(170px, 0.75fr)) !important;
+  gap: 20px !important;
+  align-items: end !important;
+}
+
+.educationFilters .filter span {
+  color: #405d62 !important;
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.educationFilters .educationSearchFilter,
+.educationFilters .educationSearchFilter .searchInputWrap,
+.educationFilters .educationSearchFilter .searchInputWrap input {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.educationFilters .educationSearchFilter .searchInputWrap {
+  min-height: 50px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.educationFilters .educationSearchFilter .searchInputWrap svg {
+  color: #00a7a4 !important;
+}
+
+.educationFilters .filter select {
+  min-height: 50px !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 31, 42, 0.12) !important;
+  box-shadow: none !important;
+  color: #001f2a !important;
+  font-weight: 400 !important;
+}
+
+.educationSection .resultCounter {
+  display: none !important;
+}
+
+.systemsEducation {
+  gap: 28px !important;
+}
+
+.educationSection .systemSection,
+.educationSection .premiumSystemSection {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.educationSection .systemHeader {
+  margin: 0 0 14px !important;
+  gap: 10px !important;
+}
+
+.educationSection .systemNumber {
+  min-height: 22px !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  background: #c6ced1 !important;
+  color: #ffffff !important;
+  font-size: 0.62rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+}
+
+.educationSection .systemHeader h3 {
+  color: #001f2a !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+}
+
+.educationSection .educationGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+}
+
+.educationSection .educationCard,
+.educationSection .premiumEducationCard {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  min-height: 0 !important;
+  padding: 30px 32px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 14px 28px rgba(0, 88, 86, 0.07) !important;
+  overflow: visible !important;
+}
+
+.educationSection .educationCard::before,
+.educationSection .premiumEducationCard::before {
+  content: "" !important;
+  display: block !important;
+  width: 78% !important;
+  height: 4px !important;
+  background: #00b8b5 !important;
+  margin-bottom: 20px !important;
+}
+
+.educationSection .previewImage,
+.educationSection .previewPlaceholder {
+  display: none !important;
+}
+
+.educationSection .educationContent {
+  padding: 0 !important;
+}
+
+.educationSection .area {
+  color: #405d62 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.educationSection .educationContent h3 {
+  margin: 12px 0 16px !important;
+  color: #001f2a !important;
+  font-size: 1.08rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+}
+
+.educationSection .educationContent p {
+  color: #405d62 !important;
+  font-size: 0.86rem !important;
+  line-height: 1.42 !important;
+  font-weight: 400 !important;
+}
+
+.educationSection .educationContent p strong {
+  color: #001f2a !important;
+  font-weight: 400 !important;
+}
+
+.educationSection .badgeRow {
+  gap: 8px !important;
+  margin: 0 0 14px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.educationSection .badgeRow .badge,
+.educationSection .badgeRow [class*="badge"] {
+  min-height: 22px !important;
+  height: 22px !important;
+  padding: 4px 10px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #c6ced1 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-size: 0.62rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+}
+
+.educationSection .badgeRow .badge.success {
+  background: #00b8b5 !important;
+}
+
+.educationSection .secondaryLink {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 0.86rem !important;
+  font-weight: 400 !important;
+}
+
+@media (max-width: 1180px) {
+  .educationSummaryGrid,
+  .educationFilters,
+  .educationSection .educationGrid {
+    grid-template-columns: 1fr !important;
+  }
+}

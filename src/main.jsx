@@ -3357,6 +3357,7 @@ function UpdatesPanel({ project, updates, setView, pending = [] }) {
 function Education({ education = [] }) {
   const [systemFilter, setSystemFilter] = useState("Todos");
   const [milestoneFilter, setMilestoneFilter] = useState("Todos");
+  const [statusFilter, setStatusFilter] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
 
   const systemOrder = [
@@ -3376,11 +3377,23 @@ function Education({ education = [] }) {
   ];
 
   const milestones = [...new Set(education.map((d) => d.milestone).filter(Boolean))];
+  const statuses = [...new Set(education.map((d) => d.status).filter(Boolean))];
   const search = String(searchTerm || "").trim().toLowerCase();
+  const getEducationStatusBucket = (status = "") => {
+    const normalized = normalizeSystemName(status);
+    if (normalized.includes("finalizado") || normalized.includes("terminado") || normalized.includes("aprobado")) return "Terminado";
+    if (normalized.includes("desarrollo") || normalized.includes("proceso")) return "En desarrollo";
+    return "Pendiente";
+  };
+  const statusCounts = ["Pendiente", "En desarrollo", "Terminado"].map((status) => ({
+    status,
+    count: education.filter((item) => getEducationStatusBucket(item.status) === status).length,
+  }));
 
   const filtered = education.filter((item) => {
     const systemOk = systemFilter === "Todos" || item.system === systemFilter;
     const milestoneOk = milestoneFilter === "Todos" || item.milestone === milestoneFilter;
+    const statusOk = statusFilter === "Todos" || item.status === statusFilter || getEducationStatusBucket(item.status) === statusFilter;
     const searchableText = [
       item.system,
       item.milestone,
@@ -3391,7 +3404,7 @@ function Education({ education = [] }) {
       item.status,
     ].join(" ").toLowerCase();
     const searchOk = !search || searchableText.includes(search);
-    return systemOk && milestoneOk && searchOk;
+    return systemOk && milestoneOk && statusOk && searchOk;
   });
 
   const grouped = orderedSystems
@@ -3439,7 +3452,7 @@ function Education({ education = [] }) {
   };
 
   return (
-    <section className="card premiumSectionCard">
+    <section className="card premiumSectionCard educationSection">
       <div className="sectionHeader">
         <div>
           <h2>Lo que vas a recibir</h2>
@@ -3455,8 +3468,35 @@ function Education({ education = [] }) {
         control y sostenibilidad de tu empresa.
       </p>
 
-      <div className="filters premiumFilters">
-        <label className="filter searchFilter">
+      <div className="educationSummaryGrid">
+        <article className="educationTotalCard">
+          <div>
+            <h3>Total de entregables</h3>
+            <strong>{education.length}</strong>
+          </div>
+          <div className="educationSummaryIcon">
+            <BookOpen size={54} />
+          </div>
+        </article>
+
+        <article className="educationStatusCard">
+          <h3>Estado de entregables</h3>
+          <div className="educationStatusRows">
+            {statusCounts.map((item) => (
+              <div className="educationStatusRow" key={item.status}>
+                <span>{item.status}</span>
+                <div className="educationStatusTrack">
+                  <div style={{ width: `${education.length ? (item.count / education.length) * 100 : 0}%` }} />
+                </div>
+                <strong>{item.count}</strong>
+              </div>
+            ))}
+          </div>
+        </article>
+      </div>
+
+      <div className="filters premiumFilters educationFilters">
+        <label className="filter searchFilter educationSearchFilter">
           <span>Buscar</span>
           <div className="searchInputWrap">
             <Search size={16} />
@@ -3469,6 +3509,7 @@ function Education({ education = [] }) {
         </label>
         <FilterSelect label="Sistema" value={systemFilter} onChange={setSystemFilter} options={orderedSystems} />
         <FilterSelect label="Hito" value={milestoneFilter} onChange={setMilestoneFilter} options={milestones} />
+        <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={["Pendiente", "En desarrollo", "Terminado", ...statuses]} />
       </div>
 
       <div className="badgeRow resultCounter"><Badge status="Disponible">{filtered.length} recursos</Badge></div>
