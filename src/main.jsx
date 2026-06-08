@@ -130,7 +130,7 @@ function Sidebar({ view, setView, project }) {
     {
       title: "Documentacion",
       items: [
-        [FileText, "Entregables", "entregables"],
+        [FileText, "Entregables GSE", "entregables"],
         [UploadCloud, "Carga de documentos", "documentos"],
       ],
     },
@@ -3169,7 +3169,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
     <section className="card premiumSectionCard deliverablesSection">
       <div className="sectionHeader">
         <div>
-          <h2>{compact ? "Entregables principales" : "Entregables"}</h2>
+          <h2>{compact ? "Entregables principales" : "Entregables GSE"}</h2>
           <p>Vista por sistema e hito, con acceso al documento cuando esté disponible.</p>
         </div>
       </div>
@@ -3181,23 +3181,6 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
               <span>Total de entregables</span>
               <strong>{deliverables.length}</strong>
               <p>Documentos y productos registrados en la matriz.</p>
-            </article>
-
-            <article className="deliverablesSummaryCard">
-              <span>Responsable</span>
-              <div className="deliverablesMiniRows">
-                <div>
-                  <span>GSE</span>
-                  <div className="deliverablesMiniTrack"><i style={{ width: `${deliverables.length ? (summary.gse / deliverables.length) * 100 : 0}%` }} /></div>
-                  <strong>{summary.gse}</strong>
-                </div>
-                <div>
-                  <span>Cliente</span>
-                  <div className="deliverablesMiniTrack soft"><i style={{ width: `${deliverables.length ? (summary.client / deliverables.length) * 100 : 0}%` }} /></div>
-                  <strong>{summary.client}</strong>
-                </div>
-              </div>
-              <p>Según la columna Responsable.</p>
             </article>
 
             <article className="deliverablesSummaryCard">
