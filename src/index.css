@@ -18191,6 +18191,19 @@ body {
   font-weight: 600 !important;
 }
 
+.loginBrandBlock {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.loginBrandBlock > span {
+  color: #405d62 !important;
+  font-size: 0.82rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+}
+
 .loginEyebrow {
   display: block !important;
   color: #00a7a4 !important;
@@ -18251,6 +18264,55 @@ body {
   border-color: #00b8b5 !important;
 }
 
+.passwordInputWrap {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.passwordInputWrap input {
+  padding-right: 48px !important;
+}
+
+.passwordToggleButton {
+  position: absolute !important;
+  right: 10px !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #405d62 !important;
+  cursor: pointer !important;
+}
+
+.rememberLoginOption {
+  display: inline-flex !important;
+  grid-template-columns: none !important;
+  align-items: center !important;
+  gap: 9px !important;
+  width: fit-content !important;
+  margin-top: -4px !important;
+}
+
+.rememberLoginOption input {
+  width: 16px !important;
+  height: 16px !important;
+  min-height: 16px !important;
+  padding: 0 !important;
+  accent-color: #00b8b5 !important;
+}
+
+.rememberLoginOption span {
+  color: #405d62 !important;
+  font-size: 0.84rem !important;
+  font-weight: 400 !important;
+}
+
 .loginMessage {
   color: #8b1d1d !important;
   background: #fff2f2 !important;
@@ -18278,6 +18340,34 @@ body {
 .loginForm button:disabled {
   opacity: 0.65 !important;
   cursor: wait !important;
+}
+
+.loginHelpText {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding-top: 6px !important;
+  color: #405d62 !important;
+}
+
+.loginHelpText svg {
+  color: #00b8b5 !important;
+  flex: 0 0 auto !important;
+  margin-top: 2px !important;
+}
+
+.loginHelpText p {
+  margin: 0 !important;
+  color: #405d62 !important;
+  font-size: 0.86rem !important;
+  line-height: 1.45 !important;
+}
+
+.loginHelpText a {
+  color: #00a7a4 !important;
+  -webkit-text-fill-color: #00a7a4 !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
 }
 
 .topbarLogoutButton {

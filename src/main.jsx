@@ -17,6 +17,8 @@ import {
   ClipboardCheck,
   ChevronRight,
   Clock3,
+  Eye,
+  EyeOff,
   ExternalLink,
   FileText,
   UploadCloud,
@@ -35,6 +37,7 @@ import {
   Target,
   Users,
   Video,
+  MessageCircle,
 } from "lucide-react";
 import { loadSheetData, demoData, getActiveSpreadsheetId } from "./sheets";
 import "./index.css";
@@ -3844,8 +3847,11 @@ function getStoredClientSession() {
 
 function ClientLogin({ onLogin }) {
   const loginUrl = import.meta.env.VITE_LOGIN_WEBHOOK_URL || "";
-  const [usuario, setUsuario] = useState("");
+  const supportWhatsappUrl = safeUrl(import.meta.env.VITE_SUPPORT_WHATSAPP_URL || "");
+  const [usuario, setUsuario] = useState(() => window.localStorage.getItem("gseRememberedUser") || "");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => Boolean(window.localStorage.getItem("gseRememberedUser")));
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -3880,6 +3886,11 @@ function ClientLogin({ onLogin }) {
         ...result.user,
         loggedAt: new Date().toISOString(),
       };
+      if (rememberMe) {
+        window.localStorage.setItem("gseRememberedUser", usuario.trim());
+      } else {
+        window.localStorage.removeItem("gseRememberedUser");
+      }
       window.localStorage.setItem("gseClientSession", JSON.stringify(session));
       onLogin(session);
     } catch (error) {
@@ -3892,7 +3903,10 @@ function ClientLogin({ onLogin }) {
   return (
     <main className="loginShell">
       <section className="loginPanel">
-        <div className="loginBrandMark">GSE&CO</div>
+        <div className="loginBrandBlock">
+          <div className="loginBrandMark">GSE&CO</div>
+          <span>Portal privado del cliente</span>
+        </div>
         <div>
           <span className="loginEyebrow">Ruta de Implementación Visible</span>
           <h1>Acceso cliente</h1>
@@ -3907,7 +3921,26 @@ function ClientLogin({ onLogin }) {
 
           <label>
             <span>Contraseña</span>
-            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete="current-password" />
+            <div className="passwordInputWrap">
+              <input value={password} onChange={(event) => setPassword(event.target.value)} type={showPassword ? "text" : "password"} autoComplete="current-password" />
+              <button
+                type="button"
+                className="passwordToggleButton"
+                onMouseDown={() => setShowPassword(true)}
+                onMouseUp={() => setShowPassword(false)}
+                onMouseLeave={() => setShowPassword(false)}
+                onTouchStart={() => setShowPassword(true)}
+                onTouchEnd={() => setShowPassword(false)}
+                aria-label="Mostrar contraseña"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </label>
+
+          <label className="rememberLoginOption">
+            <input type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} />
+            <span>Recuérdame</span>
           </label>
 
           {message && <div className="loginMessage">{message}</div>}
@@ -3917,6 +3950,18 @@ function ClientLogin({ onLogin }) {
             <ChevronRight size={18} />
           </button>
         </form>
+
+        <div className="loginHelpText">
+          <MessageCircle size={18} />
+          <p>
+            Si tienes algún problema o si olvidaste la contraseña,
+            {supportWhatsappUrl ? (
+              <> <a href={supportWhatsappUrl} target="_blank" rel="noreferrer">escríbenos al WhatsApp</a>.</>
+            ) : (
+              " escríbenos al WhatsApp."
+            )}
+          </p>
+        </div>
       </section>
     </main>
   );
