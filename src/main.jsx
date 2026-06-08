@@ -977,9 +977,10 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
       completed: isCompletedStatus(status),
     };
   });
-  const unlockedCount = allMilestones.filter((item) => item.unlocked).length;
   const visibleCompletedMilestones = allMilestones.filter((item) => isCompletedStatus(item.status)).length;
   const pinIndex = Math.max(0, allMilestones.findLastIndex((item) => item.unlocked));
+  const unlockedMilestoneRaw = allMilestones[pinIndex]?.id ?? pinIndex;
+  const unlockedMilestoneCode = String(unlockedMilestoneRaw).replace(/^E/i, "").replace(".0", "") || "0";
 
   const totalCost = (rows = []) => rows.reduce((sum, item) => {
     const cost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"] ?? 0);
@@ -1092,10 +1093,12 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
             </div>
             <div>
               <span>Desbloqueado hasta</span>
-              <strong>E{Math.max(0, unlockedCount)}/E12</strong>
+              <strong>E{unlockedMilestoneCode}/E12</strong>
             </div>
           </div>
-          <CanvaMilestonePath milestones={allMilestones} pinIndex={pinIndex} statusClass={statusClass} setView={setView} />
+          <div className="canvaRouteScroll">
+            <CanvaMilestonePath milestones={allMilestones} pinIndex={pinIndex} statusClass={statusClass} setView={setView} />
+          </div>
         </article>
 
         <article className="canvaPanel canvaCoePanel">

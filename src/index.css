@@ -18438,9 +18438,15 @@ body {
 
 /* SUMMARY_MILESTONE_PATH_RESPONSIVE_FIX_V1 */
 .canvaMilestonePanel {
+  overflow: hidden !important;
+}
+
+.canvaRouteScroll {
+  width: 100% !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
   scrollbar-width: thin !important;
+  padding-bottom: 8px !important;
 }
 
 .canvaRoutePath {
@@ -18519,7 +18525,7 @@ body {
 }
 
 @media (max-width: 1020px) {
-  .canvaMilestonePanel {
+  .canvaRouteScroll {
     overflow-x: auto !important;
     overflow-y: hidden !important;
     scrollbar-width: thin !important;
