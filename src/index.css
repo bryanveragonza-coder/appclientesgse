@@ -15727,10 +15727,11 @@ body {
   margin: 12px 0 10px !important;
   color: #11181c !important;
   -webkit-text-fill-color: #11181c !important;
-  font-size: 1.05rem !important;
-  line-height: 1.18 !important;
-  font-weight: 500 !important;
+  font-size: 0.92rem !important;
+  line-height: 1.25 !important;
+  font-weight: 400 !important;
   letter-spacing: 0 !important;
+  text-transform: none !important;
 }
 
 .findingsPremiumSection .findingMetaLine {
@@ -15858,6 +15859,15 @@ body {
   font-size: 0.84rem !important;
   line-height: 1.4 !important;
   font-weight: 400 !important;
+}
+
+.findingsPremiumSection .findingsGridWhite .findingWhiteCard .findingWhiteHeader h3,
+.findingsPremiumSection .findingWhiteCard .findingWhiteHeader h3 {
+  font-size: 0.92rem !important;
+  line-height: 1.25 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
 }
 
 @media (max-width: 1100px) {
