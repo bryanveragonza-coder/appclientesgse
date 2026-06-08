@@ -16865,6 +16865,17 @@ body {
   box-shadow: none !important;
 }
 
+.deliverablesSection .deliverablesFilters .searchInputWrap input {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.deliverablesSection .deliverablesFilters .searchInputWrap *,
+.deliverablesSection .deliverablesFilters select {
+  border-radius: 0 !important;
+}
+
 .deliverablesSection .deliverablesFilters .filter span,
 .deliverablesSection .deliverablesFilters .searchFilter > span {
   color: #53676b !important;
@@ -16887,6 +16898,7 @@ body {
 
 .deliverablesSection .deliverableCard {
   min-height: 330px !important;
+  height: auto !important;
   padding: 28px 30px !important;
   display: grid !important;
   align-content: start !important;
@@ -16897,6 +16909,7 @@ body {
   background-image: none !important;
   box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
   color: #11181c !important;
+  overflow: visible !important;
 }
 
 .deliverablesSection .deliverableCard::before {
@@ -16968,6 +16981,9 @@ body {
   font-weight: 400 !important;
   background: transparent !important;
   border: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  -webkit-line-clamp: unset !important;
 }
 
 .deliverablesSection .deliverableCard .progress {
@@ -17014,6 +17030,7 @@ body {
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  overflow: visible !important;
 }
 
 .deliverablesSection .deliverableDescriptionPanel strong {
@@ -17030,6 +17047,13 @@ body {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: initial !important;
+  text-overflow: clip !important;
 }
 
 .deliverablesSection .deliverableCard .badge.success {
