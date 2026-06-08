@@ -18438,13 +18438,15 @@ body {
 
 /* SUMMARY_MILESTONE_PATH_RESPONSIVE_FIX_V1 */
 .canvaMilestonePanel {
-  overflow: hidden !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: thin !important;
 }
 
 .canvaRoutePath {
-  width: 100% !important;
-  max-width: 900px !important;
-  min-width: 760px !important;
+  width: 980px !important;
+  max-width: none !important;
+  min-width: 980px !important;
   margin: 0 auto !important;
   padding: 22px 0 10px !important;
   box-sizing: border-box !important;
@@ -18466,7 +18468,7 @@ body {
 .canvaRouteTurn {
   right: 0 !important;
   top: 33px !important;
-  height: 102px !important;
+  height: 134px !important;
   border-left-width: 3px !important;
   border-left-style: dotted !important;
 }
@@ -18510,7 +18512,9 @@ body {
 
 @media (min-width: 1500px) {
   .canvaRoutePath {
-    max-width: 960px !important;
+    width: 980px !important;
+    min-width: 980px !important;
+    max-width: none !important;
   }
 }
 
@@ -18522,16 +18526,16 @@ body {
   }
 
   .canvaRoutePath {
-    width: 820px !important;
+    width: 940px !important;
     max-width: none !important;
-    min-width: 820px !important;
+    min-width: 940px !important;
   }
 }
 
 @media (max-width: 620px) {
   .canvaRoutePath {
-    width: 780px !important;
-    min-width: 780px !important;
+    width: 900px !important;
+    min-width: 900px !important;
   }
 
   .canvaRouteNode strong {
