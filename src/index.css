@@ -16432,3 +16432,120 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* PENDING_CLIENT_CARD_POLISH_V2 */
+.pendingClientSection .pendingList .pendingCard,
+.pendingClientSection .pendingList .pendingCard.selected,
+.pendingClientSection .pendingList .pendingCard.clientValidated {
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+}
+
+.pendingClientSection .pendingList .pendingCard *,
+.pendingClientSection .pendingList .pendingCard.selected *,
+.pendingClientSection .pendingList .pendingCard.clientValidated * {
+  background-image: none !important;
+}
+
+.pendingClientSection .pendingList .pendingCard .pendingHeader,
+.pendingClientSection .pendingList .pendingCard .pendingHeader *,
+.pendingClientSection .pendingList .pendingCard .pendingDetails,
+.pendingClientSection .pendingList .pendingCard .pendingDetails *,
+.pendingClientSection .pendingList .pendingCard .detailBlock,
+.pendingClientSection .pendingList .pendingCard .routeDetailTextBlock {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.pendingClientSection .pendingList .pendingCard .chevron {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: #102f37 !important;
+  stroke: #102f37 !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 auto !important;
+}
+
+.pendingClientSection .pendingList .pendingCard .pendingActionRow {
+  width: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.pendingClientSection .pendingList .pendingCard .pendingActionRow .badge,
+.pendingClientSection .pendingList .pendingCard .pendingActionRow [class*="badge"],
+.pendingClientSection .pendingList .pendingCard .pendingValidatePill {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 24px !important;
+  height: 24px !important;
+  padding: 5px 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-size: 0.68rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  transform: none !important;
+}
+
+.pendingClientSection .pendingList .pendingCard .pendingActionRow .badge,
+.pendingClientSection .pendingList .pendingCard .pendingActionRow .badge.neutral,
+.pendingClientSection .pendingList .pendingCard .pendingActionRow .badge.warning,
+.pendingClientSection .pendingList .pendingCard .pendingActionRow .badge.info,
+.pendingClientSection .pendingList .pendingCard .pendingActionRow .badge.danger,
+.pendingClientSection .pendingList .pendingCard .pendingValidatePill {
+  background: #c6ced1 !important;
+}
+
+.pendingClientSection .pendingList .pendingCard .pendingActionRow .badge.success {
+  background: #00b8b5 !important;
+}
+
+.pendingClientSection .pendingList .pendingCard .pendingDetails .detailBlock,
+.pendingClientSection .pendingList .pendingCard .pendingDetails .routeDetailTextBlock,
+.pendingClientSection .pendingList .pendingCard .pendingDetails .detailBlock p,
+.pendingClientSection .pendingList .pendingCard .pendingDetails .routeDetailTextBlock p {
+  padding: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.pendingClientSection .pendingList .pendingCard .pendingLinkOutside {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 0.84rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+}

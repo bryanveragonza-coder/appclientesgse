@@ -3066,6 +3066,18 @@ function PendingClient({ pending, compact = false, setView }) {
                 )}
               </div>
 
+              {link && (
+                <a
+                  className="secondaryLink pendingLinkOutside"
+                  href={link}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Abrir documento relacionado <ExternalLink size={15} />
+                </a>
+              )}
+
               {!compact && isOpen && (
                 <div className="pendingDetails" onClick={(e) => e.stopPropagation()}>
                   {item.description && (
@@ -3073,12 +3085,6 @@ function PendingClient({ pending, compact = false, setView }) {
                       <strong>Descripción</strong>
                       <p>{item.description}</p>
                     </div>
-                  )}
-
-                  {link && (
-                    <a className="secondaryLink routeSecondaryLinkFixed" href={link} target="_blank" rel="noreferrer">
-                      Abrir documento relacionado <ExternalLink size={15} />
-                    </a>
                   )}
 
                   {!item.description && !link && (
