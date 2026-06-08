@@ -17666,14 +17666,31 @@ body {
 .documentsUploadButton.disabledButton,
 .documentsUploadButton {
   opacity: 1 !important;
-  background: rgba(255,255,255,0.08) !important;
-  color: rgba(255,255,255,0.72) !important;
+  background: #00a7a4 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
   border-color: rgba(255,255,255,0.28) !important;
   font-weight: 400 !important;
 }
 
 .documentsSecondaryButton {
   font-weight: 400 !important;
+}
+
+.documentsFilters .documentsSearchFilter,
+.documentsFilters .documentsSearchFilter .searchInputWrap {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.documentsFilters .documentsSearchFilter .searchInputWrap {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.documentsFilters .documentsSearchFilter .searchInputWrap input {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .documentsChecklist {
