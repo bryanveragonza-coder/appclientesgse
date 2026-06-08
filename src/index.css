@@ -16433,6 +16433,275 @@ body {
   }
 }
 
+/* PROCESS_MASTER_UNIFIED_BRAND_STYLE_V1 */
+.processMasterSection {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #11181c !important;
+}
+
+.processMasterSection .sectionHeader {
+  margin-bottom: 22px !important;
+  padding: 0 !important;
+}
+
+.processMasterSection .sectionHeader h2 {
+  margin: 0 !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.55rem !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.processMasterSection .sectionHeader p {
+  margin-top: 12px !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.94rem !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+}
+
+.processMasterSection .processSummaryGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  margin: 0 0 20px !important;
+}
+
+.processMasterSection .processSummaryCard {
+  min-height: 150px !important;
+  padding: 30px 32px !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 22px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+}
+
+.processMasterSection .processSummaryCard::before {
+  content: "";
+  display: block;
+  width: min(72%, 290px);
+  height: 4px;
+  background: #00b8b5;
+}
+
+.processMasterSection .processSummaryCard span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-family: inherit !important;
+  font-size: 1.05rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.processMasterSection .processSummaryCard strong {
+  margin: 0 !important;
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-family: inherit !important;
+  font-size: clamp(2.4rem, 3vw, 4rem) !important;
+  line-height: 0.95 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.processMasterSection .processSummaryCard p {
+  display: none !important;
+}
+
+.processMasterSection .premiumFilters.processFilters,
+.processMasterSection .processFilters {
+  margin: 0 0 20px !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(280px, 1fr) repeat(3, minmax(160px, 220px)) !important;
+  gap: 14px !important;
+  align-items: end !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.processMasterSection .processFilters .searchFilter,
+.processMasterSection .processFilters .filter {
+  min-width: 0 !important;
+}
+
+.processMasterSection .processFilters .searchInputWrap,
+.processMasterSection .processFilters select {
+  min-height: 46px !important;
+  border: 1px solid rgba(16, 47, 55, 0.12) !important;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  box-shadow: none !important;
+}
+
+.processMasterSection .processFilters .filter span,
+.processMasterSection .processFilters .searchFilter > span {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.76rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.processMasterSection .processTablesStack {
+  display: grid !important;
+  gap: 20px !important;
+}
+
+.processMasterSection .processTableCard {
+  padding: 28px 30px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+}
+
+.processMasterSection .processTableHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  margin-bottom: 18px !important;
+}
+
+.processMasterSection .processTableHeader h3 {
+  margin: 0 !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.05rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+}
+
+.processMasterSection .processTableHeader p {
+  margin: 6px 0 0 !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.88rem !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+}
+
+.processMasterSection .processTableHeader .badge,
+.processMasterSection .processTable .badge {
+  min-height: 24px !important;
+  padding: 5px 12px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-size: 0.68rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+}
+
+.processMasterSection .processTableWrap,
+.processMasterSection .individualMatrixScroll {
+  max-height: 520px !important;
+  overflow: auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.processMasterSection .processTable {
+  border-collapse: collapse !important;
+  background: #ffffff !important;
+}
+
+.processMasterSection .processTable th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1 !important;
+  padding: 13px 14px !important;
+  background: #eef6f6 !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  border-bottom: 1px solid #d8eceb !important;
+  font-family: inherit !important;
+  font-size: 0.72rem !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.processMasterSection .processTable td {
+  padding: 13px 14px !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  border-bottom: 1px solid #edf3f3 !important;
+  font-size: 0.82rem !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+  background: #ffffff !important;
+}
+
+.processMasterSection .processTable td strong {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-weight: 500 !important;
+}
+
+.processMasterSection .processPreviewLink,
+.processMasterSection .processNoPreview {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 0.8rem !important;
+  font-weight: 400 !important;
+}
+
+.processMasterSection .processNoPreview {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+}
+
+.processMasterSection .processTableWrap::-webkit-scrollbar,
+.processMasterSection div:has(> table.processTable)::-webkit-scrollbar {
+  width: 5px !important;
+  height: 5px !important;
+}
+
+.processMasterSection .processTableWrap::-webkit-scrollbar-thumb,
+.processMasterSection div:has(> table.processTable)::-webkit-scrollbar-thumb {
+  background: rgba(0, 184, 181, 0.45) !important;
+  border-radius: 999px !important;
+}
+
+.processMasterSection .processTableWrap::-webkit-scrollbar-track,
+.processMasterSection div:has(> table.processTable)::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+@media (max-width: 1100px) {
+  .processMasterSection .processSummaryGrid,
+  .processMasterSection .premiumFilters.processFilters,
+  .processMasterSection .processFilters {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* PENDING_CLIENT_CARD_POLISH_V2 */
 .pendingClientSection .pendingList .pendingCard,
 .pendingClientSection .pendingList .pendingCard.selected,
