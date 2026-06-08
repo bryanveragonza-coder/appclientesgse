@@ -17594,3 +17594,157 @@ body {
     min-height: 124px !important;
   }
 }
+
+/* DOCUMENT_UPLOAD_PORTAL_ALIGNMENT_V2 */
+.documentsSummaryGrid {
+  display: none !important;
+}
+
+.documentsHero {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 450px) !important;
+  padding: 58px 68px !important;
+}
+
+.documentsHeroMetrics {
+  align-content: center !important;
+  gap: 14px !important;
+}
+
+.documentsHeroMetrics .portalMetricCard {
+  min-height: 108px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-content: center !important;
+  gap: 8px !important;
+  padding: 18px 26px !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.documentsHeroMetrics .portalMetricCard span {
+  color: #00a7a4 !important;
+  -webkit-text-fill-color: #00a7a4 !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 0.78rem !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  font-weight: 600 !important;
+}
+
+.documentsHeroMetrics .portalMetricCard strong {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  color: #001f2a !important;
+  -webkit-text-fill-color: #001f2a !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: clamp(1.9rem, 2.9vw, 2.65rem) !important;
+  line-height: 0.95 !important;
+  font-weight: 400 !important;
+}
+
+.documentsHeroMetrics .portalMetricCard strong svg {
+  color: #001f2a !important;
+  stroke-width: 2.1 !important;
+  margin-left: -8px !important;
+}
+
+.documentsHeroMetrics .portalMetricCard .progress {
+  height: 9px !important;
+  border-radius: 0 !important;
+  background: #c8d4d5 !important;
+  margin-top: 2px !important;
+}
+
+.documentsHeroMetrics .portalMetricCard .progressFill {
+  border-radius: 0 !important;
+  background: #00b8b5 !important;
+}
+
+.documentsUploadButton.disabledButton,
+.documentsUploadButton {
+  opacity: 1 !important;
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(255,255,255,0.72) !important;
+  border-color: rgba(255,255,255,0.28) !important;
+  font-weight: 400 !important;
+}
+
+.documentsSecondaryButton {
+  font-weight: 400 !important;
+}
+
+.documentsChecklist {
+  display: block !important;
+}
+
+.documentsFlatGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+  padding: 0 !important;
+}
+
+.documentChecklistItem {
+  min-height: 0 !important;
+}
+
+.documentCardCategory {
+  display: block !important;
+  color: #405d62 !important;
+  -webkit-text-fill-color: #405d62 !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 0.78rem !important;
+  line-height: 1.15 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  margin: 0 !important;
+}
+
+.documentChecklistItem .badgeRow {
+  width: auto !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.documentChecklistItem .badgeRow .badge,
+.documentChecklistItem .badgeRow [class*="badge"] {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  min-height: 22px !important;
+  height: 22px !important;
+  padding: 4px 10px !important;
+  margin: 0 !important;
+  display: inline-flex !important;
+  border-radius: 999px !important;
+}
+
+@media (max-width: 1180px) {
+  .documentsHero,
+  .documentsFlatGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .documentsHero {
+    padding: 38px 30px !important;
+  }
+}

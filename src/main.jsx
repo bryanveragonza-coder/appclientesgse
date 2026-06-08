@@ -3620,17 +3620,8 @@ function DocumentsUpload({ documents = [], project }) {
     });
   }, [documents, responses, searchTerm, requiredFilter, documentStatusFilter]);
 
-  const categories = [...new Set(filteredDocuments.map((item) => item.category).filter(Boolean))];
-  const grouped = categories.map((category) => ({
-    category,
-    items: filteredDocuments.filter((item) => item.category === category),
-  }));
-  const ungrouped = filteredDocuments.filter((item) => !item.category);
-
-  const answered = documents.filter((item) => ["Sí tengo", "No tengo"].includes(getCurrentResponse(item))).length;
   const yesHave = documents.filter((item) => getCurrentResponse(item) === "Sí tengo").length;
   const required = documents.filter((item) => getRequiredLabel(item) === "Obligatorio").length;
-  const pendingUpload = documents.filter((item) => ["Pendiente", "Por subir"].includes(getCurrentStatus(item))).length;
 
   const renderDocumentItem = (item, index) => {
     const key = getDocumentKey(item) || String(index);
@@ -3646,6 +3637,7 @@ function DocumentsUpload({ documents = [], project }) {
 
         <div className="documentChecklistContent">
           <div className="documentItemTop">
+            {item.category && <span className="documentCardCategory">{item.category}</span>}
             <h3>{item.item}</h3>
             <div className="badgeRow">
               {item.required && <Badge status="Disponible">Obligatorio: {item.required}</Badge>}
@@ -3712,50 +3704,21 @@ function DocumentsUpload({ documents = [], project }) {
 
         <div className="documentsHeroMetrics">
           <div className="portalMetricCard">
-            <span>Ítems respondidos</span>
-            <strong>{answered}/{documents.length}</strong>
+            <span>Ítems cargados</span>
+            <strong><ChevronRight size={26} />{yesHave}/{documents.length}</strong>
+            <ProgressBar value={documents.length ? (yesHave / documents.length) * 100 : 0} status="Finalizado" />
           </div>
           <div className="portalMetricCard">
             <span>Sí tiene</span>
-            <strong>{yesHave}</strong>
+            <strong><ChevronRight size={26} />{yesHave}</strong>
+            <ProgressBar value={documents.length ? (yesHave / documents.length) * 100 : 0} status="Finalizado" />
           </div>
           <div className="portalMetricCard">
             <span>Obligatorios</span>
-            <strong>{required}</strong>
+            <strong><ChevronRight size={26} />{required}</strong>
+            <ProgressBar value={documents.length ? (required / documents.length) * 100 : 0} status="Finalizado" />
           </div>
         </div>
-      </div>
-
-      <div className="documentsSummaryGrid">
-        <article className="documentsSummaryCard">
-          <div>
-            <span>Total documentos</span>
-            <strong>{documents.length}</strong>
-          </div>
-          <div className="documentsSummaryIcon">
-            <FolderOpen size={48} />
-          </div>
-        </article>
-
-        <article className="documentsSummaryCard">
-          <div>
-            <span>Obligatorios</span>
-            <strong>{required}</strong>
-          </div>
-          <div className="documentsSummaryIcon">
-            <ClipboardCheck size={48} />
-          </div>
-        </article>
-
-        <article className="documentsSummaryCard">
-          <div>
-            <span>Por cargar</span>
-            <strong>{pendingUpload}</strong>
-          </div>
-          <div className="documentsSummaryIcon">
-            <UploadCloud size={48} />
-          </div>
-        </article>
       </div>
 
       <div className="filters premiumFilters documentsFilters">
@@ -3810,35 +3773,9 @@ function DocumentsUpload({ documents = [], project }) {
           </div>
         )}
 
-        {grouped.map((group) => (
-          <div className="documentCategoryBlock" key={group.category}>
-            <div className="documentCategoryHeader">
-              <div>
-                <span>Categoría</span>
-                <h3>{group.category}</h3>
-              </div>
-              <Badge status="Disponible">{group.items.length} documentos</Badge>
-            </div>
-
-            <div className="documentItemsGrid">
-              {group.items.map((item, index) => renderDocumentItem(item, index))}
-            </div>
-          </div>
-        ))}
-
-        {ungrouped.length > 0 && (
-          <div className="documentCategoryBlock">
-            <div className="documentCategoryHeader">
-              <div>
-                <span>Categoría</span>
-                <h3>Documentos generales</h3>
-              </div>
-              <Badge status="Disponible">{ungrouped.length} documentos</Badge>
-            </div>
-
-            <div className="documentItemsGrid">
-              {ungrouped.map((item, index) => renderDocumentItem(item, index))}
-            </div>
+        {filteredDocuments.length > 0 && (
+          <div className="documentItemsGrid documentsFlatGrid">
+            {filteredDocuments.map((item, index) => renderDocumentItem(item, index))}
           </div>
         )}
       </div>
