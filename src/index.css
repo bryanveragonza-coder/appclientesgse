@@ -16089,3 +16089,337 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* PENDING_CLIENT_UNIFIED_BRAND_STYLE_V1 */
+.pendingClientSection {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #11181c !important;
+}
+
+.pendingClientSection .sectionHeader {
+  margin-bottom: 22px !important;
+  padding: 0 !important;
+}
+
+.pendingClientSection .sectionHeader h2 {
+  margin: 0 !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.55rem !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.pendingClientSection .sectionHeader p {
+  margin-top: 12px !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.94rem !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+}
+
+.pendingClientSection .sectionHeader .badge {
+  display: none !important;
+}
+
+.pendingClientSection .pendingSummaryGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  margin: 0 0 20px !important;
+}
+
+.pendingClientSection .pendingSummaryCard {
+  min-height: 170px !important;
+  padding: 30px 32px !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 22px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+}
+
+.pendingClientSection .pendingSummaryCard::before {
+  content: "";
+  display: block;
+  width: min(72%, 290px);
+  height: 4px;
+  background: #00b8b5;
+}
+
+.pendingClientSection .pendingSummaryCard > span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.05rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.pendingClientSection .pendingSummaryCard > strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: clamp(2.4rem, 3vw, 4rem) !important;
+  line-height: 0.95 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.pendingClientSection .pendingSummaryCard > p {
+  display: none !important;
+}
+
+.pendingClientSection .pendingMiniRows {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.pendingClientSection .pendingMiniRows > div {
+  display: grid !important;
+  grid-template-columns: 92px minmax(100px, 1fr) 28px !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.pendingClientSection .pendingMiniRows span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+}
+
+.pendingClientSection .pendingMiniTrack {
+  height: 10px !important;
+  background: #d8eceb !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+}
+
+.pendingClientSection .pendingMiniTrack i {
+  display: block !important;
+  height: 100% !important;
+  background: #c6ced1 !important;
+  border-radius: 0 !important;
+}
+
+.pendingClientSection .pendingMiniTrack.blocked i {
+  background: #11181c !important;
+}
+
+.pendingClientSection .pendingMiniTrack.review i,
+.pendingClientSection .pendingMiniTrack.soft i {
+  background: #53676b !important;
+}
+
+.pendingClientSection .pendingMiniTrack.success i {
+  background: #00b8b5 !important;
+}
+
+.pendingClientSection .pendingMiniRows strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 0.78rem !important;
+  text-align: right !important;
+  font-weight: 400 !important;
+}
+
+.pendingClientSection .premiumFilters.pendingFilters,
+.pendingClientSection .pendingFilters.oneLinePendingFilters {
+  margin: 0 0 20px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  gap: 14px !important;
+}
+
+.pendingClientSection .pendingFilters.oneLinePendingFilters .searchInputWrap,
+.pendingClientSection .pendingFilters.oneLinePendingFilters .filter select {
+  min-height: 46px !important;
+  border: 1px solid rgba(16, 47, 55, 0.12) !important;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  box-shadow: none !important;
+}
+
+.pendingClientSection .pendingFilters.oneLinePendingFilters .filter span,
+.pendingClientSection .pendingFilters.oneLinePendingFilters .searchFilter > span {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.76rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.pendingClientSection .pendingList {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+}
+
+.pendingClientSection .pendingCard {
+  min-height: 300px !important;
+  padding: 28px 30px !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 18px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+  color: #11181c !important;
+}
+
+.pendingClientSection .pendingCard::before {
+  content: "";
+  display: block;
+  width: min(72%, 290px);
+  height: 4px;
+  background: #00b8b5;
+}
+
+.pendingClientSection .pendingCard.selected,
+.pendingClientSection .pendingCard.clientValidated {
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 0 !important;
+}
+
+.pendingClientSection .pendingHeader,
+.pendingClientSection .pendingActionRow,
+.pendingClientSection .pendingDetails,
+.pendingClientSection .pendingDetails .detailBlock,
+.pendingClientSection .pendingDetails .routeDetailTextBlock {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.pendingClientSection .pendingHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+.pendingClientSection .pendingCard .itemTitle {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.92rem !important;
+  line-height: 1.25 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.pendingClientSection .pendingCard .muted,
+.pendingClientSection .pendingCard .pendingMeta,
+.pendingClientSection .pendingCard .pendingMeta * {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.84rem !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+}
+
+.pendingClientSection .pendingActionRow {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+.pendingClientSection .pendingActionRow .badge,
+.pendingClientSection .pendingValidatePill {
+  min-height: 24px !important;
+  padding: 5px 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-size: 0.68rem !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+}
+
+.pendingClientSection .pendingActionRow .badge.success {
+  background: #00b8b5 !important;
+}
+
+.pendingClientSection .pendingActionRow .badge.info {
+  background: #53676b !important;
+}
+
+.pendingClientSection .pendingActionRow .badge.neutral,
+.pendingClientSection .pendingActionRow .badge.warning {
+  background: #c6ced1 !important;
+}
+
+.pendingClientSection .pendingActionRow .badge.danger {
+  background: #11181c !important;
+}
+
+.pendingClientSection .pendingValidatePill {
+  background: #00b8b5 !important;
+  cursor: pointer !important;
+}
+
+.pendingClientSection .pendingSaveMessage {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.72rem !important;
+}
+
+.pendingClientSection .pendingDetails strong {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+}
+
+.pendingClientSection .pendingDetails p,
+.pendingClientSection .pendingDetails span {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.84rem !important;
+  line-height: 1.4 !important;
+  font-weight: 400 !important;
+}
+
+.pendingClientSection .pendingDetails .secondaryLink {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 0.84rem !important;
+  font-weight: 400 !important;
+}
+
+@media (max-width: 1100px) {
+  .pendingClientSection .pendingSummaryGrid,
+  .pendingClientSection .pendingList {
+    grid-template-columns: 1fr !important;
+  }
+}

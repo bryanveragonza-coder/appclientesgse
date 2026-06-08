@@ -123,7 +123,7 @@ function Sidebar({ view, setView, project }) {
         [Target, "Ruta del proyecto", "ruta"],
         [BarChart3, "COE", "coe"],
         [Search, "Hallazgos", "hallazgos"],
-        [AlertTriangle, "Pendientes", "pendientes"],
+        [AlertTriangle, "Pendientes cliente", "pendientes"],
       ],
     },
     { title: "Procesos", items: [[ClipboardCheck, "Lista Maestra de Procesos", "procesos"]] },
@@ -2810,7 +2810,7 @@ function PendingClient({ pending, compact = false, setView }) {
 
   const normalizeValidation = (value) => {
     const text = normalizeSystemName(value || "");
-    if (text.includes("validado") || text.includes("completado") || text.includes("finalizado")) return "Completado";
+    if (text.includes("implementado") || text.includes("validado") || text.includes("completado") || text.includes("finalizado")) return "Implementado";
     if (text.includes("pendiente") || !text) return "Pendiente";
     return value;
   };
@@ -2818,7 +2818,7 @@ function PendingClient({ pending, compact = false, setView }) {
   const statusOptions = useMemo(() => pending.map((item) => item.status).filter(Boolean), [pending]);
   const validationOptions = useMemo(() => {
     const values = pending.map((item) => normalizeValidation(getValidationStatus(item))).filter(Boolean);
-    return [...new Set(["Completado", "Pendiente", ...values])];
+    return [...new Set(["Implementado", "Pendiente", ...values])];
   }, [pending, pendingValidation]);
 
   const filteredPending = useMemo(() => {
@@ -2847,22 +2847,22 @@ function PendingClient({ pending, compact = false, setView }) {
 
       if (statusText.includes("finalizado") || statusText.includes("completado") || statusText.includes("terminado")) {
         acc.finalized += 1;
-      } else if (statusText.includes("desarrollo") || statusText.includes("desarollo") || statusText.includes("revision")) {
-        acc.development += 1;
       } else if (statusText.includes("bloqueado")) {
         acc.blocked += 1;
+      } else if (statusText.includes("revision") || statusText.includes("revisión") || statusText.includes("desarrollo") || statusText.includes("desarollo") || statusText.includes("proceso")) {
+        acc.review += 1;
       } else {
         acc.pending += 1;
       }
 
-      if (validationText.includes("completado") || validationText.includes("validado")) {
-        acc.completedValidation += 1;
+      if (validationText.includes("implementado") || validationText.includes("completado") || validationText.includes("validado")) {
+        acc.implemented += 1;
       } else {
-        acc.pendingValidation += 1;
+        acc.pendingImplementation += 1;
       }
 
       return acc;
-    }, { pending: 0, development: 0, finalized: 0, blocked: 0, completedValidation: 0, pendingValidation: 0 });
+    }, { pending: 0, review: 0, finalized: 0, blocked: 0, implemented: 0, pendingImplementation: 0 });
   }, [pending, pendingValidation]);
 
   const items = compact ? pending.slice(0, 4) : filteredPending;
@@ -2933,8 +2933,8 @@ function PendingClient({ pending, compact = false, setView }) {
     <section className="card premiumSectionCard pendingClientSection">
       <div className="sectionHeader">
         <div>
-          <h2>Pendientes del cliente</h2>
-          <p>Acciones necesarias para avanzar sin retrasos. Haz clic para ver descripción y enlace de aprobación.</p>
+          <h2>Pendientes cliente</h2>
+          <p>Acciones necesarias para avanzar sin retrasos. Haz clic para ver descripción y enlace relacionado.</p>
         </div>
         {!compact && <Badge status="En validación">{filteredPending.length} visibles</Badge>}
       </div>
@@ -2952,17 +2952,22 @@ function PendingClient({ pending, compact = false, setView }) {
               <span>Estado</span>
               <div className="pendingMiniRows">
                 <div>
+                  <span>Bloqueado</span>
+                  <div className="pendingMiniTrack blocked"><i style={{ width: `${pending.length ? (summary.blocked / pending.length) * 100 : 0}%` }} /></div>
+                  <strong>{summary.blocked}</strong>
+                </div>
+                <div>
                   <span>Pendiente</span>
                   <div className="pendingMiniTrack"><i style={{ width: `${pending.length ? (summary.pending / pending.length) * 100 : 0}%` }} /></div>
                   <strong>{summary.pending}</strong>
                 </div>
                 <div>
-                  <span>En desarrollo</span>
-                  <div className="pendingMiniTrack soft"><i style={{ width: `${pending.length ? (summary.development / pending.length) * 100 : 0}%` }} /></div>
-                  <strong>{summary.development}</strong>
+                  <span>En revisión</span>
+                  <div className="pendingMiniTrack review"><i style={{ width: `${pending.length ? (summary.review / pending.length) * 100 : 0}%` }} /></div>
+                  <strong>{summary.review}</strong>
                 </div>
                 <div>
-                  <span>Finalizado</span>
+                  <span>Terminado</span>
                   <div className="pendingMiniTrack success"><i style={{ width: `${pending.length ? (summary.finalized / pending.length) * 100 : 0}%` }} /></div>
                   <strong>{summary.finalized}</strong>
                 </div>
@@ -2971,20 +2976,20 @@ function PendingClient({ pending, compact = false, setView }) {
             </article>
 
             <article className="pendingSummaryCard">
-              <span>Validación del cliente</span>
+              <span>Implementó</span>
               <div className="pendingMiniRows">
                 <div>
-                  <span>Completado</span>
-                  <div className="pendingMiniTrack success"><i style={{ width: `${pending.length ? (summary.completedValidation / pending.length) * 100 : 0}%` }} /></div>
-                  <strong>{summary.completedValidation}</strong>
+                  <span>Implementado</span>
+                  <div className="pendingMiniTrack success"><i style={{ width: `${pending.length ? (summary.implemented / pending.length) * 100 : 0}%` }} /></div>
+                  <strong>{summary.implemented}</strong>
                 </div>
                 <div>
                   <span>Pendiente</span>
-                  <div className="pendingMiniTrack"><i style={{ width: `${pending.length ? (summary.pendingValidation / pending.length) * 100 : 0}%` }} /></div>
-                  <strong>{summary.pendingValidation}</strong>
+                  <div className="pendingMiniTrack"><i style={{ width: `${pending.length ? (summary.pendingImplementation / pending.length) * 100 : 0}%` }} /></div>
+                  <strong>{summary.pendingImplementation}</strong>
                 </div>
               </div>
-              <p>Según la columna ValidacionDeCliente.</p>
+              <p>Seguimiento de implementación del pendiente.</p>
             </article>
           </div>
 
@@ -3001,7 +3006,7 @@ function PendingClient({ pending, compact = false, setView }) {
               </div>
             </label>
             <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
-            <FilterSelect label="Validado" value={validationFilter} onChange={setValidationFilter} options={validationOptions} />
+            <FilterSelect label="Implementó" value={validationFilter} onChange={setValidationFilter} options={validationOptions} />
           </div>
         </>
       )}
@@ -3012,7 +3017,7 @@ function PendingClient({ pending, compact = false, setView }) {
           const link = safeUrl(item.link);
           const validationStatus = getValidationStatus(item);
           const normalizedValidation = normalizeValidation(validationStatus);
-          const isValidated = normalizedValidation === "Completado";
+          const isValidated = normalizedValidation === "Implementado";
           const key = item.request || item.id || `${item.owner}-${item.dueDate}`;
 
           return (
@@ -3044,15 +3049,15 @@ function PendingClient({ pending, compact = false, setView }) {
                 <Badge status={item.status}>{item.status}</Badge>
 
                 {isValidated ? (
-                  <Badge status="Finalizado">Completado</Badge>
+                  <Badge status="Finalizado">Implementado</Badge>
                 ) : (
                   <button
                     className="pendingValidatePill"
                     type="button"
                     disabled={Boolean(savingValidation[key])}
-                    onClick={() => handleValidatePending(item, "Validado")}
+                    onClick={() => handleValidatePending(item, "Implementado")}
                   >
-                    {savingValidation[key] ? "Guardando..." : "Validar"}
+                    {savingValidation[key] ? "Guardando..." : "Implementó"}
                   </button>
                 )}
 
@@ -3072,7 +3077,7 @@ function PendingClient({ pending, compact = false, setView }) {
 
                   {link && (
                     <a className="secondaryLink routeSecondaryLinkFixed" href={link} target="_blank" rel="noreferrer">
-                      Abrir documento para aprobación <ExternalLink size={15} />
+                      Abrir documento relacionado <ExternalLink size={15} />
                     </a>
                   )}
 
