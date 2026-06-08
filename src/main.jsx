@@ -2631,13 +2631,15 @@ function Findings({ findings = [] }) {
         </article>
 
         <article className="findingsSummaryCard">
-          <span>Estado de hallazgos</span>
-          <div className="findingsMiniCounterGrid">
-            <div><strong>{statusSummary.pending}</strong><small>Pendiente</small></div>
-            <div><strong>{statusSummary.inProcess}</strong><small>En proceso</small></div>
-            <div><strong>{statusSummary.completed}</strong><small>Completado</small></div>
-          </div>
-          <p>Lectura actual de avance de los hallazgos filtrados.</p>
+          <span>Hallazgos pendientes</span>
+          <strong>{statusSummary.pending}</strong>
+          <p>{statusSummary.inProcess} en proceso.</p>
+        </article>
+
+        <article className="findingsSummaryCard">
+          <span>Hallazgos completados</span>
+          <strong>{statusSummary.completed}</strong>
+          <p>Finalizados o solucionados.</p>
         </article>
       </div>
 

@@ -15358,6 +15358,336 @@ body {
   background: transparent !important;
 }
 
+/* FINDINGS_UNIFIED_BRAND_STYLE_V1 */
+.findingsPremiumSection {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #11181c !important;
+}
+
+.findingsPremiumSection .sectionHeader {
+  margin-bottom: 22px !important;
+  padding: 0 !important;
+}
+
+.findingsPremiumSection .sectionHeader h2 {
+  margin: 0 !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.55rem !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.findingsPremiumSection .sectionHeader p {
+  margin-top: 12px !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.94rem !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+}
+
+.findingsPremiumSection .sectionHeader .badge {
+  display: none !important;
+}
+
+.findingsPremiumSection .findingsSummaryGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  margin: 0 0 20px !important;
+}
+
+.findingsPremiumSection .findingsSummaryCard {
+  min-height: 150px !important;
+  padding: 30px 32px !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 22px !important;
+  position: relative !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+}
+
+.findingsPremiumSection .findingsSummaryCard::before {
+  content: "";
+  display: block;
+  width: min(72%, 290px);
+  height: 4px;
+  background: #00b8b5;
+}
+
+.findingsPremiumSection .findingsSummaryCard > span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.05rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.findingsPremiumSection .findingsSummaryCard > strong {
+  margin: 0 !important;
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-family: inherit !important;
+  font-size: clamp(2.4rem, 3vw, 4rem) !important;
+  line-height: 0.95 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.findingsPremiumSection .findingsSummaryCard > p {
+  margin: 0 !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.88rem !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+}
+
+.findingsPremiumSection .findingsDeliverablesSplitGrid,
+.findingsPremiumSection .findingsDeliverablesSummaryCard {
+  display: none !important;
+}
+
+.findingsPremiumSection .premiumFilters.findingsFilters,
+.findingsPremiumSection .findingsFiltersOrdered,
+.findingsPremiumSection .dependentFindingFilters {
+  margin: 0 0 20px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  gap: 14px !important;
+}
+
+.findingsPremiumSection .findingsFiltersOrdered .searchInputWrap,
+.findingsPremiumSection .findingsFiltersOrdered .filter select,
+.findingsPremiumSection .dependentFindingFilters .searchInputWrap,
+.findingsPremiumSection .dependentFindingFilters .filter select {
+  min-height: 46px !important;
+  border: 1px solid rgba(16, 47, 55, 0.12) !important;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  box-shadow: none !important;
+}
+
+.findingsPremiumSection .findingsFiltersOrdered .filter span,
+.findingsPremiumSection .findingsFiltersOrdered .searchFilter > span,
+.findingsPremiumSection .dependentFindingFilters .filter span,
+.findingsPremiumSection .dependentFindingFilters .searchFilter > span {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.76rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.findingsPremiumSection .findingsGridWhite {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+}
+
+.findingsPremiumSection .findingWhiteCard {
+  min-height: 330px !important;
+  padding: 28px 30px !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 18px !important;
+  position: relative !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+  color: #11181c !important;
+}
+
+.findingsPremiumSection .findingWhiteCard::before {
+  content: "";
+  display: block;
+  width: min(72%, 290px);
+  height: 4px;
+  background: #00b8b5;
+}
+
+.findingsPremiumSection .findingWhiteCard.selected {
+  border: 0 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+}
+
+.findingsPremiumSection .findingWhiteHeader {
+  padding: 0 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 16px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #11181c !important;
+}
+
+.findingsPremiumSection .findingWhiteHeader h3 {
+  margin: 12px 0 10px !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.05rem !important;
+  line-height: 1.18 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.findingsPremiumSection .findingMetaLine {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.findingsPremiumSection .findingMetaLine span {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.76rem !important;
+  font-weight: 400 !important;
+}
+
+.findingsPremiumSection .findingDeliveryDate {
+  margin: 0 0 14px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.84rem !important;
+  font-weight: 400 !important;
+}
+
+.findingsPremiumSection .findingBadgesCompactOnly,
+.findingsPremiumSection .badgeRow {
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.findingsPremiumSection .findingBadgesCompactOnly .badge,
+.findingsPremiumSection .badgeRow .badge {
+  width: auto !important;
+  min-height: 24px !important;
+  padding: 5px 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-size: 0.68rem !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+}
+
+.findingsPremiumSection .badge.success {
+  background: #00b8b5 !important;
+}
+
+.findingsPremiumSection .badge.info {
+  background: #53676b !important;
+}
+
+.findingsPremiumSection .badge.neutral,
+.findingsPremiumSection .badge.warning {
+  background: #c6ced1 !important;
+}
+
+.findingsPremiumSection .badge.danger {
+  background: #11181c !important;
+}
+
+.findingsPremiumSection .findingLinkOutside,
+.findingsPremiumSection .secondaryLink.findingLink {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 0.84rem !important;
+  font-weight: 400 !important;
+}
+
+.findingsPremiumSection .findingFixedExpanded,
+.findingsPremiumSection .findingFixedScroll,
+.findingsPremiumSection .findingDetailBlock,
+.findingsPremiumSection .findingDetailGrid,
+.findingsPremiumSection .findingDetailGrid > div {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.findingsPremiumSection .findingFixedScroll {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.findingsPremiumSection .findingDetailBlock strong,
+.findingsPremiumSection .findingDetailGrid strong {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+}
+
+.findingsPremiumSection .findingDetailBlock p,
+.findingsPremiumSection .findingDetailGrid span,
+.findingsPremiumSection .muted {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.84rem !important;
+  line-height: 1.4 !important;
+  font-weight: 400 !important;
+}
+
+@media (max-width: 1100px) {
+  .findingsPremiumSection .findingsSummaryGrid,
+  .findingsPremiumSection .findingsGridWhite {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 @media (max-width: 1100px) {
   .coeSection .coeExecutiveGrid.threeCards,
   .coeSection .coeInsightGrid,
