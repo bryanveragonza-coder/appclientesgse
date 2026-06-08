@@ -2227,29 +2227,48 @@ function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
   const asIsNavSummary = useMemo(() => summarizeNav(filteredAsIs), [filteredAsIs]);
   const toBeNavSummary = useMemo(() => summarizeNav(filteredToBe), [filteredToBe]);
 
-  const MiniCounterGroup = ({ summary }) => (
-    <div className="coeMiniCounterGrid">
-      <div><strong>{summary.maintained}</strong><small>Mantenidas</small></div>
-      <div><strong>{summary.deleted}</strong><small>Eliminadas</small></div>
-      <div><strong>{summary.added}</strong><small>Agregadas</small></div>
+  const maxActivityCount = Math.max(
+    1,
+    asIsActivityStatusSummary.maintained,
+    asIsActivityStatusSummary.deleted,
+    asIsActivityStatusSummary.added,
+    toBeActivityStatusSummary.maintained,
+    toBeActivityStatusSummary.deleted,
+    toBeActivityStatusSummary.added
+  );
+
+  const maxNavCount = Math.max(
+    1,
+    asIsNavSummary.value,
+    asIsNavSummary.noValue,
+    toBeNavSummary.value,
+    toBeNavSummary.noValue
+  );
+
+  const CoeBarMetric = ({ label, value, max }) => (
+    <div className="coeInsightBarMetric">
+      <span>{label}</span>
+      <div className="coeInsightBarTrack">
+        <i style={{ width: `${Math.max(value > 0 ? 4 : 0, (value / Math.max(1, max)) * 100)}%` }} />
+      </div>
+      <strong>{value}</strong>
     </div>
   );
 
   const ActivitySummaryRow = ({ title, summary }) => (
-    <div className="coeInsightRow">
+    <div className="coeInsightRow coeBarSummaryGroup">
       <span>{title}</span>
-      <MiniCounterGroup summary={summary} />
+      <CoeBarMetric label="Mantenidas" value={summary.maintained} max={maxActivityCount} />
+      <CoeBarMetric label="Eliminadas" value={summary.deleted} max={maxActivityCount} />
+      <CoeBarMetric label="Agregadas" value={summary.added} max={maxActivityCount} />
     </div>
   );
 
   const NavSummaryRow = ({ title, summary }) => (
-    <div className="coeInsightRow">
+    <div className="coeInsightRow coeBarSummaryGroup">
       <span>{title}</span>
-      <div className="coeMiniCounterGrid nav">
-        <div><strong>{summary.value}</strong><small>Generan valor</small></div>
-        <div><strong>{summary.noValue}</strong><small>No generan valor</small></div>
-        <div><strong>{summary.unclassified}</strong><small>Sin clasificar</small></div>
-      </div>
+      <CoeBarMetric label="Generar Valor" value={summary.value} max={maxNavCount} />
+      <CoeBarMetric label="No generan valor" value={summary.noValue} max={maxNavCount} />
     </div>
   );
 

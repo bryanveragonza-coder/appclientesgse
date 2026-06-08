@@ -15137,9 +15137,91 @@ body {
   font-weight: 400 !important;
 }
 
+.coeSection .coeInsightCard.coeActivitiesCard,
+.coeSection .coeInsightCard.coeNavCard {
+  padding: 28px 30px !important;
+  gap: 18px !important;
+  align-content: start !important;
+}
+
+.coeSection .coeBarSummaryGroup {
+  display: grid !important;
+  gap: 9px !important;
+}
+
+.coeSection .coeBarSummaryGroup > span {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 0.88rem !important;
+  line-height: 1.2 !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+}
+
+.coeSection .coeInsightBarMetric {
+  display: grid !important;
+  grid-template-columns: 98px minmax(120px, 1fr) 34px !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.coeSection .coeInsightBarMetric > span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+}
+
+.coeSection .coeInsightBarTrack {
+  height: 10px !important;
+  background: #e8f4f3 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+}
+
+.coeSection .coeInsightBarTrack i {
+  display: block !important;
+  height: 100% !important;
+  background: #00b8b5 !important;
+  border-radius: 0 !important;
+}
+
+.coeSection .coeInsightBarMetric > strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+  text-align: right !important;
+}
+
 .coeSection .coeProcessListCard {
   min-height: 0 !important;
   padding: 28px 30px !important;
+}
+
+.coeSection .coeProcessScrollList,
+.coeSection .coeProcessScrollList.fixedProcessList {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.coeSection .coeBarRow {
+  padding: 0 0 16px !important;
+  margin: 0 0 16px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.coeSection .coeBarRow:last-child {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .coeSection .coeChartHeader,
