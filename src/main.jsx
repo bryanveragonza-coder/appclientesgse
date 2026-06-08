@@ -3408,14 +3408,17 @@ function Education({ education = [] }) {
     return systemOk && milestoneOk && statusOk && searchOk;
   });
 
-  const grouped = milestones
-    .map((milestone) => ({
-      milestone,
-      items: filtered.filter((item) => item.milestone === milestone),
-    }))
-    .filter((group) => group.items.length > 0);
-
-  const ungrouped = filtered.filter((item) => !item.milestone);
+  const grouped = filtered.reduce((acc, item) => {
+    const milestone = String(item.milestone || "Sin hito asignado").trim() || "Sin hito asignado";
+    const key = normalizeSystemName(milestone) || "sin hito";
+    const existing = acc.find((group) => group.key === key);
+    if (existing) {
+      existing.items.push(item);
+    } else {
+      acc.push({ key, milestone, items: [item] });
+    }
+    return acc;
+  }, []);
 
   const renderEducationCard = (item, index, prefix = "") => {
     const image = safeUrl(item.imagePreview);
@@ -3446,7 +3449,7 @@ function Education({ education = [] }) {
 
           <div className="badgeRow">
             {item.milestone && <Badge status="En validación">Hito: {item.milestone}</Badge>}
-            {item.status && <Badge status={item.status}>{item.status}</Badge>}
+            {item.status && <Badge status={getEducationStatusBucket(item.status) === "Terminado" ? "Finalizado" : item.status}>{item.status}</Badge>}
           </div>
 
           {isOpen && (
@@ -3544,18 +3547,6 @@ function Education({ education = [] }) {
           </div>
         ))}
 
-        {ungrouped.length > 0 && (
-          <div className="systemSection premiumSystemSection">
-            <div className="systemHeader">
-              <div className="systemNumber">Otros</div>
-              <h3>Sin hito asignado</h3>
-            </div>
-
-            <div className="educationGrid">
-              {ungrouped.map((item, index) => renderEducationCard(item, index, "ungrouped"))}
-            </div>
-          </div>
-        )}
       </div>
 
       {!filtered.length && (

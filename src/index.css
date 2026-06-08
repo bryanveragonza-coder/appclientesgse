@@ -17922,10 +17922,12 @@ body {
 
 .educationFilters .educationSearchFilter .searchInputWrap {
   min-height: 50px !important;
-  border: 0 !important;
-  border-radius: 0 !important;
+  border: 1px solid rgba(0, 31, 42, 0.13) !important;
+  border-radius: 18px !important;
   box-shadow: none !important;
-  padding: 0 !important;
+  padding: 0 16px !important;
+  background: rgba(255,255,255,0.46) !important;
+  background-color: rgba(255,255,255,0.46) !important;
 }
 
 .educationFilters .educationSearchFilter .searchInputWrap svg {
@@ -18129,6 +18131,16 @@ body {
 }
 
 .educationSection .secondaryLink {
+  display: inline-flex !important;
+  width: fit-content !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin-top: 16px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
   color: #00b8b5 !important;
   -webkit-text-fill-color: #00b8b5 !important;
   font-size: 0.86rem !important;
