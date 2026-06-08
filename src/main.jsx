@@ -3359,6 +3359,7 @@ function Education({ education = [] }) {
   const [milestoneFilter, setMilestoneFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
+  const [openEducationCard, setOpenEducationCard] = useState("");
 
   const systemOrder = [
     "Sistema 1: Operación sin Caos",
@@ -3407,28 +3408,39 @@ function Education({ education = [] }) {
     return systemOk && milestoneOk && statusOk && searchOk;
   });
 
-  const grouped = orderedSystems
-    .map((system) => ({
-      system,
-      items: filtered.filter((item) => normalizeSystem(item.system) === system),
+  const grouped = milestones
+    .map((milestone) => ({
+      milestone,
+      items: filtered.filter((item) => item.milestone === milestone),
     }))
     .filter((group) => group.items.length > 0);
 
-  const ungrouped = filtered.filter((item) => !normalizeSystem(item.system));
+  const ungrouped = filtered.filter((item) => !item.milestone);
 
   const renderEducationCard = (item, index, prefix = "") => {
     const image = safeUrl(item.imagePreview);
     const link = safeUrl(item.link);
+    const cardKey = `${prefix}${item.deliverable}-${index}`;
+    const isOpen = openEducationCard === cardKey;
 
     return (
-      <article className="educationCard premiumEducationCard" key={`${prefix}${item.deliverable}-${index}`}>
+      <article className={`educationCard premiumEducationCard ${isOpen ? "open" : ""}`} key={cardKey}>
         {image ? (
           <img className="previewImage" src={image} alt={item.deliverable || "Imagen proceso"} />
         ) : (
-          <div className="previewPlaceholder"><Monitor size={34} />Imagen proceso</div>
+          <div className="previewPlaceholder"><Monitor size={34} />Vista previa</div>
         )}
 
         <div className="educationContent">
+          <button
+            className="educationCardToggle"
+            type="button"
+            onClick={() => setOpenEducationCard((current) => (current === cardKey ? "" : cardKey))}
+            aria-expanded={isOpen}
+          >
+            <ChevronRight size={24} />
+          </button>
+
           <div className="area">{item.system || "Entregable"}</div>
           <h3>{item.deliverable}</h3>
 
@@ -3437,9 +3449,13 @@ function Education({ education = [] }) {
             {item.status && <Badge status={item.status}>{item.status}</Badge>}
           </div>
 
-          {item.whatIs && <p><strong>¿Qué es?</strong><br />{item.whatIs}</p>}
-          {item.purpose && <p><strong>¿Para qué sirve?</strong><br />{item.purpose}</p>}
-          {item.howToRead && <p><strong>¿Cómo leerlo?</strong><br />{item.howToRead}</p>}
+          {isOpen && (
+            <div className="educationDetailsPanel">
+              {item.whatIs && <p><strong>¿Qué es?</strong><br />{item.whatIs}</p>}
+              {item.purpose && <p><strong>¿Para qué sirve?</strong><br />{item.purpose}</p>}
+              {item.howToRead && <p><strong>¿Cómo leerlo?</strong><br />{item.howToRead}</p>}
+            </div>
+          )}
 
           {link && (
             <a className="secondaryLink routeSecondaryLinkFixed" href={link} target="_blank" rel="noreferrer">
@@ -3516,14 +3532,14 @@ function Education({ education = [] }) {
 
       <div className="systemsEducation">
         {grouped.map((group, groupIndex) => (
-          <div className="systemSection premiumSystemSection" key={group.system}>
+          <div className="systemSection premiumSystemSection" key={group.milestone}>
             <div className="systemHeader">
-              <div className="systemNumber">Sistema {groupIndex + 1}</div>
-              <h3>{group.system.replace(/^Sistema\s*\d+\s*:\s*/i, "")}</h3>
+              <div className="systemNumber">Hito {groupIndex + 1}</div>
+              <h3>{group.milestone}</h3>
             </div>
 
             <div className="educationGrid">
-              {group.items.map((item, index) => renderEducationCard(item, index, group.system))}
+              {group.items.map((item, index) => renderEducationCard(item, index, group.milestone))}
             </div>
           </div>
         ))}
@@ -3532,7 +3548,7 @@ function Education({ education = [] }) {
           <div className="systemSection premiumSystemSection">
             <div className="systemHeader">
               <div className="systemNumber">Otros</div>
-              <h3>Entregables adicionales</h3>
+              <h3>Sin hito asignado</h3>
             </div>
 
             <div className="educationGrid">

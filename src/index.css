@@ -17993,7 +17993,7 @@ body {
   display: grid !important;
   grid-template-columns: 1fr !important;
   min-height: 0 !important;
-  padding: 30px 32px !important;
+  padding: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: #ffffff !important;
@@ -18003,6 +18003,32 @@ body {
 
 .educationSection .educationCard::before,
 .educationSection .premiumEducationCard::before {
+  display: none !important;
+}
+
+.educationSection .previewImage,
+.educationSection .previewPlaceholder {
+  display: grid !important;
+  width: 100% !important;
+  height: 178px !important;
+  min-height: 178px !important;
+  max-height: 178px !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: #e8f4f4 !important;
+  color: #6a7f82 !important;
+  object-fit: cover !important;
+  place-items: center !important;
+  font-size: 0.8rem !important;
+  font-weight: 400 !important;
+}
+
+.educationSection .educationContent {
+  position: relative !important;
+  padding: 28px 32px 30px !important;
+}
+
+.educationSection .educationContent::before {
   content: "" !important;
   display: block !important;
   width: 78% !important;
@@ -18011,13 +18037,31 @@ body {
   margin-bottom: 20px !important;
 }
 
-.educationSection .previewImage,
-.educationSection .previewPlaceholder {
-  display: none !important;
+.educationSection .educationCardToggle {
+  position: absolute !important;
+  top: 28px !important;
+  right: 30px !important;
+  width: 30px !important;
+  height: 30px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #001f2a !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
 }
 
-.educationSection .educationContent {
-  padding: 0 !important;
+.educationSection .educationCardToggle svg {
+  stroke-width: 2 !important;
+  transform: rotate(90deg) !important;
+  transition: transform .18s ease !important;
+}
+
+.educationSection .educationCard.open .educationCardToggle svg {
+  transform: rotate(-90deg) !important;
 }
 
 .educationSection .area {
@@ -18036,6 +18080,12 @@ body {
   line-height: 1.2 !important;
   font-weight: 400 !important;
   letter-spacing: 0 !important;
+}
+
+.educationDetailsPanel {
+  display: grid !important;
+  gap: 14px !important;
+  margin-top: 10px !important;
 }
 
 .educationSection .educationContent p {
