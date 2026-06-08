@@ -737,7 +737,7 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
   );
 }
 
-function AppTopbar({ project, pending = [], meetings = [], updates = [], milestones = [], findings = [], deliverables = [], documents = [], education = [], processesAsIs = [], processesToBe = [], setView, setSelectedHito, setSelectedDeliverable }) {
+function AppTopbar({ project, pending = [], meetings = [], updates = [], milestones = [], findings = [], deliverables = [], documents = [], education = [], processesAsIs = [], processesToBe = [], setView, setSelectedHito, setSelectedDeliverable, onLogout }) {
   const [openPanel, setOpenPanel] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const meetUrl = safeUrl(project?.linkMeet);
@@ -914,6 +914,9 @@ function AppTopbar({ project, pending = [], meetings = [], updates = [], milesto
 
         <Logo src={project?.logoClient} fallback={(project?.companyClient || project?.client || "CL").slice(0, 2)} className="canvaTopLogo" />
         <span className="canvaUserName">{project?.contactName || project?.responsibleClient || "Cliente"}</span>
+        <button className="topbarLogoutButton" type="button" onClick={onLogout}>
+          Salir
+        </button>
       </div>
     </div>
   );
@@ -3831,7 +3834,96 @@ function DocumentsUpload({ documents = [], project }) {
   );
 }
 
+function getStoredClientSession() {
+  try {
+    return JSON.parse(window.localStorage.getItem("gseClientSession") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function ClientLogin({ onLogin }) {
+  const loginUrl = import.meta.env.VITE_LOGIN_WEBHOOK_URL || "";
+  const [usuario, setUsuario] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setMessage("");
+
+    if (!loginUrl) {
+      setMessage("Falta configurar VITE_LOGIN_WEBHOOK_URL en Vercel.");
+      return;
+    }
+
+    if (!usuario.trim() || !password.trim()) {
+      setMessage("Ingresa usuario y contraseña.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(loginUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ usuario, password }),
+      });
+      const result = await response.json();
+
+      if (!response.ok || result.ok === false || !result.user?.sheetId) {
+        throw new Error(result.message || "No se pudo iniciar sesión.");
+      }
+
+      const session = {
+        ...result.user,
+        loggedAt: new Date().toISOString(),
+      };
+      window.localStorage.setItem("gseClientSession", JSON.stringify(session));
+      onLogin(session);
+    } catch (error) {
+      setMessage(error.message || "Usuario o contraseña incorrectos.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="loginShell">
+      <section className="loginPanel">
+        <div className="loginBrandMark">GSE&CO</div>
+        <div>
+          <span className="loginEyebrow">Ruta de Implementación Visible</span>
+          <h1>Acceso cliente</h1>
+          <p>Ingresa con el usuario asignado para abrir automáticamente tu ruta del proyecto.</p>
+        </div>
+
+        <form className="loginForm" onSubmit={handleSubmit}>
+          <label>
+            <span>Usuario</span>
+            <input value={usuario} onChange={(event) => setUsuario(event.target.value)} autoComplete="username" />
+          </label>
+
+          <label>
+            <span>Contraseña</span>
+            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete="current-password" />
+          </label>
+
+          {message && <div className="loginMessage">{message}</div>}
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Validando..." : "Entrar"}
+            <ChevronRight size={18} />
+          </button>
+        </form>
+      </section>
+    </main>
+  );
+}
+
 function App() {
+  const [session, setSession] = useState(() => getStoredClientSession());
   const [view, setView] = useState("portal");
   const [data, setData] = useState(demoData);
   const [connected, setConnected] = useState(false);
@@ -3840,6 +3932,8 @@ function App() {
   const [selectedHito, setSelectedHito] = useState("");
 
   useEffect(() => {
+    if (!session?.sheetId) return;
+
     loadSheetData()
       .then((sheetData) => {
         setData(sheetData);
@@ -3851,7 +3945,7 @@ function App() {
         setConnected(false);
         setError("No se pudo conectar con Google Sheets. Revisa publicación, permisos o nombres de pestañas.");
       });
-  }, []);
+  }, [session?.sheetId]);
 
   const { project, milestones, findings, pending, deliverables, updates, education, meetings = [], documents = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
@@ -3859,6 +3953,17 @@ function App() {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
     return `${completed} hitos completados de ${milestones.length}`;
   }, [milestones]);
+
+  const handleLogout = () => {
+    window.localStorage.removeItem("gseClientSession");
+    setSession(null);
+    setConnected(false);
+    setData(demoData);
+  };
+
+  if (!session?.sheetId) {
+    return <ClientLogin onLogin={setSession} />;
+  }
 
   return (
     <div className="app">
@@ -3880,6 +3985,7 @@ function App() {
           setView={setView}
           setSelectedHito={setSelectedHito}
           setSelectedDeliverable={setSelectedDeliverable}
+          onLogout={handleLogout}
         />
 
         <div className="content">

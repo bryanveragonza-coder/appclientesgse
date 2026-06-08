@@ -4,10 +4,17 @@ function getSheetIdFromUrl() {
   return params.get("sheet") || params.get("sheetId") || "";
 }
 
-const SPREADSHEET_ID = getSheetIdFromUrl() || import.meta.env.VITE_SPREADSHEET_ID || "";
+function getSheetIdFromSession() {
+  try {
+    const session = JSON.parse(window.localStorage.getItem("gseClientSession") || "null");
+    return session?.sheetId || "";
+  } catch {
+    return "";
+  }
+}
 
 export function getActiveSpreadsheetId() {
-  return SPREADSHEET_ID;
+  return getSheetIdFromSession() || getSheetIdFromUrl() || import.meta.env.VITE_SPREADSHEET_ID || "";
 }
 
 export const demoData = {
@@ -121,7 +128,7 @@ function getSpreadsheetId(rawValue) {
 }
 
 function csvUrl(sheetName) {
-  const { id, type } = getSpreadsheetId(SPREADSHEET_ID);
+  const { id, type } = getSpreadsheetId(getActiveSpreadsheetId());
   const encodedSheet = encodeURIComponent(sheetName);
 
   if (type === "published") {
@@ -586,8 +593,8 @@ function mapCOERows(rows) {
 }
 
 export async function loadSheetData() {
-  if (!SPREADSHEET_ID) {
-    throw new Error("Falta configurar VITE_SPREADSHEET_ID o usar ?sheet=ID");
+  if (!getActiveSpreadsheetId()) {
+    throw new Error("Falta iniciar sesión o configurar VITE_SPREADSHEET_ID.");
   }
 
   const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, documentRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows] = await Promise.all([

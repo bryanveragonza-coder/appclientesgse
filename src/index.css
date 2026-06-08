@@ -18154,3 +18154,140 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ==========================================================
+   CLIENT_LOGIN_FAST_AUTH_V1
+   Acceso cliente por Google Sheet maestro + Apps Script
+   ========================================================== */
+.loginShell {
+  min-height: 100vh !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 32px !important;
+  background: #eaf5f5 !important;
+  font-family: "Roboto", sans-serif !important;
+}
+
+.loginPanel {
+  width: min(100%, 520px) !important;
+  display: grid !important;
+  gap: 26px !important;
+  padding: 44px 46px !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 20px 44px rgba(0, 88, 86, 0.13) !important;
+}
+
+.loginBrandMark {
+  width: 118px !important;
+  height: 44px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+}
+
+.loginEyebrow {
+  display: block !important;
+  color: #00a7a4 !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 10px !important;
+}
+
+.loginPanel h1 {
+  margin: 0 !important;
+  color: #001f2a !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: clamp(2.3rem, 6vw, 4rem) !important;
+  line-height: 0.98 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.loginPanel p {
+  margin: 14px 0 0 !important;
+  color: #405d62 !important;
+  font-size: 1rem !important;
+  line-height: 1.55 !important;
+}
+
+.loginForm {
+  display: grid !important;
+  gap: 18px !important;
+}
+
+.loginForm label {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.loginForm label span {
+  color: #405d62 !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+}
+
+.loginForm input {
+  width: 100% !important;
+  min-height: 52px !important;
+  padding: 0 16px !important;
+  border: 1px solid rgba(0, 31, 42, 0.14) !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: #001f2a !important;
+  font-size: 1rem !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.loginForm input:focus {
+  border-color: #00b8b5 !important;
+}
+
+.loginMessage {
+  color: #8b1d1d !important;
+  background: #fff2f2 !important;
+  padding: 10px 12px !important;
+  font-size: 0.86rem !important;
+  line-height: 1.35 !important;
+}
+
+.loginForm button {
+  min-height: 52px !important;
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+}
+
+.loginForm button:disabled {
+  opacity: 0.65 !important;
+  cursor: wait !important;
+}
+
+.topbarLogoutButton {
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  border: 1px solid rgba(0, 31, 42, 0.12) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #405d62 !important;
+  font-size: 0.78rem !important;
+  font-weight: 400 !important;
+  cursor: pointer !important;
+}
