@@ -3520,22 +3520,30 @@ function DocumentsUpload({ documents = [], project }) {
   const [responses, setResponses] = useState({});
   const [saving, setSaving] = useState({});
   const [saveMessage, setSaveMessage] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [requiredFilter, setRequiredFilter] = useState("Todos");
+  const [documentStatusFilter, setDocumentStatusFilter] = useState("Todos");
 
   const title = documents.find((item) => item.title)?.title || "Carga de documentos iniciales";
   const description =
     documents.find((item) => item.description)?.description ||
     "Para iniciar el diagnóstico, revisa qué documentos tiene tu empresa y súbelos en la carpeta compartida.";
 
-  const getCurrentResponse = (item) => responses[item.id] ?? item.responseClient ?? "";
+  const getDocumentKey = (item) => item.id || item.item || item.title || "";
+  const getCurrentResponse = (item) => responses[getDocumentKey(item)] ?? item.responseClient ?? "";
   const getCurrentStatus = (item) => {
     const response = getCurrentResponse(item);
     if (response === "Sí tengo") return "Por subir";
     if (response === "No tengo") return "No disponible";
     return item.status || "Pendiente";
   };
+  const getRequiredLabel = (item) => {
+    const value = normalizeSystemName(item.required || item.obligatorio || "");
+    return value.startsWith("s") || value.includes("obligatorio") ? "Obligatorio" : "Opcional";
+  };
 
   const handleResponseChange = async (item, respuesta) => {
-    const key = item.id || item.item;
+    const key = getDocumentKey(item);
     const previous = responses[key] ?? item.responseClient ?? "";
 
     setResponses((current) => ({ ...current, [key]: respuesta }));
@@ -3585,25 +3593,53 @@ function DocumentsUpload({ documents = [], project }) {
     }
   };
 
-  const categories = [...new Set(documents.map((item) => item.category).filter(Boolean))];
+  const statusOptions = useMemo(
+    () => Array.from(new Set(documents.map((item) => getCurrentStatus(item)).filter(Boolean))),
+    [documents, responses]
+  );
+
+  const filteredDocuments = useMemo(() => {
+    const query = normalizeSystemName(searchTerm);
+
+    return documents.filter((item) => {
+      const searchable = normalizeSystemName(
+        [
+          item.title,
+          item.category,
+          item.item,
+          item.detail,
+          item.observation,
+          item.required,
+          getCurrentStatus(item),
+        ].filter(Boolean).join(" ")
+      );
+      const matchesSearch = !query || searchable.includes(query);
+      const matchesRequired = requiredFilter === "Todos" || getRequiredLabel(item) === requiredFilter;
+      const matchesStatus = documentStatusFilter === "Todos" || getCurrentStatus(item) === documentStatusFilter;
+      return matchesSearch && matchesRequired && matchesStatus;
+    });
+  }, [documents, responses, searchTerm, requiredFilter, documentStatusFilter]);
+
+  const categories = [...new Set(filteredDocuments.map((item) => item.category).filter(Boolean))];
   const grouped = categories.map((category) => ({
     category,
-    items: documents.filter((item) => item.category === category),
+    items: filteredDocuments.filter((item) => item.category === category),
   }));
-  const ungrouped = documents.filter((item) => !item.category);
+  const ungrouped = filteredDocuments.filter((item) => !item.category);
 
   const answered = documents.filter((item) => ["Sí tengo", "No tengo"].includes(getCurrentResponse(item))).length;
   const yesHave = documents.filter((item) => getCurrentResponse(item) === "Sí tengo").length;
-  const required = documents.filter((item) => String(item.required || "").toLowerCase().startsWith("s")).length;
+  const required = documents.filter((item) => getRequiredLabel(item) === "Obligatorio").length;
+  const pendingUpload = documents.filter((item) => ["Pendiente", "Por subir"].includes(getCurrentStatus(item))).length;
 
   const renderDocumentItem = (item, index) => {
-    const key = item.id || item.item || String(index);
+    const key = getDocumentKey(item) || String(index);
     const currentResponse = getCurrentResponse(item);
     const currentStatus = getCurrentStatus(item);
     const isDone = currentResponse === "Sí tengo" || String(currentStatus || "").toLowerCase().includes("cargado") || String(currentStatus || "").toLowerCase().includes("validado");
 
     return (
-      <article className="documentChecklistItem" key={`${item.category || "general"}-${item.item}-${index}`}>
+      <article className="documentChecklistItem" key={`${item.category || "general"}-${key}-${index}`}>
         <div className="documentCheckIcon">
           {isDone ? <CheckCircle2 size={19} /> : <ClipboardCheck size={19} />}
         </div>
@@ -3690,6 +3726,54 @@ function DocumentsUpload({ documents = [], project }) {
         </div>
       </div>
 
+      <div className="documentsSummaryGrid">
+        <article className="documentsSummaryCard">
+          <div>
+            <span>Total documentos</span>
+            <strong>{documents.length}</strong>
+          </div>
+          <div className="documentsSummaryIcon">
+            <FolderOpen size={48} />
+          </div>
+        </article>
+
+        <article className="documentsSummaryCard">
+          <div>
+            <span>Obligatorios</span>
+            <strong>{required}</strong>
+          </div>
+          <div className="documentsSummaryIcon">
+            <ClipboardCheck size={48} />
+          </div>
+        </article>
+
+        <article className="documentsSummaryCard">
+          <div>
+            <span>Por cargar</span>
+            <strong>{pendingUpload}</strong>
+          </div>
+          <div className="documentsSummaryIcon">
+            <UploadCloud size={48} />
+          </div>
+        </article>
+      </div>
+
+      <div className="filters premiumFilters documentsFilters">
+        <label className="filter searchFilter documentsSearchFilter">
+          <span>Buscar</span>
+          <div className="searchInputWrap">
+            <Search size={19} />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar documento, categoría o estado..."
+            />
+          </div>
+        </label>
+        <FilterSelect label="Obligatorio" value={requiredFilter} onChange={setRequiredFilter} options={["Obligatorio", "Opcional"]} />
+        <FilterSelect label="Estado" value={documentStatusFilter} onChange={setDocumentStatusFilter} options={statusOptions} />
+      </div>
+
       <div className="documentsChecklist">
         {!documents.length && (
           <div className="documentCategoryBlock">
@@ -3710,6 +3794,18 @@ function DocumentsUpload({ documents = [], project }) {
                   <p>La app busca una pestaña llamada Documentos con columnas como Titulo, Descripcion, Categoria, Item, Detalle, Obligatorio, RespuestaCliente, Estado, Observacion y FechaRespuesta.</p>
                 </div>
               </article>
+            </div>
+          </div>
+        )}
+
+        {documents.length > 0 && filteredDocuments.length === 0 && (
+          <div className="documentCategoryBlock documentsEmptyState">
+            <div className="documentCategoryHeader">
+              <div>
+                <span>Sin resultados</span>
+                <h3>No hay documentos con esos filtros</h3>
+              </div>
+              <Badge status="Pendiente">Ajustar búsqueda</Badge>
             </div>
           </div>
         )}
