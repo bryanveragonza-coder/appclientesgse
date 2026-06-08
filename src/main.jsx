@@ -3120,6 +3120,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
   const systems = [...new Set(deliverables.map((d) => d.system).filter(Boolean))];
   const statuses = [...new Set(deliverables.map((d) => d.status).filter(Boolean))];
   const responsibles = [...new Set(deliverables.map((d) => d.responsible).filter(Boolean))];
+  const milestones = [...new Set(deliverables.map((d) => d.milestone).filter(Boolean))];
 
   const summary = useMemo(() => {
     const isFinalized = (status = "") => {
@@ -3151,7 +3152,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
   const filtered = deliverables.filter((item) => {
     const systemOk = systemFilter === "Todos" || item.system === systemFilter;
     const statusOk = statusFilter === "Todos" || item.status === statusFilter;
-    const responsibleOk = responsibleFilter === "Todos" || item.responsible === responsibleFilter;
+    const responsibleOk = responsibleFilter === "Todos" || item.milestone === responsibleFilter;
     const searchableText = [
       item.system,
       item.milestone,
@@ -3220,7 +3221,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
               </div>
             </label>
             <FilterSelect label="Sistema" value={systemFilter} onChange={setSystemFilter} options={systems} />
-            <FilterSelect label="Responsable" value={responsibleFilter} onChange={setResponsibleFilter} options={responsibles} />
+            <FilterSelect label="Hito" value={responsibleFilter} onChange={setResponsibleFilter} options={milestones} />
             <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statuses} />
           </div>
         </>
