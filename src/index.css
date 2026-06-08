@@ -16367,7 +16367,7 @@ body {
 }
 
 .pendingClientSection .pendingActionRow .badge.info {
-  background: #53676b !important;
+  background: #c6ced1 !important;
 }
 
 .pendingClientSection .pendingActionRow .badge.neutral,
@@ -16376,11 +16376,11 @@ body {
 }
 
 .pendingClientSection .pendingActionRow .badge.danger {
-  background: #11181c !important;
+  background: #c6ced1 !important;
 }
 
 .pendingClientSection .pendingValidatePill {
-  background: #00b8b5 !important;
+  background: #c6ced1 !important;
   cursor: pointer !important;
 }
 
@@ -16404,6 +16404,15 @@ body {
   font-size: 0.84rem !important;
   line-height: 1.4 !important;
   font-weight: 400 !important;
+}
+
+.pendingClientSection .pendingDetails .detailBlock,
+.pendingClientSection .pendingDetails .routeDetailTextBlock,
+.pendingClientSection .pendingDetails .detailBlock p,
+.pendingClientSection .pendingDetails .routeDetailTextBlock p {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 .pendingClientSection .pendingDetails .secondaryLink {
