@@ -2625,33 +2625,48 @@ function Findings({ findings = [] }) {
 
       <div className="findingsSummaryGrid">
         <article className="findingsSummaryCard">
-          <span>Hallazgos totales</span>
-          <strong>{filteredFindings.length}</strong>
+          <div>
+            <span>Total de Hallazgos</span>
+            <strong>{filteredFindings.length}</strong>
+          </div>
+          <div className="findingsSummaryIcon" aria-hidden="true">
+            <MapPin size={18} />
+            <MapPin size={18} />
+            <MapPin size={18} />
+            <Flag size={28} />
+          </div>
           <p>Total visible según los filtros activos.</p>
         </article>
 
-        <article className="findingsSummaryCard">
-          <span>Hallazgos pendientes</span>
-          <strong>{statusSummary.pending}</strong>
-          <p>{statusSummary.inProcess} en proceso.</p>
-        </article>
-
-        <article className="findingsSummaryCard">
-          <span>Hallazgos completados</span>
-          <strong>{statusSummary.completed}</strong>
-          <p>Finalizados o solucionados.</p>
+        <article className="findingsSummaryCard findingsStatusSummaryCard">
+          <span>Estado de Hallazgos</span>
+          <div className="findingsStatusRows">
+            <div>
+              <span>Completado</span>
+              <div><i style={{ width: `${filteredFindings.length ? (statusSummary.completed / filteredFindings.length) * 100 : 0}%` }} /></div>
+              <strong>{statusSummary.completed}</strong>
+            </div>
+            <div>
+              <span>Pendiente</span>
+              <div><i style={{ width: `${filteredFindings.length ? (statusSummary.pending / filteredFindings.length) * 100 : 0}%` }} /></div>
+              <strong>{statusSummary.pending}</strong>
+            </div>
+            <div>
+              <span>En desarrollo</span>
+              <div><i style={{ width: `${filteredFindings.length ? (statusSummary.inProcess / filteredFindings.length) * 100 : 0}%` }} /></div>
+              <strong>{statusSummary.inProcess}</strong>
+            </div>
+          </div>
+          <p>Lectura actual de avance de los hallazgos filtrados.</p>
         </article>
       </div>
 
       <div className="findingsDeliverablesSplitGrid compactDeliverableCards">
-        <article className="findingsDeliverableTotalCard">
-          <span>Total entregables GSE</span>
-          <strong>{visibleDeliverableTotals.gse}</strong>
-          <p>Entregables internos visibles.</p>
-        </article>
-
-        <article className="findingsDeliverableBreakdownCard">
-          <span>Cantidad GSE</span>
+        <article className="findingsDeliverableDashboardCard">
+          <div className="findingsDeliverableDashboardHeader">
+            <span>Entregables GSE</span>
+            <strong>{visibleDeliverableTotals.gse}</strong>
+          </div>
           <div className="findingsDeliverableBreakdownRows">
             {Object.values(visibleDeliverableSummary).map((item) => (
               <div key={`gse-${item.label}`}>
@@ -2663,14 +2678,11 @@ function Findings({ findings = [] }) {
           </div>
         </article>
 
-        <article className="findingsDeliverableTotalCard client">
-          <span>Total entregables cliente</span>
-          <strong>{visibleDeliverableTotals.client}</strong>
-          <p>Entregables requeridos visibles.</p>
-        </article>
-
-        <article className="findingsDeliverableBreakdownCard client">
-          <span>Cantidad cliente</span>
+        <article className="findingsDeliverableDashboardCard client">
+          <div className="findingsDeliverableDashboardHeader">
+            <span>Entregables cliente</span>
+            <strong>{visibleDeliverableTotals.client}</strong>
+          </div>
           <div className="findingsDeliverableBreakdownRows">
             {Object.values(visibleDeliverableSummary).map((item) => (
               <div key={`client-${item.label}`}>

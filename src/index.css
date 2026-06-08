@@ -15398,17 +15398,18 @@ body {
 
 .findingsPremiumSection .findingsSummaryGrid {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 20px !important;
   margin: 0 0 20px !important;
 }
 
 .findingsPremiumSection .findingsSummaryCard {
   min-height: 150px !important;
-  padding: 30px 32px !important;
+  padding: 34px 34px 30px !important;
   display: grid !important;
-  align-content: start !important;
-  gap: 22px !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 24px !important;
   position: relative !important;
   overflow: visible !important;
   border: 0 !important;
@@ -15419,14 +15420,62 @@ body {
 }
 
 .findingsPremiumSection .findingsSummaryCard::before {
-  content: "";
-  display: block;
-  width: min(72%, 290px);
-  height: 4px;
-  background: #00b8b5;
+  display: none !important;
 }
 
-.findingsPremiumSection .findingsSummaryCard > span {
+.findingsPremiumSection .findingsSummaryCard > div:first-child {
+  display: grid !important;
+  gap: 30px !important;
+}
+
+.findingsPremiumSection .findingsSummaryIcon {
+  width: 122px !important;
+  height: 122px !important;
+  margin-right: -34px !important;
+  align-self: center !important;
+  display: grid !important;
+  place-items: center !important;
+  position: relative !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+}
+
+.findingsPremiumSection .findingsSummaryIcon::before {
+  content: "";
+  width: 76px;
+  height: 76px;
+  position: absolute;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+}
+
+.findingsPremiumSection .findingsSummaryIcon svg {
+  position: absolute;
+  stroke-width: 1.8;
+}
+
+.findingsPremiumSection .findingsSummaryIcon svg:nth-child(1) {
+  left: 34px;
+  bottom: 31px;
+}
+
+.findingsPremiumSection .findingsSummaryIcon svg:nth-child(2) {
+  left: 46px;
+  top: 43px;
+}
+
+.findingsPremiumSection .findingsSummaryIcon svg:nth-child(3) {
+  right: 34px;
+  bottom: 39px;
+}
+
+.findingsPremiumSection .findingsSummaryIcon svg:nth-child(4) {
+  right: 28px;
+  top: 27px;
+}
+
+.findingsPremiumSection .findingsSummaryCard > span,
+.findingsPremiumSection .findingsSummaryCard > div:first-child > span {
   color: #11181c !important;
   -webkit-text-fill-color: #11181c !important;
   font-size: 1.05rem !important;
@@ -15436,7 +15485,8 @@ body {
   text-transform: none !important;
 }
 
-.findingsPremiumSection .findingsSummaryCard > strong {
+.findingsPremiumSection .findingsSummaryCard > strong,
+.findingsPremiumSection .findingsSummaryCard > div:first-child > strong {
   margin: 0 !important;
   color: #00b8b5 !important;
   -webkit-text-fill-color: #00b8b5 !important;
@@ -15448,15 +15498,144 @@ body {
 }
 
 .findingsPremiumSection .findingsSummaryCard > p {
-  margin: 0 !important;
-  color: #53676b !important;
-  -webkit-text-fill-color: #53676b !important;
+  display: none !important;
+}
+
+.findingsPremiumSection .findingsStatusSummaryCard {
+  grid-template-columns: 1fr !important;
+  align-content: start !important;
+  gap: 30px !important;
+}
+
+.findingsPremiumSection .findingsStatusRows {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.findingsPremiumSection .findingsStatusRows > div {
+  display: grid !important;
+  grid-template-columns: 104px minmax(160px, 1fr) 34px !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+.findingsPremiumSection .findingsStatusRows span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
   font-size: 0.88rem !important;
-  line-height: 1.35 !important;
   font-weight: 400 !important;
 }
 
-.findingsPremiumSection .findingsDeliverablesSplitGrid,
+.findingsPremiumSection .findingsStatusRows div div {
+  height: 11px !important;
+  background: #d8eceb !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+}
+
+.findingsPremiumSection .findingsStatusRows i {
+  display: block !important;
+  height: 100% !important;
+  background: #00b8b5 !important;
+}
+
+.findingsPremiumSection .findingsStatusRows strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 1rem !important;
+  text-align: right !important;
+  font-weight: 400 !important;
+}
+
+.findingsPremiumSection .findingsDeliverablesSplitGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  margin: 0 0 20px !important;
+}
+
+.findingsPremiumSection .findingsDeliverableDashboardCard {
+  min-height: 220px !important;
+  padding: 28px 30px !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 22px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+}
+
+.findingsPremiumSection .findingsDeliverableDashboardHeader {
+  display: flex !important;
+  align-items: baseline !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+}
+
+.findingsPremiumSection .findingsDeliverableDashboardHeader span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.05rem !important;
+  font-weight: 400 !important;
+}
+
+.findingsPremiumSection .findingsDeliverableDashboardHeader strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 2.4rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+}
+
+.findingsPremiumSection .findingsDeliverableDashboardCard .findingsDeliverableBreakdownRows {
+  display: grid !important;
+  gap: 11px !important;
+}
+
+.findingsPremiumSection .findingsDeliverableDashboardCard .findingsDeliverableBreakdownRows > div {
+  display: grid !important;
+  grid-template-columns: 145px minmax(120px, 1fr) 34px !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.findingsPremiumSection .findingsDeliverableDashboardCard .findingsDeliverableBreakdownRows span {
+  margin: 0 !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+}
+
+.findingsPremiumSection .findingsDeliverableDashboardCard .findingsDeliverableBreakdownRows div div {
+  height: 10px !important;
+  background: #e8f4f3 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+}
+
+.findingsPremiumSection .findingsDeliverableDashboardCard .findingsDeliverableBreakdownRows i {
+  display: block !important;
+  height: 100% !important;
+  background: #00b8b5 !important;
+}
+
+.findingsPremiumSection .findingsDeliverableDashboardCard .findingsDeliverableBreakdownRows strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 0.78rem !important;
+  font-weight: 400 !important;
+  text-align: right !important;
+}
+
 .findingsPremiumSection .findingsDeliverablesSummaryCard {
   display: none !important;
 }
