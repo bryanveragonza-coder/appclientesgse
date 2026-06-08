@@ -3840,6 +3840,108 @@ function DocumentsUpload({ documents = [], project }) {
   );
 }
 
+function MobilePortalHome({ project, milestones = [], pending = [], setView }) {
+  const [mobileSearch, setMobileSearch] = useState("");
+  const company = project.companyClient || project.client || "Cliente";
+  const contact = project.contactName || project.responsibleClient || "Cliente";
+  const progress = Number(project.progress) || 0;
+  const disorder = Math.max(0, 100 - progress);
+  const completedMilestones = milestones.filter((item) => isCompletedStatus(item.status)).length;
+  const activePending = pending.filter(isPendingActive).length;
+  const quickItems = [
+    { label: "Resumen", view: "resumen", icon: BarChart3 },
+    { label: "Ruta", view: "ruta", icon: Target },
+    { label: "COE", view: "coe", icon: Brain },
+    { label: "Hallazgos", view: "hallazgos", icon: Search },
+    { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
+    { label: "Entregables", view: "entregables", icon: ClipboardCheck },
+    { label: "Documentos", view: "documentos", icon: UploadCloud },
+    { label: "Recibir", view: "educacion", icon: BookOpen },
+  ];
+  const filteredQuickItems = quickItems.filter((item) => normalizeSystemName(item.label).includes(normalizeSystemName(mobileSearch)));
+  const routeItems = Array.from({ length: 13 }, (_, index) => {
+    const item = milestones[index] || {};
+    return {
+      id: String(item.id || index).replace(/^E/i, ""),
+      title: item.title || "Por definir",
+      unlocked: index < 4 || normalizeSystemName(item.open || item.abierto || "").includes("si") || isCompletedStatus(item.status),
+    };
+  });
+
+  return (
+    <section className="mobilePortalHome">
+      <div className="mobileHeroTop">
+        <div className="mobileAvatar"><Users size={34} /></div>
+        <h1>Hola {contact}</h1>
+        <span>{company}</span>
+
+        <label className="mobileHomeSearch">
+          <Search size={17} />
+          <input value={mobileSearch} onChange={(event) => setMobileSearch(event.target.value)} placeholder="Buscar" />
+        </label>
+      </div>
+
+      <div className="mobileHomeBody">
+        <div className="mobileQuickGrid">
+          {(mobileSearch ? filteredQuickItems : quickItems).map((item) => {
+            const Icon = item.icon;
+            return (
+              <button className="mobileQuickButton" key={item.view} type="button" onClick={() => setView(item.view)}>
+                <Icon size={28} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <h2>Resumen</h2>
+        <div className="mobileMiniKpis">
+          <button type="button" onClick={() => setView("resumen")}>
+            <i />
+            <span>Avance General</span>
+            <strong>{progress}%</strong>
+          </button>
+          <button type="button" onClick={() => setView("resumen")}>
+            <i />
+            <span>Desorden</span>
+            <strong>{disorder}%</strong>
+          </button>
+          <button type="button" onClick={() => setView("pendientes")}>
+            <i />
+            <span>Pendientes</span>
+            <strong>{activePending}</strong>
+          </button>
+        </div>
+
+        <button className="mobileMilestonePreview" type="button" onClick={() => setView("ruta")}>
+          <div className="mobilePreviewHeader">
+            <span>Hitos completados</span>
+            <strong>{completedMilestones}/{Math.max(milestones.length, 13)}</strong>
+          </div>
+          <div className="mobileMiniRoute">
+            {routeItems.map((item) => (
+              <span className={item.unlocked ? "open" : ""} key={item.id}>{item.id}</span>
+            ))}
+          </div>
+        </button>
+
+        <div className="mobileBottomCards">
+          <button type="button" onClick={() => setView("ruta")}>
+            <Rocket size={28} />
+            <span>Hitos completados</span>
+            <strong>{completedMilestones}/{Math.max(milestones.length, 13)}</strong>
+          </button>
+          <button type="button" onClick={() => setView("ruta")}>
+            <Flag size={28} />
+            <span>Ruta del proyecto</span>
+            <strong>Ver</strong>
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function getStoredClientSession() {
   try {
     return JSON.parse(window.localStorage.getItem("gseClientSession") || "null");
@@ -4036,7 +4138,7 @@ function App() {
           onLogout={handleLogout}
         />
 
-        <div className="content">
+        <div className={`content view-${view}`}>
           <div className="mobileTabs">
             {[
               ["portal", "Portal"],
@@ -4058,7 +4160,12 @@ function App() {
 
           {error && <div className="errorBox">{error}</div>}
 
-          {view === "portal" && <PortalProject project={project} milestones={milestones} pending={pending} setView={setView} />}
+          {view === "portal" && (
+            <>
+              <MobilePortalHome project={project} milestones={milestones} pending={pending} setView={setView} />
+              <PortalProject project={project} milestones={milestones} pending={pending} setView={setView} />
+            </>
+          )}
 
           {view === "resumen" && (
             <SummaryCanvaDashboard
