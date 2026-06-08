@@ -18464,7 +18464,7 @@ body {
 }
 
 .canvaRouteTurn {
-  right: calc((100% / 7) * 0.5) !important;
+  right: 0 !important;
   top: 33px !important;
   height: 102px !important;
   border-left-width: 3px !important;
