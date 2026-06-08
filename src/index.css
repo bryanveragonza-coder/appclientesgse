@@ -13754,7 +13754,7 @@ body {
 
 .canvaRoutePin {
   position: absolute;
-  top: -43px;
+  top: -52px !important;
   left: 50%;
   z-index: 4;
   color: #00b8b5;
@@ -18444,9 +18444,10 @@ body {
 .canvaRouteScroll {
   width: 100% !important;
   overflow-x: auto !important;
-  overflow-y: hidden !important;
+  overflow-y: visible !important;
   scrollbar-width: thin !important;
   padding-bottom: 8px !important;
+  padding-top: 34px !important;
 }
 
 .canvaRoutePath {
@@ -18454,7 +18455,7 @@ body {
   max-width: none !important;
   min-width: 980px !important;
   margin: 0 auto !important;
-  padding: 22px 0 10px !important;
+  padding: 28px 0 10px !important;
   box-sizing: border-box !important;
 }
 
