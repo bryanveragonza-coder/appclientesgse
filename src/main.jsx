@@ -3115,6 +3115,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [responsibleFilter, setResponsibleFilter] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
+  const [openDeliverable, setOpenDeliverable] = useState("");
 
   const systems = [...new Set(deliverables.map((d) => d.system).filter(Boolean))];
   const statuses = [...new Set(deliverables.map((d) => d.status).filter(Boolean))];
@@ -3231,25 +3232,37 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
         {items.map((item) => {
           const link = safeUrl(item.link);
           const selected = selectedDeliverable === item.deliverable;
+          const deliverableKey = `${item.system}-${item.milestone}-${item.deliverable}`;
+          const isOpen = openDeliverable === deliverableKey;
           return (
             <div
               className={`deliverableCard ${selected ? "selected" : ""} ${compact ? "clickable" : ""}`}
-              key={`${item.system}-${item.milestone}-${item.deliverable}`}
+              key={deliverableKey}
               onClick={() => {
                 if (compact) {
                   setSelectedDeliverable?.(item.deliverable);
                   setView?.("entregables");
+                  return;
                 }
+                setOpenDeliverable(isOpen ? "" : deliverableKey);
               }}
             >
-              <div className="area">{item.system}</div>
+              <div className="deliverableCardTop">
+                <div className="area">{item.system}</div>
+                {!compact && <ChevronRight className={`chevron ${isOpen ? "open" : ""}`} size={18} />}
+              </div>
               <div className="itemTitle">{item.deliverable}</div>
               <div className="badgeRow"><Badge status={item.status}>{item.status}</Badge></div>
               {item.milestone && <div className="muted">Hito: {item.milestone}</div>}
               {item.responsible && <div className="muted"><strong>Responsable:</strong> {item.responsible}</div>}
               <ProgressBar value={item.progress} status={item.status} />
               <div className="muted">{item.progress}% de avance</div>
-              {item.observation && <p className="observation">{item.observation}</p>}
+              {!compact && item.observation && isOpen && (
+                <div className="deliverableDescriptionPanel" onClick={(e) => e.stopPropagation()}>
+                  <strong>Descripción</strong>
+                  <p className="observation">{item.observation}</p>
+                </div>
+              )}
               {link && (
                 <a className="secondaryLink routeSecondaryLinkFixed" href={link} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
                   Ver entregable <ExternalLink size={15} />

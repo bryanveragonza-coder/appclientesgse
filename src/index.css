@@ -16928,6 +16928,27 @@ body {
   text-transform: none !important;
 }
 
+.deliverablesSection .deliverableCardTop {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.deliverablesSection .deliverableCardTop .chevron {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 auto !important;
+  color: #102f37 !important;
+  stroke: #102f37 !important;
+}
+
 .deliverablesSection .deliverableCard .itemTitle {
   color: #11181c !important;
   -webkit-text-fill-color: #11181c !important;
@@ -16974,15 +16995,41 @@ body {
 .deliverablesSection .deliverableCard .badge {
   min-height: 24px !important;
   height: 24px !important;
-  padding: 5px 12px !important;
+  padding: 4px 10px !important;
   border: 0 !important;
   border-radius: 999px !important;
   box-shadow: none !important;
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
-  font-size: 0.68rem !important;
+  font-size: 0.64rem !important;
   line-height: 1 !important;
   font-weight: 500 !important;
+}
+
+.deliverablesSection .deliverableDescriptionPanel {
+  padding: 0 !important;
+  display: grid !important;
+  gap: 10px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.deliverablesSection .deliverableDescriptionPanel strong {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.88rem !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+}
+
+.deliverablesSection .deliverableDescriptionPanel .observation {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 .deliverablesSection .deliverableCard .badge.success {
