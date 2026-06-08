@@ -18435,3 +18435,111 @@ body {
     font-size: clamp(1.85rem, 10vw, 2.75rem) !important;
   }
 }
+
+/* SUMMARY_MILESTONE_PATH_RESPONSIVE_FIX_V1 */
+.canvaMilestonePanel {
+  overflow: hidden !important;
+}
+
+.canvaRoutePath {
+  width: 100% !important;
+  max-width: 900px !important;
+  min-width: 760px !important;
+  margin: 0 auto !important;
+  padding: 22px 0 10px !important;
+  box-sizing: border-box !important;
+}
+
+.canvaRouteRow.top,
+.canvaRouteRow.bottom {
+  gap: 0 !important;
+}
+
+.canvaRouteRow.top {
+  grid-template-columns: repeat(6, 1fr) !important;
+}
+
+.canvaRouteRow.bottom {
+  grid-template-columns: repeat(7, 1fr) !important;
+}
+
+.canvaRouteTurn {
+  right: calc((100% / 7) * 0.5) !important;
+  top: 33px !important;
+  height: 102px !important;
+  border-left-width: 3px !important;
+  border-left-style: dotted !important;
+}
+
+.canvaRouteRow::before,
+.canvaRouteRow.top::after,
+.canvaRouteRow.bottom::after,
+.canvaRouteRow.bottom::before {
+  display: block !important;
+  border-top-width: 3px !important;
+  border-top-style: dotted !important;
+}
+
+.canvaRouteRow::before,
+.canvaRouteRow.top::after {
+  top: 11px !important;
+}
+
+.canvaRouteRow.bottom::before,
+.canvaRouteRow.bottom::after {
+  top: 11px !important;
+}
+
+.canvaRouteNode {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  box-sizing: border-box !important;
+}
+
+.canvaRouteNode strong {
+  max-width: 96px !important;
+  min-height: 24px !important;
+}
+
+.canvaRouteNode small,
+.canvaRouteNode em {
+  max-width: 96px !important;
+}
+
+@media (min-width: 1500px) {
+  .canvaRoutePath {
+    max-width: 960px !important;
+  }
+}
+
+@media (max-width: 1020px) {
+  .canvaMilestonePanel {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: thin !important;
+  }
+
+  .canvaRoutePath {
+    width: 820px !important;
+    max-width: none !important;
+    min-width: 820px !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .canvaRoutePath {
+    width: 780px !important;
+    min-width: 780px !important;
+  }
+
+  .canvaRouteNode strong {
+    font-size: 0.58rem !important;
+  }
+
+  .canvaRouteNode small,
+  .canvaRouteNode em {
+    font-size: 0.54rem !important;
+  }
+}
