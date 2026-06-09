@@ -17595,9 +17595,17 @@ body {
   }
 
   .documentsInstructions {
+    grid-template-areas:
+      "title"
+      "left"
+      "right" !important;
     grid-template-columns: 1fr !important;
     gap: 14px !important;
-    padding: 22px 20px !important;
+    padding: 8px 0 !important;
+  }
+
+  .documentsInstructions h2 {
+    font-size: 1.45rem !important;
   }
 
   .documentsInstructions p {
@@ -17717,39 +17725,56 @@ body {
 
 .documentsInstructions {
   display: grid !important;
+  grid-template-areas:
+    "title title"
+    "left right" !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 34px !important;
-  padding: 30px 34px !important;
-  background: #ffffff !important;
+  column-gap: 58px !important;
+  row-gap: 14px !important;
+  padding: 10px 0 8px !important;
+  background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
-  box-shadow: 0 14px 28px rgba(0, 88, 86, 0.07) !important;
+  box-shadow: none !important;
+}
+
+.documentsInstructions h2 {
+  grid-area: title !important;
+  margin: 0 !important;
+  color: #001f2a !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 1.7rem !important;
+  line-height: 1.1 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
 }
 
 .documentsInstructions div {
   display: grid !important;
-  gap: 14px !important;
+  gap: 18px !important;
   align-content: start !important;
+}
+
+.documentsInstructions div:nth-of-type(1) {
+  grid-area: left !important;
+}
+
+.documentsInstructions div:nth-of-type(2) {
+  grid-area: right !important;
 }
 
 .documentsInstructions p {
   margin: 0 !important;
-  color: #405d62 !important;
-  font-size: 0.95rem !important;
-  line-height: 1.55 !important;
+  color: #141b1f !important;
+  font-size: 1rem !important;
+  line-height: 1.42 !important;
   font-weight: 400 !important;
 }
 
-.documentsInstructions p:first-child::first-letter {
-  color: #00b8b5 !important;
-  font-size: 2.6rem !important;
-  line-height: 0.9 !important;
-  font-weight: 500 !important;
-}
-
 .documentsInstructions strong {
-  color: #001f2a !important;
-  font-weight: 500 !important;
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-weight: 700 !important;
 }
 
 .documentsChecklist {

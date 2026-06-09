@@ -3796,6 +3796,7 @@ function DocumentsUpload({ documents = [], project }) {
       </div>
 
       <section className="documentsInstructions">
+        <h2>Instrucciones:</h2>
         <div>
           <p>Carga la información disponible en el formato que tengas: Excel, PDF, Word, imágenes u otros. Para facilitar la revisión, nombra cada archivo con el mismo nombre del documento solicitado.</p>
           <p>Selecciona <strong>“SÍ TENGO”</strong> cuando cuentes con el documento solicitado o cuando puedas representar la información de forma sencilla, aunque no exista en un formato formal.</p>
