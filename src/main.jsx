@@ -29,6 +29,7 @@ import {
   LockKeyhole,
   LogIn,
   MapPin,
+  Mic,
   Monitor,
   Rocket,
   Search,
@@ -3840,25 +3841,55 @@ function DocumentsUpload({ documents = [], project }) {
   );
 }
 
-function MobilePortalHome({ project, milestones = [], pending = [], setView }) {
+function MobilePortalHome({ project, milestones = [], pending = [], meetings = [], updates = [], findings = [], deliverables = [], documents = [], education = [], coeAsIs = [], coeToBe = [], setView }) {
   const [mobileSearch, setMobileSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [openMobilePanel, setOpenMobilePanel] = useState("");
+  const [showBottomNav, setShowBottomNav] = useState(false);
   const company = project.companyClient || project.client || "Cliente";
   const contact = project.contactName || project.responsibleClient || "Cliente";
   const progress = Number(project.progress) || 0;
   const disorder = Math.max(0, 100 - progress);
   const completedMilestones = milestones.filter((item) => isCompletedStatus(item.status)).length;
   const activePending = pending.filter(isPendingActive).length;
+  const meetUrl = safeUrl(project?.linkMeet);
+  const meetingItems = [
+    ...meetings.map((item) => ({
+      title: item.title || "Reunión",
+      detail: [item.date, item.time].filter(Boolean).join(" · ") || "Por definir",
+      link: safeUrl(item.link) || meetUrl,
+    })),
+    {
+      title: project?.nextStep || "Próxima reunión",
+      detail: project?.nextDate || "Por definir",
+      link: meetUrl,
+    },
+    ...updates
+      .filter((item) => normalizeSystemName(`${item.target || ""} ${item.title || ""} ${item.text || ""}`).includes("reunion"))
+      .slice(0, 2)
+      .map((item) => ({ title: item.title || "Reunión", detail: item.text || "Por definir", link: meetUrl })),
+  ].filter((item) => item.title || item.detail).slice(0, 5);
+  const pendingItems = pending.filter(isPendingActive).slice(0, 6);
   const quickItems = [
-    { label: "Resumen", view: "resumen", icon: BarChart3 },
-    { label: "Ruta", view: "ruta", icon: Target },
-    { label: "COE", view: "coe", icon: Brain },
-    { label: "Hallazgos", view: "hallazgos", icon: Search },
-    { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
-    { label: "Entregables", view: "entregables", icon: ClipboardCheck },
-    { label: "Documentos", view: "documentos", icon: UploadCloud },
-    { label: "Recibir", view: "educacion", icon: BookOpen },
+    { label: "Resumen", view: "resumen", icon: BarChart3, short: "Inicio" },
+    { label: "Ruta", view: "ruta", icon: MapPin, short: "Ruta" },
+    { label: "COE", view: "coe", icon: Brain, short: "COE" },
+    { label: "Hallazgos", view: "hallazgos", icon: Search, short: "Hallazgos" },
+    { label: "Pendientes", view: "pendientes", icon: AlertTriangle, short: "Pendientes" },
+    { label: "Entregables", view: "entregables", icon: ClipboardCheck, short: "Entregables" },
+    { label: "Documentos", view: "documentos", icon: UploadCloud, short: "Documentos" },
+    { label: "Recibir", view: "educacion", icon: BookOpen, short: "Recibir" },
   ];
-  const filteredQuickItems = quickItems.filter((item) => normalizeSystemName(item.label).includes(normalizeSystemName(mobileSearch)));
+  const query = normalizeSystemName(mobileSearch);
+  const searchResults = query ? [
+    ...quickItems.map((item) => ({ type: "Sección", title: item.label, detail: "Abrir sección", view: item.view, haystack: item.label })),
+    ...milestones.map((item) => ({ type: "Hito", title: item.title, detail: [item.id, item.status].filter(Boolean).join(" · "), view: "ruta", haystack: `${item.id} ${item.title} ${item.status}` })),
+    ...pending.map((item) => ({ type: "Pendiente", title: item.request, detail: [item.status, item.dueDate].filter(Boolean).join(" · "), view: "pendientes", haystack: `${item.request} ${item.status} ${item.owner} ${item.description}` })),
+    ...findings.map((item) => ({ type: "Hallazgo", title: item.finding, detail: [item.priority, item.status].filter(Boolean).join(" · "), view: "hallazgos", haystack: `${item.id} ${item.finding} ${item.status} ${item.priority}` })),
+    ...deliverables.map((item) => ({ type: "Entregable", title: item.deliverable, detail: [item.milestone, item.status].filter(Boolean).join(" · "), view: "entregables", haystack: `${item.deliverable} ${item.system} ${item.milestone} ${item.status}` })),
+    ...documents.map((item) => ({ type: "Documento", title: item.item || item.title, detail: [item.category, item.status].filter(Boolean).join(" · "), view: "documentos", haystack: `${item.title} ${item.item} ${item.category} ${item.status}` })),
+    ...education.map((item) => ({ type: "Info", title: item.deliverable, detail: [item.milestone, item.status].filter(Boolean).join(" · "), view: "educacion", haystack: `${item.deliverable} ${item.system} ${item.milestone} ${item.whatIs}` })),
+  ].filter((item) => normalizeSystemName(item.haystack).includes(query)).slice(0, 8) : [];
   const routeItems = Array.from({ length: 13 }, (_, index) => {
     const item = milestones[index] || {};
     return {
@@ -3868,27 +3899,67 @@ function MobilePortalHome({ project, milestones = [], pending = [], setView }) {
     };
   });
 
+  useEffect(() => {
+    const onScroll = () => setShowBottomNav(window.scrollY > 260);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const openResult = (item) => {
+    setView(item.view);
+    setSearchOpen(false);
+    setMobileSearch("");
+  };
+
   return (
     <section className="mobilePortalHome">
       <div className="mobileHeroTop">
-        <div className="mobileAvatar"><Users size={34} /></div>
+        <Logo src={project.logoClient || project.logoGSE} fallback={(company || "GSE").slice(0, 2)} className="mobileHeroLogo" />
         <h1>Hola {contact}</h1>
         <span>{company}</span>
 
-        <label className="mobileHomeSearch">
-          <Search size={17} />
-          <input value={mobileSearch} onChange={(event) => setMobileSearch(event.target.value)} placeholder="Buscar" />
-        </label>
+        <div className="mobileHeroActions">
+          <button className="mobileHomeSearch" type="button" onClick={() => setSearchOpen(true)}>
+            <Search size={17} />
+            <span>Buscar</span>
+          </button>
+          <button className="mobileRoundAction" type="button" onClick={() => setOpenMobilePanel(openMobilePanel === "meetings" ? "" : "meetings")}>
+            <Clock3 size={19} />
+          </button>
+          <button className="mobileRoundAction" type="button" onClick={() => setOpenMobilePanel(openMobilePanel === "pending" ? "" : "pending")}>
+            <Bell size={19} />
+            {activePending > 0 && <i>{activePending}</i>}
+          </button>
+        </div>
+
+        {openMobilePanel && (
+          <div className="mobileTopPopover">
+            <h3>{openMobilePanel === "meetings" ? "Reuniones" : "Pendientes"}</h3>
+            {(openMobilePanel === "meetings" ? meetingItems : pendingItems).map((item, index) => (
+              <button
+                type="button"
+                key={`${item.title || item.request}-${index}`}
+                onClick={() => openMobilePanel === "pending" ? setView("pendientes") : item.link && window.open(item.link, "_blank", "noreferrer")}
+              >
+                {openMobilePanel === "meetings" ? <Clock3 size={16} /> : <AlertTriangle size={16} />}
+                <span>{item.title || item.request}</span>
+                <small>{item.detail || item.dueDate || item.status || "Por definir"}</small>
+              </button>
+            ))}
+            {openMobilePanel === "pending" && !pendingItems.length && <p>No hay pendientes activos.</p>}
+          </div>
+        )}
       </div>
 
       <div className="mobileHomeBody">
         <div className="mobileQuickGrid">
-          {(mobileSearch ? filteredQuickItems : quickItems).map((item) => {
+          {quickItems.map((item) => {
             const Icon = item.icon;
             return (
               <button className="mobileQuickButton" key={item.view} type="button" onClick={() => setView(item.view)}>
                 <Icon size={28} />
-                <span>{item.label}</span>
+                <span>{item.short}</span>
               </button>
             );
           })}
@@ -3937,7 +4008,54 @@ function MobilePortalHome({ project, milestones = [], pending = [], setView }) {
             <strong>Ver</strong>
           </button>
         </div>
+
+        <article className="mobileCoeCard">
+          <div className="mobileCoeHead">
+            <span>COE</span>
+            <strong>$0.00</strong>
+            <div>
+              <i />
+              <small>COE AS IS</small>
+              <b />
+              <small>COE TO BE</small>
+            </div>
+          </div>
+          <CanvaTrendChart coeAsIs={coeAsIs} coeToBe={coeToBe} progress={progress} />
+        </article>
       </div>
+
+      {searchOpen && (
+        <div className="mobileSearchOverlay">
+          <div className="mobileSearchBar">
+            <button type="button" onClick={() => setSearchOpen(false)}><ArrowRight size={22} /></button>
+            <input value={mobileSearch} onChange={(event) => setMobileSearch(event.target.value)} autoFocus placeholder="Buscar..." />
+            <button type="button"><Mic size={22} /></button>
+          </div>
+          <div className="mobileSearchResults">
+            {(searchResults.length ? searchResults : quickItems).map((item, index) => (
+              <button type="button" key={`${item.title || item.label}-${index}`} onClick={() => openResult(item)}>
+                <Clock3 size={22} />
+                <span>{item.title || item.label}</span>
+                <small>{item.detail || item.type || "Abrir"}</small>
+                <ArrowRight size={20} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <nav className={`mobileBottomNav ${showBottomNav ? "visible" : ""}`}>
+        {quickItems.slice(0, 5).map((item) => {
+          const Icon = item.icon;
+          return (
+            <button type="button" key={item.view} onClick={() => setView(item.view)}>
+              <Icon size={18} />
+              <span>{item.short}</span>
+              {item.view === "pendientes" && activePending > 0 && <i>{activePending}</i>}
+            </button>
+          );
+        })}
+      </nav>
     </section>
   );
 }
@@ -4162,7 +4280,20 @@ function App() {
 
           {view === "portal" && (
             <>
-              <MobilePortalHome project={project} milestones={milestones} pending={pending} setView={setView} />
+              <MobilePortalHome
+                project={project}
+                milestones={milestones}
+                pending={pending}
+                meetings={meetings}
+                updates={updates}
+                findings={findings}
+                deliverables={deliverables}
+                documents={documents}
+                education={education}
+                coeAsIs={coeAsIs}
+                coeToBe={coeToBe}
+                setView={setView}
+              />
               <PortalProject project={project} milestones={milestones} pending={pending} setView={setView} />
             </>
           )}
