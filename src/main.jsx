@@ -3852,6 +3852,14 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
   const disorder = Math.max(0, 100 - progress);
   const completedMilestones = milestones.filter((item) => isCompletedStatus(item.status)).length;
   const activePending = pending.filter(isPendingActive).length;
+  const costFor = (item = {}) => {
+    const cost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"] ?? 0);
+    const frequency = parseNumericValue(item.frequency ?? item.frecuencia ?? item.FRECUENCIA ?? 1) || 1;
+    return cost * frequency;
+  };
+  const totalAsIs = coeAsIs.reduce((sum, item) => sum + costFor(item), 0);
+  const totalToBe = coeToBe.reduce((sum, item) => sum + costFor(item), 0);
+  const coePercent = totalAsIs > 0 ? ((totalAsIs - totalToBe) / totalAsIs) * 100 : 0;
   const meetUrl = safeUrl(project?.linkMeet);
   const meetingItems = [
     ...meetings.map((item) => ({
@@ -3895,9 +3903,22 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
     return {
       id: String(item.id || index).replace(/^E/i, ""),
       title: item.title || "Por definir",
+      date: item.targetDate || item.date || "Fecha",
       unlocked: index < 4 || normalizeSystemName(item.open || item.abierto || "").includes("si") || isCompletedStatus(item.status),
+      status: item.status || (index < 4 ? "Abierto" : "Cerrado"),
     };
   });
+  const topRouteItems = routeItems.slice(0, 6);
+  const bottomRouteItems = routeItems.slice(6, 13);
+  const systemMetrics = [
+    { label: "Hallazgos", total: findings.length, value: findings.filter((item) => isCompletedStatus(item.status)).length, note: "Completado" },
+    { label: "Perfiles", total: 0, value: 0, note: "Pendiente de datos" },
+    { label: "Nivel de empleabilidad", total: 0, value: 0, note: "Pendiente de datos" },
+    { label: "Desempeño", total: 0, value: 0, note: "Pendiente de datos" },
+    { label: "Masa Salarial", total: 0, value: 0, note: "Pendiente de datos" },
+  ];
+  const unlockedIndex = Math.max(0, routeItems.findLastIndex((item) => item.unlocked));
+  const unlockedCode = routeItems[unlockedIndex]?.id || "0";
 
   useEffect(() => {
     const onScroll = () => setShowBottomNav(window.scrollY > 260);
@@ -3913,8 +3934,8 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
   };
 
   return (
-    <section className="mobilePortalHome">
-      <div className="mobileHeroTop">
+    <section className="mobilePortalHome" onClick={() => setOpenMobilePanel("")}>
+      <div className="mobileHeroTop" onClick={(event) => event.stopPropagation()}>
         <Logo src={project.logoClient || project.logoGSE} fallback={(company || "GSE").slice(0, 2)} className="mobileHeroLogo" />
         <h1>Hola {contact}</h1>
         <span>{company}</span>
@@ -3984,17 +4005,37 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
           </button>
         </div>
 
-        <button className="mobileMilestonePreview" type="button" onClick={() => setView("ruta")}>
-          <div className="mobilePreviewHeader">
-            <span>Hitos completados</span>
-            <strong>{completedMilestones}/{Math.max(milestones.length, 13)}</strong>
+        <article className="mobileMilestoneChart">
+          <h3>Hitos completados</h3>
+          <div className="mobileMilestoneScroll">
+            <div className="mobileMilestoneCanvas">
+              <div className="mobileMilestoneRow">
+                {topRouteItems.map((item, index) => (
+                  <button type="button" className="mobileMilestoneNode" key={`top-${item.id}`} onClick={() => setView("ruta")}>
+                    {index === unlockedIndex && <MapPin size={30} className="mobileMilestonePin" />}
+                    <span className={item.unlocked ? "open" : ""}>E{item.id}</span>
+                    <ChevronRight size={18} />
+                    <strong>{item.title}</strong>
+                    <small>{item.date}</small>
+                    <em>{item.unlocked ? "Abierto" : "Cerrado"}</em>
+                  </button>
+                ))}
+              </div>
+              <div className="mobileMilestoneRow">
+                {bottomRouteItems.map((item, index) => (
+                  <button type="button" className="mobileMilestoneNode" key={`bottom-${item.id}`} onClick={() => setView("ruta")}>
+                    {index + 6 === unlockedIndex && <MapPin size={30} className="mobileMilestonePin" />}
+                    <span className={item.unlocked ? "open" : ""}>E{item.id}</span>
+                    <ChevronRight size={18} />
+                    <strong>{item.title}</strong>
+                    <small>{item.date}</small>
+                    <em>{item.unlocked ? "Abierto" : "Cerrado"}</em>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mobileMiniRoute">
-            {routeItems.map((item) => (
-              <span className={item.unlocked ? "open" : ""} key={item.id}>{item.id}</span>
-            ))}
-          </div>
-        </button>
+        </article>
 
         <div className="mobileBottomCards">
           <button type="button" onClick={() => setView("ruta")}>
@@ -4003,16 +4044,16 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
             <strong>{completedMilestones}/{Math.max(milestones.length, 13)}</strong>
           </button>
           <button type="button" onClick={() => setView("ruta")}>
-            <Flag size={28} />
-            <span>Ruta del proyecto</span>
-            <strong>Ver</strong>
+            <Rocket size={28} />
+            <span>Desbloqueado hasta</span>
+            <strong>E{unlockedCode}/E12</strong>
           </button>
         </div>
 
         <article className="mobileCoeCard">
           <div className="mobileCoeHead">
             <span>COE</span>
-            <strong>$0.00</strong>
+            <strong>${formatCurrency(Math.abs(totalAsIs - totalToBe))}</strong>
             <div>
               <i />
               <small>COE AS IS</small>
@@ -4021,6 +4062,45 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
             </div>
           </div>
           <CanvaTrendChart coeAsIs={coeAsIs} coeToBe={coeToBe} progress={progress} />
+        </article>
+
+        <div className="mobileCoeMetricCards">
+          <button type="button" onClick={() => setView("coe")}><i /><span>Total AS IS</span><strong>${formatCurrency(totalAsIs)}</strong></button>
+          <button type="button" onClick={() => setView("coe")}><i /><span>COE mensual</span><strong>{Math.abs(coePercent).toFixed(0)}%</strong></button>
+          <button type="button" onClick={() => setView("coe")}><i /><span>Total TO BE</span><strong>${formatCurrency(totalToBe)}</strong></button>
+        </div>
+
+        <article className="mobileMilestoneTable">
+          <h3>Detalle de Avance Hitos</h3>
+          <div className="mobileMilestoneTableHead">
+            <span>ID</span><span>Nombre</span><span>Estado</span><span>Avance</span>
+          </div>
+          <div className="mobileMilestoneTableBody">
+            {routeItems.map((item, index) => (
+              <button type="button" key={`mobile-row-${item.id}`} onClick={() => setView("ruta")}>
+                <span>E{item.id}</span>
+                <strong>{item.title}</strong>
+                <em className={isCompletedStatus(item.status) ? "done" : normalizeSystemName(item.status).includes("desarrollo") ? "active" : ""}>{item.status}</em>
+                <span>{Number(milestones[index]?.progress) || (isCompletedStatus(item.status) ? 100 : 0)}%</span>
+              </button>
+            ))}
+          </div>
+        </article>
+
+        <article className="mobileSystemProgress">
+          <h3>Avances por sistema</h3>
+          <div className="mobileSystemScroller">
+            {systemMetrics.map((item) => (
+              <button type="button" key={item.label} onClick={() => item.label === "Hallazgos" ? setView("hallazgos") : undefined}>
+                <strong>{item.total}</strong>
+                <span>{item.label}</span>
+                <div className="mobileDonut" style={{ "--value": item.total ? Math.max(4, (item.value / item.total) * 100) : 0 }}>
+                  <b>{item.value}</b>
+                </div>
+                <small>{item.note}</small>
+              </button>
+            ))}
+          </div>
         </article>
       </div>
 

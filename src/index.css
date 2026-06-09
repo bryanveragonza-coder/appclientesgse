@@ -18864,6 +18864,295 @@ body {
     margin-top: 5px !important;
     font-size: 0.86rem !important;
   }
+
+  .mobileMilestonePreview,
+  .mobileMiniRoute {
+    display: none !important;
+  }
+
+  .mobileMilestoneChart {
+    width: 100% !important;
+    padding: 18px 14px 12px !important;
+    margin-bottom: 12px !important;
+    background: #ffffff !important;
+    box-shadow: 6px 8px 15px rgba(0, 88, 86, 0.13) !important;
+  }
+
+  .mobileMilestoneChart h3 {
+    margin: 0 0 18px !important;
+    color: #001f2a !important;
+    font-size: 1.35rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileMilestoneScroll {
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    padding: 28px 0 8px !important;
+    scrollbar-width: thin !important;
+  }
+
+  .mobileMilestoneCanvas {
+    width: 760px !important;
+    display: grid !important;
+    gap: 24px !important;
+  }
+
+  .mobileMilestoneRow {
+    display: grid !important;
+    grid-template-columns: repeat(7, 100px) !important;
+    gap: 16px !important;
+  }
+
+  .mobileMilestoneNode {
+    position: relative !important;
+    display: grid !important;
+    justify-items: center !important;
+    gap: 3px !important;
+    min-height: 112px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #001f2a !important;
+    text-align: center !important;
+  }
+
+  .mobileMilestonePin {
+    position: absolute !important;
+    top: -32px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    color: #00b8b5 !important;
+    fill: #00b8b5 !important;
+    z-index: 2 !important;
+  }
+
+  .mobileMilestonePin circle {
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
+  }
+
+  .mobileMilestoneNode > span {
+    width: 28px !important;
+    height: 28px !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 1.5px solid #141b1f !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    color: #141b1f !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+  }
+
+  .mobileMilestoneNode > span.open {
+    border-color: #00b8b5 !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobileMilestoneNode svg:not(.mobileMilestonePin) {
+    transform: rotate(90deg) !important;
+    color: #141b1f !important;
+  }
+
+  .mobileMilestoneNode strong,
+  .mobileMilestoneNode small,
+  .mobileMilestoneNode em {
+    max-width: 96px !important;
+    color: #001f2a !important;
+    line-height: 1.12 !important;
+    font-style: normal !important;
+  }
+
+  .mobileMilestoneNode strong {
+    font-size: 0.74rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileMilestoneNode small {
+    font-size: 0.66rem !important;
+  }
+
+  .mobileMilestoneNode em {
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+  }
+
+  .mobileCoeMetricCards {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin: 12px 0 12px !important;
+  }
+
+  .mobileCoeMetricCards button {
+    min-height: 76px !important;
+    padding: 9px 8px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: 6px 8px 15px rgba(0, 88, 86, 0.13) !important;
+    color: #001f2a !important;
+    text-align: left !important;
+  }
+
+  .mobileCoeMetricCards i {
+    display: block !important;
+    height: 3px !important;
+    width: 100% !important;
+    margin-bottom: 11px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileCoeMetricCards span,
+  .mobileCoeMetricCards strong {
+    display: block !important;
+    color: #001f2a !important;
+    font-size: 0.64rem !important;
+    line-height: 1.15 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeMetricCards strong {
+    margin-top: 5px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .mobileMilestoneTable,
+  .mobileSystemProgress {
+    padding: 16px 14px !important;
+    margin-top: 12px !important;
+    background: #ffffff !important;
+    box-shadow: 6px 8px 15px rgba(0, 88, 86, 0.13) !important;
+  }
+
+  .mobileMilestoneTable h3,
+  .mobileSystemProgress h3 {
+    margin: 0 0 15px !important;
+    color: #001f2a !important;
+    font-size: 0.86rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileMilestoneTableHead,
+  .mobileMilestoneTableBody button {
+    display: grid !important;
+    grid-template-columns: 38px minmax(94px, 1fr) 92px 50px !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+
+  .mobileMilestoneTableHead {
+    color: #001f2a !important;
+    font-size: 0.7rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .mobileMilestoneTableBody {
+    max-height: 164px !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+  }
+
+  .mobileMilestoneTableBody button {
+    width: 100% !important;
+    min-height: 30px !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #001f2a !important;
+    font-size: 0.68rem !important;
+    text-align: left !important;
+  }
+
+  .mobileMilestoneTableBody strong {
+    font-weight: 400 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .mobileMilestoneTableBody em {
+    min-height: 20px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 3px 8px !important;
+    border-radius: 999px !important;
+    background: #bfc7ca !important;
+    color: #ffffff !important;
+    font-size: 0.6rem !important;
+    font-style: normal !important;
+  }
+
+  .mobileMilestoneTableBody em.done {
+    background: #00b8b5 !important;
+  }
+
+  .mobileMilestoneTableBody em.active {
+    background: #53676b !important;
+  }
+
+  .mobileSystemScroller {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 108px !important;
+    gap: 14px !important;
+    overflow-x: auto !important;
+    padding-bottom: 8px !important;
+    scrollbar-width: thin !important;
+  }
+
+  .mobileSystemScroller button {
+    border: 0 !important;
+    background: transparent !important;
+    color: #001f2a !important;
+    text-align: center !important;
+  }
+
+  .mobileSystemScroller strong,
+  .mobileSystemScroller span,
+  .mobileSystemScroller small {
+    display: block !important;
+    color: #405d62 !important;
+    font-size: 0.66rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .mobileSystemScroller strong {
+    color: #001f2a !important;
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+  }
+
+  .mobileDonut {
+    width: 78px !important;
+    height: 78px !important;
+    margin: 10px auto 7px !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 999px !important;
+    background: conic-gradient(#00b8b5 calc(var(--value) * 1%), #e7eeee 0) !important;
+  }
+
+  .mobileDonut::before {
+    content: "" !important;
+    width: 58px !important;
+    height: 58px !important;
+    grid-area: 1 / 1 !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+  }
+
+  .mobileDonut b {
+    position: relative !important;
+    z-index: 1 !important;
+    color: #405d62 !important;
+    font-size: 0.8rem !important;
+    font-weight: 400 !important;
+  }
 }
 
 /* MOBILE_PORTAL_HOME_V2_SEARCH_NAV */
