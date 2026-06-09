@@ -17714,13 +17714,26 @@ body {
 .documentsFilters .documentsSearchFilter,
 .documentsFilters .documentsSearchFilter .searchInputWrap,
 .documentsFilters .documentsSearchFilter .searchInputWrap input {
-  border: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
 }
 
 .documentsFilters .documentsSearchFilter .searchInputWrap {
-  border-radius: 0 !important;
+  min-height: 54px !important;
+  border: 1px solid rgba(0, 31, 42, 0.13) !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,0.46) !important;
+  padding: 0 16px !important;
+}
+
+.documentsFilters .documentsSearchFilter .searchInputWrap input {
+  border: 0 !important;
+  background: transparent !important;
+  font-size: 0.98rem !important;
+}
+
+.documentsFilters .documentsSearchFilter .searchInputWrap svg {
+  color: #00a7a4 !important;
 }
 
 .documentsInstructions {

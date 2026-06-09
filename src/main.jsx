@@ -3779,22 +3779,6 @@ function DocumentsUpload({ documents = [], project }) {
         </div>
       </div>
 
-      <div className="filters premiumFilters documentsFilters">
-        <label className="filter searchFilter documentsSearchFilter">
-          <span>Buscar</span>
-          <div className="searchInputWrap">
-            <Search size={19} />
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar documento, categoría o estado..."
-            />
-          </div>
-        </label>
-        <FilterSelect label="Obligatorio" value={requiredFilter} onChange={setRequiredFilter} options={["Obligatorio", "Opcional"]} />
-        <FilterSelect label="Estado" value={documentStatusFilter} onChange={setDocumentStatusFilter} options={statusOptions} />
-      </div>
-
       <section className="documentsInstructions">
         <h2>Instrucciones:</h2>
         <div>
@@ -3808,6 +3792,22 @@ function DocumentsUpload({ documents = [], project }) {
           <p>No necesitas tener todo completo al 100%. Cada documento nos ayuda a reducir tiempos de levantamiento y enfocar el diagnóstico en los puntos críticos de tu operación.</p>
         </div>
       </section>
+
+      <div className="filters premiumFilters documentsFilters">
+        <label className="filter searchFilter documentsSearchFilter">
+          <span>Buscar</span>
+          <div className="searchInputWrap">
+            <Search size={19} />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar entregable, sistema o hito..."
+            />
+          </div>
+        </label>
+        <FilterSelect label="Obligatorio" value={requiredFilter} onChange={setRequiredFilter} options={["Obligatorio", "Opcional"]} />
+        <FilterSelect label="Estado" value={documentStatusFilter} onChange={setDocumentStatusFilter} options={statusOptions} />
+      </div>
 
       <div className="documentsChecklist">
         {!documents.length && (
