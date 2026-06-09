@@ -17593,6 +17593,16 @@ body {
   .documentsSummaryCard {
     min-height: 124px !important;
   }
+
+  .documentsInstructions {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    padding: 22px 20px !important;
+  }
+
+  .documentsInstructions p {
+    font-size: 0.88rem !important;
+  }
 }
 
 /* DOCUMENT_UPLOAD_PORTAL_ALIGNMENT_V2 */
@@ -17691,6 +17701,55 @@ body {
 .documentsFilters .documentsSearchFilter .searchInputWrap input {
   background: transparent !important;
   background-color: transparent !important;
+}
+
+.documentsFilters .documentsSearchFilter,
+.documentsFilters .documentsSearchFilter .searchInputWrap,
+.documentsFilters .documentsSearchFilter .searchInputWrap input {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.documentsFilters .documentsSearchFilter .searchInputWrap {
+  border-radius: 0 !important;
+}
+
+.documentsInstructions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 34px !important;
+  padding: 30px 34px !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 14px 28px rgba(0, 88, 86, 0.07) !important;
+}
+
+.documentsInstructions div {
+  display: grid !important;
+  gap: 14px !important;
+  align-content: start !important;
+}
+
+.documentsInstructions p {
+  margin: 0 !important;
+  color: #405d62 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.55 !important;
+  font-weight: 400 !important;
+}
+
+.documentsInstructions p:first-child::first-letter {
+  color: #00b8b5 !important;
+  font-size: 2.6rem !important;
+  line-height: 0.9 !important;
+  font-weight: 500 !important;
+}
+
+.documentsInstructions strong {
+  color: #001f2a !important;
+  font-weight: 500 !important;
 }
 
 .documentsChecklist {

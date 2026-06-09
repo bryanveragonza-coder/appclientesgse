@@ -3585,9 +3585,7 @@ function DocumentsUpload({ documents = [], project }) {
   const [documentStatusFilter, setDocumentStatusFilter] = useState("Todos");
 
   const title = documents.find((item) => item.title)?.title || "Carga de documentos iniciales";
-  const description =
-    documents.find((item) => item.description)?.description ||
-    "Para iniciar el diagnóstico, revisa qué documentos tiene tu empresa y súbelos en la carpeta compartida.";
+  const description = "Bienvenido al inicio formal de tu proyecto Business Power. Esta sección nos ayudará a conocer cómo opera actualmente tu empresa. Este es el primer paso para dejar atrás el caos operativo y empezar a trabajar con estructura, control y claridad.";
 
   const getDocumentKey = (item) => item.id || item.item || item.title || "";
   const getCurrentResponse = (item) => responses[getDocumentKey(item)] ?? item.responseClient ?? "";
@@ -3796,6 +3794,19 @@ function DocumentsUpload({ documents = [], project }) {
         <FilterSelect label="Obligatorio" value={requiredFilter} onChange={setRequiredFilter} options={["Obligatorio", "Opcional"]} />
         <FilterSelect label="Estado" value={documentStatusFilter} onChange={setDocumentStatusFilter} options={statusOptions} />
       </div>
+
+      <section className="documentsInstructions">
+        <div>
+          <p>Carga la información disponible en el formato que tengas: Excel, PDF, Word, imágenes u otros. Para facilitar la revisión, nombra cada archivo con el mismo nombre del documento solicitado.</p>
+          <p>Selecciona <strong>“SÍ TENGO”</strong> cuando cuentes con el documento solicitado o cuando puedas representar la información de forma sencilla, aunque no exista en un formato formal.</p>
+          <p>Si no cuentas con algún documento formal, pero la información existe en la práctica, por favor represéntala de forma sencilla y súbela. Por ejemplo: si no tienes un organigrama diagramado, dibuja o estructura cómo está organizada actualmente la empresa para que podamos conocer su funcionamiento real.</p>
+        </div>
+        <div>
+          <p>Si no cuentas con algún documento o información, marca <strong>“NO TENGO”</strong>. Si está incompleta, desactualizada o en proceso, <strong>SÚBELA EN LA CARPETA CORRESPONDIENTE</strong> e indícalo en el nombre del archivo.</p>
+          <p><strong>Ejemplo:</strong> “Organigrama_Incompleto”.</p>
+          <p>No necesitas tener todo completo al 100%. Cada documento nos ayuda a reducir tiempos de levantamiento y enfocar el diagnóstico en los puntos críticos de tu operación.</p>
+        </div>
+      </section>
 
       <div className="documentsChecklist">
         {!documents.length && (
