@@ -18911,7 +18911,7 @@ body {
     display: grid !important;
     justify-items: center !important;
     gap: 3px !important;
-    min-height: 112px !important;
+    min-height: 86px !important;
     padding: 0 !important;
     border: 0 !important;
     background: transparent !important;
@@ -18954,31 +18954,23 @@ body {
   }
 
   .mobileMilestoneNode svg:not(.mobileMilestonePin) {
-    transform: rotate(90deg) !important;
+    transform: none !important;
     color: #141b1f !important;
   }
 
-  .mobileMilestoneNode strong,
-  .mobileMilestoneNode small,
-  .mobileMilestoneNode em {
-    max-width: 96px !important;
-    color: #001f2a !important;
-    line-height: 1.12 !important;
-    font-style: normal !important;
+  .mobileMilestoneNode .mobileLockIcon {
+    color: #5d696c !important;
+    stroke-width: 1.8 !important;
   }
 
+  .mobileMilestoneNode .mobileLockIcon.open {
+    color: #00b8b5 !important;
+  }
+
+  .mobileMilestoneNode strong,
   .mobileMilestoneNode strong {
     font-size: 0.74rem !important;
     font-weight: 400 !important;
-  }
-
-  .mobileMilestoneNode small {
-    font-size: 0.66rem !important;
-  }
-
-  .mobileMilestoneNode em {
-    font-size: 0.68rem !important;
-    font-weight: 700 !important;
   }
 
   .mobileCoeMetricCards {
@@ -19134,7 +19126,8 @@ body {
     display: grid !important;
     place-items: center !important;
     border-radius: 999px !important;
-    background: conic-gradient(#00b8b5 calc(var(--value) * 1%), #e7eeee 0) !important;
+    background: conic-gradient(#00b8b5 calc(var(--value) * 1%), #dfe8e9 0) !important;
+    box-shadow: inset 0 0 0 1px rgba(0,31,42,0.02) !important;
   }
 
   .mobileDonut::before {
@@ -19147,6 +19140,7 @@ body {
   }
 
   .mobileDonut b {
+    grid-area: 1 / 1 !important;
     position: relative !important;
     z-index: 1 !important;
     color: #405d62 !important;

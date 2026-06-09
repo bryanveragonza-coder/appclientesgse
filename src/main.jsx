@@ -26,6 +26,7 @@ import {
   Flag,
   Hourglass,
   Layers3,
+  Lock,
   LockKeyhole,
   LogIn,
   MapPin,
@@ -36,6 +37,7 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
+  Unlock,
   Users,
   Video,
   MessageCircle,
@@ -4014,10 +4016,8 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
                   <button type="button" className="mobileMilestoneNode" key={`top-${item.id}`} onClick={() => setView("ruta")}>
                     {index === unlockedIndex && <MapPin size={30} className="mobileMilestonePin" />}
                     <span className={item.unlocked ? "open" : ""}>E{item.id}</span>
-                    <ChevronRight size={18} />
+                    {item.unlocked ? <Unlock className="mobileLockIcon open" size={16} /> : <Lock className="mobileLockIcon" size={16} />}
                     <strong>{item.title}</strong>
-                    <small>{item.date}</small>
-                    <em>{item.unlocked ? "Abierto" : "Cerrado"}</em>
                   </button>
                 ))}
               </div>
@@ -4026,10 +4026,8 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
                   <button type="button" className="mobileMilestoneNode" key={`bottom-${item.id}`} onClick={() => setView("ruta")}>
                     {index + 6 === unlockedIndex && <MapPin size={30} className="mobileMilestonePin" />}
                     <span className={item.unlocked ? "open" : ""}>E{item.id}</span>
-                    <ChevronRight size={18} />
+                    {item.unlocked ? <Unlock className="mobileLockIcon open" size={16} /> : <Lock className="mobileLockIcon" size={16} />}
                     <strong>{item.title}</strong>
-                    <small>{item.date}</small>
-                    <em>{item.unlocked ? "Abierto" : "Cerrado"}</em>
                   </button>
                 ))}
               </div>
