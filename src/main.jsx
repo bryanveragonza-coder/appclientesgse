@@ -4510,19 +4510,26 @@ function MobileRouteView({ milestones = [], deliverables = [], pending = [], set
             {openPanel && (
               <div className="mobileRouteAccordionPanel">
                 <h3>{panels.find((panel) => panel.key === openPanel)?.label}</h3>
-                <p>{panels.find((panel) => panel.key === openPanel)?.text}</p>
-                {openPanel === "entregables" && relatedDeliverables.map((item, index) => safeUrl(item.link) && (
-                  <button
-                    type="button"
-                    key={`${item.deliverable}-${index}`}
-                    onClick={() => {
-                      setSelectedDeliverable?.(item.deliverable);
-                      setView("entregables");
-                    }}
-                  >
-                    Ver entregable <ExternalLink size={13} />
-                  </button>
-                ))}
+                {openPanel === "entregables" ? (
+                  <div className="mobileRouteDeliverableList">
+                    {relatedDeliverables.length ? relatedDeliverables.map((item, index) => {
+                      const link = safeUrl(item.link || item.url || item.documentUrl);
+                      const name = item.deliverable || item.title || `Entregable ${index + 1}`;
+                      return (
+                        <div className="mobileRouteDeliverableItem" key={`${name}-${index}`}>
+                          <strong>{name}</strong>
+                          {link && (
+                            <a href={link} target="_blank" rel="noreferrer">
+                              Abrir enlace <ExternalLink size={12} />
+                            </a>
+                          )}
+                        </div>
+                      );
+                    }) : <p>Sin entregables registrados para este hito.</p>}
+                  </div>
+                ) : (
+                  <p>{panels.find((panel) => panel.key === openPanel)?.text}</p>
+                )}
               </div>
             )}
           </article>

@@ -19751,12 +19751,14 @@ body {
   .mobileRouteFilters {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 18px !important;
-    margin: 0 14px 18px !important;
+    gap: 16px !important;
+    margin: 0 0 18px !important;
+    padding: 0 18px !important;
   }
 
   .mobileRouteFilters .filter {
     gap: 4px !important;
+    min-width: 0 !important;
   }
 
   .mobileRouteFilters .filter span {
@@ -19768,6 +19770,8 @@ body {
 
   .mobileRouteFilters select {
     width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     height: 28px !important;
     min-height: 28px !important;
     padding: 0 28px 0 12px !important;
@@ -19871,6 +19875,9 @@ body {
 
   .mobileRouteMilestoneCard .progressText {
     margin-top: 4px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
     color: #001f2a !important;
     font-size: 0.62rem !important;
     font-weight: 400 !important;
@@ -19899,9 +19906,11 @@ body {
   }
 
   .mobileRouteAccordionPanel {
-    margin: 12px -6px 0 !important;
-    padding: 12px 14px !important;
-    background: #eaf5f4 !important;
+    margin: 10px 0 0 !important;
+    padding: 10px 0 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
     color: #23464c !important;
     white-space: pre-line !important;
   }
@@ -19930,6 +19939,39 @@ body {
     color: #00a7a4 !important;
     font-size: 0.7rem !important;
     font-weight: 600 !important;
+  }
+
+  .mobileRouteDeliverableList {
+    display: grid !important;
+    gap: 10px !important;
+  }
+
+  .mobileRouteDeliverableItem {
+    display: grid !important;
+    gap: 3px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+  }
+
+  .mobileRouteDeliverableItem strong {
+    color: #001f2a !important;
+    font-size: 0.72rem !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+  }
+
+  .mobileRouteDeliverableItem a {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    width: max-content !important;
+    max-width: 100% !important;
+    color: #00a7a4 !important;
+    font-size: 0.68rem !important;
+    font-weight: 400 !important;
+    text-decoration: none !important;
   }
 
   .mobileRouteEmpty {
