@@ -2125,7 +2125,7 @@ function formatCurrency(value) {
   return number.toLocaleString("es-EC", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
+function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previousView = "portal" }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [processFilter, setProcessFilter] = useState("Todos");
   const [typeFilter, setTypeFilter] = useState("Todos");
@@ -2135,6 +2135,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
   const [mobileNavSide, setMobileNavSide] = useState("asis");
   const [mobileProcessSide, setMobileProcessSide] = useState("asis");
   const [mobileBottomNavVisible, setMobileBottomNavVisible] = useState(false);
+  const [mobileCoeTouchStart, setMobileCoeTouchStart] = useState(null);
 
   const enrichRows = (rows) => rows.map((item) => {
     const time = parseNumericValue(item.time);
@@ -2374,6 +2375,15 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
 
   const toggleSide = (current, setter) => setter(current === "asis" ? "tobe" : "asis");
   const activePending = pending.filter(isPendingActive).length;
+  const coeBackView = previousView === "ruta" ? "ruta" : "portal";
+  const finishCoeSwipe = (clientX, onPrev, onNext) => {
+    if (mobileCoeTouchStart === null) return;
+    const diff = mobileCoeTouchStart - clientX;
+    if (Math.abs(diff) > 36) {
+      diff > 0 ? onNext() : onPrev();
+    }
+    setMobileCoeTouchStart(null);
+  };
 
   const MobileBarMetric = ({ label, value, max }) => (
     <div className="mobileCoeBarMetric">
@@ -2384,7 +2394,11 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
   );
 
   const MobileInsightCard = ({ title, badge, sideLabel, children, onPrev, onNext, nextLabel }) => (
-    <article className="mobileCoeInsightCard">
+    <article
+      className="mobileCoeInsightCard"
+      onTouchStart={(event) => setMobileCoeTouchStart(event.touches[0]?.clientX ?? null)}
+      onTouchEnd={(event) => finishCoeSwipe(event.changedTouches[0]?.clientX ?? 0, onPrev, onNext)}
+    >
       <i className="mobileCoeAccent" />
       <div className="mobileCoeInsightHead">
         <span>{title}</span>
@@ -2399,17 +2413,16 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
   );
 
   const MobileProcessRows = ({ rows }) => {
-    const visibleRows = rows.slice(0, 5);
     return (
       <div className="mobileCoeProcessRows">
-        {visibleRows.map((item, index) => (
+        {rows.map((item, index) => (
           <div className="mobileCoeProcessRow" key={`${item.process}-${index}`}>
             <span>{index + 1}. {item.process}</span>
             <div><i style={{ width: `${Math.max(4, (item.total / maxProcessCost) * 100)}%` }} /></div>
             <strong>${formatCurrency(item.total)}</strong>
           </div>
         ))}
-        {!visibleRows.length && <p>No hay datos para mostrar.</p>}
+        {!rows.length && <p>No hay datos para mostrar.</p>}
       </div>
     );
   };
@@ -2431,6 +2444,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
               <th>Proceso</th>
               <th>Tipo</th>
               <th>Actividad</th>
+              <th>Total</th>
             </tr>
           </thead>
           <tbody>
@@ -2440,6 +2454,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
                 <td>{item.process}</td>
                 <td>{item.processType}</td>
                 <td>{item.activity}</td>
+                <td>${formatCurrency(item.totalCost)}</td>
               </tr>
             ))}
           </tbody>
@@ -2453,7 +2468,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
     <>
     <section className="mobileCoeView">
       <div className="mobileRouteTopbar">
-        <button type="button" onClick={() => setView?.("portal")}><ChevronLeft size={18} /> Atrás</button>
+        <button type="button" onClick={() => setView?.(coeBackView)}><ChevronLeft size={18} /> Atrás</button>
         <button type="button" onClick={() => setView?.("hallazgos")}>Siguiente <ChevronRight size={18} /></button>
       </div>
 
@@ -2468,9 +2483,9 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
 
       <div className="mobileCoeBody">
         <div className="mobileCoeKpis">
-          <article><i /><span>Costo procesos AS IS</span><strong>${formatCurrency(asIsTotal)}</strong></article>
-          <article><i /><span>COE mensual</span><strong>${formatCurrency(Math.abs(difference))}</strong></article>
-          <article><i /><span>Costo procesos TO BE</span><strong>${formatCurrency(toBeTotal)}</strong></article>
+          <article><i /><span>Costo procesos AS IS</span><strong><ChevronRight size={16} />${formatCurrency(asIsTotal)}</strong></article>
+          <article><i /><span>COE mensual</span><strong><ChevronRight size={16} />${formatCurrency(Math.abs(difference))}</strong></article>
+          <article><i /><span>Costo procesos TO BE</span><strong><ChevronRight size={16} />${formatCurrency(toBeTotal)}</strong></article>
         </div>
 
         <article className="mobileCoeMainCard">
@@ -2529,7 +2544,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
         <MobileMatrix title="Matriz COE TO BE" subtitle="Actividades propuestas para la operación objetivo." rows={filteredToBe} />
       </div>
 
-      <nav className={`mobileBottomNav ${mobileBottomNavVisible ? "visible" : ""}`}>
+      <nav className="mobileBottomNav visible">
         {[
           { label: "Inicio", view: "portal", icon: BarChart3 },
           { label: "Ruta", view: "ruta", icon: MapPin },
@@ -4702,6 +4717,7 @@ function App() {
   const [error, setError] = useState("");
   const [selectedDeliverable, setSelectedDeliverable] = useState("");
   const [selectedHito, setSelectedHito] = useState("");
+  const [previousView, setPreviousView] = useState("portal");
 
   useEffect(() => {
     if (!session?.sheetId) return;
@@ -4733,13 +4749,19 @@ function App() {
     setData(demoData);
   };
 
+  const navigate = (nextView) => {
+    if (!nextView || nextView === view) return;
+    setPreviousView(view);
+    setView(nextView);
+  };
+
   if (!session?.sheetId) {
     return <ClientLogin onLogin={setSession} />;
   }
 
   return (
     <div className="app">
-      <Sidebar view={view} setView={setView} project={project} />
+      <Sidebar view={view} setView={navigate} project={project} />
 
       <main className="main">
         <AppTopbar
@@ -4754,7 +4776,7 @@ function App() {
           education={education}
           processesAsIs={processesAsIs}
           processesToBe={processesToBe}
-          setView={setView}
+          setView={navigate}
           setSelectedHito={setSelectedHito}
           setSelectedDeliverable={setSelectedDeliverable}
           onLogout={handleLogout}
@@ -4774,7 +4796,7 @@ function App() {
               ["documentos", "Documentos"],
               ["educacion", "Lo que vas a recibir"],
             ].map(([value, label]) => (
-              <button key={value} onClick={() => setView(value)} className={view === value ? "active" : ""}>
+              <button key={value} onClick={() => navigate(value)} className={view === value ? "active" : ""}>
                 {label}
               </button>
             ))}
@@ -4796,9 +4818,9 @@ function App() {
                 education={education}
                 coeAsIs={coeAsIs}
                 coeToBe={coeToBe}
-                setView={setView}
+                setView={navigate}
               />
-              <PortalProject project={project} milestones={milestones} pending={pending} setView={setView} />
+              <PortalProject project={project} milestones={milestones} pending={pending} setView={navigate} />
             </>
           )}
 
@@ -4815,20 +4837,20 @@ function App() {
               coeToBe={coeToBe}
               updates={updates}
               meetings={meetings}
-              setView={setView}
+              setView={navigate}
             />
           )}
 
           {view === "ruta" && (
             <>
-              <MobileRouteView milestones={milestones} deliverables={deliverables} pending={pending} setView={setView} setSelectedDeliverable={setSelectedDeliverable} />
+              <MobileRouteView milestones={milestones} deliverables={deliverables} pending={pending} setView={navigate} setSelectedDeliverable={setSelectedDeliverable} />
               <div className="desktopRouteView">
-                <Timeline milestones={milestones} deliverables={deliverables} detailed setView={setView} setSelectedDeliverable={setSelectedDeliverable} selectedHito={selectedHito} setSelectedHito={setSelectedHito} />
+                <Timeline milestones={milestones} deliverables={deliverables} detailed setView={navigate} setSelectedDeliverable={setSelectedDeliverable} selectedHito={selectedHito} setSelectedHito={setSelectedHito} />
               </div>
             </>
           )}
           {view === "procesos" && <ProcessesMasterList processesAsIs={processesAsIs} processesToBe={processesToBe} />}
-          {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={setView} />}
+          {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "hallazgos" && <Findings findings={findings} />}
           {view === "pendientes" && <PendingClient pending={pending} />}
           {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} />}
