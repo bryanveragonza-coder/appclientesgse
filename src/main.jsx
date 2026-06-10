@@ -2376,11 +2376,12 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
   const toggleSide = (current, setter) => setter(current === "asis" ? "tobe" : "asis");
   const activePending = pending.filter(isPendingActive).length;
   const coeBackView = previousView === "ruta" ? "ruta" : "portal";
-  const finishCoeSwipe = (clientX, onPrev, onNext) => {
+  const finishCoeSwipe = (touch, onPrev, onNext) => {
     if (mobileCoeTouchStart === null) return;
-    const diff = mobileCoeTouchStart - clientX;
-    if (Math.abs(diff) > 36) {
-      diff > 0 ? onNext() : onPrev();
+    const diffX = mobileCoeTouchStart.x - touch.clientX;
+    const diffY = mobileCoeTouchStart.y - touch.clientY;
+    if (Math.abs(diffX) > 36 && Math.abs(diffX) > Math.abs(diffY) * 1.25) {
+      diffX > 0 ? onNext() : onPrev();
     }
     setMobileCoeTouchStart(null);
   };
@@ -2396,8 +2397,14 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
   const MobileInsightCard = ({ title, badge, sideLabel, children, onPrev, onNext, nextLabel }) => (
     <article
       className="mobileCoeInsightCard"
-      onTouchStart={(event) => setMobileCoeTouchStart(event.touches[0]?.clientX ?? null)}
-      onTouchEnd={(event) => finishCoeSwipe(event.changedTouches[0]?.clientX ?? 0, onPrev, onNext)}
+      onTouchStart={(event) => {
+        const touch = event.touches[0];
+        setMobileCoeTouchStart(touch ? { x: touch.clientX, y: touch.clientY } : null);
+      }}
+      onTouchEnd={(event) => {
+        const touch = event.changedTouches[0];
+        if (touch) finishCoeSwipe(touch, onPrev, onNext);
+      }}
     >
       <i className="mobileCoeAccent" />
       <div className="mobileCoeInsightHead">
