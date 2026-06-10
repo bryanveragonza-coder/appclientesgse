@@ -4349,7 +4349,7 @@ function MobileRouteView({ milestones = [], deliverables = [], pending = [], set
   const [routeHitoFilter, setRouteHitoFilter] = useState("Todos");
   const [activeIndex, setActiveIndex] = useState(0);
   const [openPanel, setOpenPanel] = useState("");
-  const [showBottomNav, setShowBottomNav] = useState(false);
+  const [routeTouchStart, setRouteTouchStart] = useState(null);
 
   const statusOptions = useMemo(() => [...new Set(milestones.map((item) => item.status).filter(Boolean))], [milestones]);
   const hitoOptions = useMemo(() => milestones.map((item) => item.title).filter(Boolean), [milestones]);
@@ -4389,13 +4389,6 @@ function MobileRouteView({ milestones = [], deliverables = [], pending = [], set
     setActiveIndex(0);
     setOpenPanel("");
   }, [routeSearchTerm, routeStatusFilter, routeHitoFilter]);
-
-  useEffect(() => {
-    const onScroll = () => setShowBottomNav(window.scrollY > 220);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const activeMilestone = filteredMilestones[activeIndex] || filteredMilestones[0] || milestones[0] || {};
   const relatedDeliverables = deliverables.filter((item) =>
@@ -4440,11 +4433,18 @@ function MobileRouteView({ milestones = [], deliverables = [], pending = [], set
     });
   };
 
+  const finishSwipe = (clientX) => {
+    if (routeTouchStart === null) return;
+    const diff = routeTouchStart - clientX;
+    if (Math.abs(diff) > 36) move(diff > 0 ? 1 : -1);
+    setRouteTouchStart(null);
+  };
+
   return (
     <section className="mobileRouteView">
       <div className="mobileRouteTopbar">
         <button type="button" onClick={() => setView("portal")}><ChevronLeft size={18} /> Atrás</button>
-        <button type="button" onClick={() => move(1)}>Siguiente <ChevronRight size={18} /></button>
+        <button type="button" onClick={() => setView("coe")}>Siguiente <ChevronRight size={18} /></button>
       </div>
 
       <header className="mobileRouteHero">
@@ -4461,7 +4461,7 @@ function MobileRouteView({ milestones = [], deliverables = [], pending = [], set
             <article key={item.label}>
               <i />
               <span>{item.label}</span>
-              <strong>{item.value}</strong>
+              <strong><ChevronRight size={18} />{item.value}</strong>
             </article>
           ))}
         </div>
@@ -4469,7 +4469,7 @@ function MobileRouteView({ milestones = [], deliverables = [], pending = [], set
         <article className="mobileRouteTotalCard">
           <div><Flag size={32} /></div>
           <span>Hitos<br />Completados</span>
-          <strong>{milestones.length}</strong>
+          <strong><ChevronRight size={28} />{milestones.length}</strong>
         </article>
 
         <div className="mobileRouteFilters">
@@ -4477,7 +4477,11 @@ function MobileRouteView({ milestones = [], deliverables = [], pending = [], set
           <FilterSelect label="Hito" value={routeHitoFilter} onChange={setRouteHitoFilter} options={hitoOptions} />
         </div>
 
-        <div className="mobileRouteCarousel">
+        <div
+          className="mobileRouteCarousel"
+          onTouchStart={(event) => setRouteTouchStart(event.touches[0]?.clientX ?? null)}
+          onTouchEnd={(event) => finishSwipe(event.changedTouches[0]?.clientX ?? 0)}
+        >
           <button className="mobileRouteArrow" type="button" onClick={() => move(-1)} aria-label="Hito anterior">
             <ChevronLeft size={30} />
           </button>
@@ -4531,7 +4535,7 @@ function MobileRouteView({ milestones = [], deliverables = [], pending = [], set
         {!filteredMilestones.length && <div className="mobileRouteEmpty">No hay hitos con esos filtros.</div>}
       </div>
 
-      <nav className={`mobileBottomNav ${showBottomNav ? "visible" : ""}`}>
+      <nav className="mobileBottomNav visible">
         {[
           { label: "Inicio", view: "portal", icon: BarChart3 },
           { label: "Ruta", view: "ruta", icon: MapPin },

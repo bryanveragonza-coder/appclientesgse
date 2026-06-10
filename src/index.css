@@ -19570,6 +19570,10 @@ body {
 }
 
 @media (max-width: 760px) {
+  .content.view-ruta > .mobileTabs {
+    display: none !important;
+  }
+
   .desktopRouteView {
     display: none !important;
   }
@@ -19578,9 +19582,10 @@ body {
     display: block !important;
     min-height: 100vh !important;
     margin: -18px -18px 0 !important;
-    padding-bottom: 82px !important;
+    padding-bottom: 94px !important;
     background: #eaf5f4 !important;
     color: #001f2a !important;
+    overflow-x: hidden !important;
   }
 
   .mobileRouteTopbar {
@@ -19611,7 +19616,7 @@ body {
     display: grid !important;
     justify-items: center !important;
     gap: 12px !important;
-    padding: 22px 18px 26px !important;
+    padding: 30px 18px 28px !important;
     background: #00b8b5 !important;
     color: #ffffff !important;
   }
@@ -19655,7 +19660,7 @@ body {
   .mobileRouteBody {
     position: relative !important;
     margin-top: -10px !important;
-    padding: 10px 18px 28px !important;
+    padding: 10px 22px 34px !important;
     border-radius: 8px 8px 0 0 !important;
     background: #eaf5f4 !important;
   }
@@ -19671,9 +19676,19 @@ body {
 
   .mobileRouteStatusCards {
     display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(104px, 1fr) !important;
+    grid-template-columns: repeat(3, minmax(104px, 1fr)) !important;
     gap: 8px !important;
-    margin-bottom: 14px !important;
+    margin: 0 0 16px !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  .mobileRouteStatusCards::-webkit-scrollbar {
+    display: none !important;
   }
 
   .mobileRouteStatusCards article {
@@ -19684,6 +19699,7 @@ body {
     padding: 10px 10px 9px !important;
     background: #ffffff !important;
     box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
+    scroll-snap-align: start !important;
   }
 
   .mobileRouteStatusCards i {
@@ -19699,6 +19715,9 @@ body {
   }
 
   .mobileRouteStatusCards strong {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 2px !important;
     color: #001f2a !important;
     font-size: 1rem !important;
     font-weight: 400 !important;
@@ -19710,7 +19729,7 @@ body {
     align-items: center !important;
     gap: 12px !important;
     min-height: 76px !important;
-    margin-bottom: 14px !important;
+    margin: 0 0 18px !important;
     background: #ffffff !important;
     box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
   }
@@ -19730,6 +19749,9 @@ body {
   }
 
   .mobileRouteTotalCard strong {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
     padding-right: 18px !important;
     color: #001f2a !important;
     font-size: 1.75rem !important;
@@ -19739,8 +19761,8 @@ body {
   .mobileRouteFilters {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 24px !important;
-    margin: 0 16px 14px !important;
+    gap: 20px !important;
+    margin: 0 12px 18px !important;
   }
 
   .mobileRouteFilters .filter {
@@ -19755,25 +19777,29 @@ body {
   }
 
   .mobileRouteFilters select {
-    height: 25px !important;
-    min-height: 25px !important;
-    padding: 0 22px 0 10px !important;
+    width: 100% !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 28px 0 12px !important;
     border: 1px solid #cbdadb !important;
     border-radius: 0 !important;
     background-color: #ffffff !important;
     color: #001f2a !important;
     font-size: 0.68rem !important;
+    appearance: auto !important;
   }
 
   .mobileRouteCarousel {
     display: grid !important;
-    grid-template-columns: 26px minmax(0, 1fr) 26px !important;
-    gap: 2px !important;
+    grid-template-columns: 30px minmax(0, 1fr) 30px !important;
+    gap: 6px !important;
     align-items: center !important;
+    margin: 0 6px !important;
+    touch-action: pan-y !important;
   }
 
   .mobileRouteArrow {
-    width: 26px !important;
+    width: 30px !important;
     height: 52px !important;
     display: grid !important;
     place-items: center !important;
@@ -19785,7 +19811,7 @@ body {
   .mobileRouteMilestoneCard {
     position: relative !important;
     min-height: 188px !important;
-    padding: 16px 24px 18px !important;
+    padding: 18px 22px 18px !important;
     background: #ffffff !important;
     box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
   }
@@ -19853,7 +19879,7 @@ body {
   .mobileRouteAccordionButtons {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 6px !important;
+    gap: 8px !important;
     margin-top: 15px !important;
   }
 
@@ -19867,7 +19893,7 @@ body {
     border: 0 !important;
     background: transparent !important;
     color: #001f2a !important;
-    font-size: 0.58rem !important;
+    font-size: 0.56rem !important;
     font-weight: 400 !important;
     white-space: nowrap !important;
   }
