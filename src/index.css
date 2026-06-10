@@ -19581,7 +19581,7 @@ body {
   .mobileRouteView {
     display: block !important;
     min-height: 100vh !important;
-    margin: -18px -18px 0 !important;
+    margin: 0 !important;
     padding-bottom: 94px !important;
     background: #eaf5f4 !important;
     color: #001f2a !important;
@@ -19595,10 +19595,11 @@ body {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    min-height: 44px !important;
-    padding: 0 12px !important;
+    min-height: 48px !important;
+    padding: 0 18px !important;
     background: #ffffff !important;
     box-shadow: 0 1px 0 rgba(0, 31, 42, 0.06) !important;
+    overflow: visible !important;
   }
 
   .mobileRouteTopbar button {
@@ -19660,7 +19661,7 @@ body {
   .mobileRouteBody {
     position: relative !important;
     margin-top: -10px !important;
-    padding: 10px 22px 34px !important;
+    padding: 10px 20px 34px !important;
     border-radius: 8px 8px 0 0 !important;
     background: #eaf5f4 !important;
   }
@@ -19676,19 +19677,9 @@ body {
 
   .mobileRouteStatusCards {
     display: grid !important;
-    grid-auto-flow: column !important;
-    grid-auto-columns: minmax(104px, 1fr) !important;
-    grid-template-columns: repeat(3, minmax(104px, 1fr)) !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 8px !important;
     margin: 0 0 16px !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-  }
-
-  .mobileRouteStatusCards::-webkit-scrollbar {
-    display: none !important;
   }
 
   .mobileRouteStatusCards article {
@@ -19699,7 +19690,6 @@ body {
     padding: 10px 10px 9px !important;
     background: #ffffff !important;
     box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
-    scroll-snap-align: start !important;
   }
 
   .mobileRouteStatusCards i {
@@ -19761,8 +19751,8 @@ body {
   .mobileRouteFilters {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 20px !important;
-    margin: 0 12px 18px !important;
+    gap: 18px !important;
+    margin: 0 14px 18px !important;
   }
 
   .mobileRouteFilters .filter {
@@ -19790,15 +19780,16 @@ body {
   }
 
   .mobileRouteCarousel {
-    display: grid !important;
-    grid-template-columns: 30px minmax(0, 1fr) 30px !important;
-    gap: 6px !important;
-    align-items: center !important;
-    margin: 0 6px !important;
+    position: relative !important;
+    display: block !important;
+    margin: 0 !important;
     touch-action: pan-y !important;
   }
 
   .mobileRouteArrow {
+    position: absolute !important;
+    top: 50% !important;
+    z-index: 3 !important;
     width: 30px !important;
     height: 52px !important;
     display: grid !important;
@@ -19806,12 +19797,21 @@ body {
     border: 0 !important;
     background: transparent !important;
     color: #001f2a !important;
+    transform: translateY(-50%) !important;
+  }
+
+  .mobileRouteArrow:first-child {
+    left: 2px !important;
+  }
+
+  .mobileRouteArrow:last-child {
+    right: 2px !important;
   }
 
   .mobileRouteMilestoneCard {
     position: relative !important;
     min-height: 188px !important;
-    padding: 18px 22px 18px !important;
+    padding: 18px 42px 18px !important;
     background: #ffffff !important;
     box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
   }

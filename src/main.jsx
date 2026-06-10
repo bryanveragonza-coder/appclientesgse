@@ -4468,7 +4468,7 @@ function MobileRouteView({ milestones = [], deliverables = [], pending = [], set
 
         <article className="mobileRouteTotalCard">
           <div><Flag size={32} /></div>
-          <span>Hitos<br />Completados</span>
+          <span>Total de Hitos</span>
           <strong><ChevronRight size={28} />{milestones.length}</strong>
         </article>
 
