@@ -20289,12 +20289,11 @@ body {
 
   .mobileCoeProcessRows {
     display: grid !important;
-    grid-auto-flow: column !important;
-    grid-auto-columns: minmax(180px, 82%) !important;
-    gap: 10px !important;
-    overflow-x: auto !important;
-    overscroll-behavior-x: contain !important;
-    scroll-snap-type: x mandatory !important;
+    gap: 6px !important;
+    max-height: 112px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain !important;
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: thin !important;
   }
@@ -20304,7 +20303,6 @@ body {
     grid-template-columns: minmax(86px, 1fr) minmax(62px, 86px) 34px !important;
     align-items: center !important;
     gap: 8px !important;
-    scroll-snap-align: start !important;
   }
 
   .mobileCoeProcessRow span {
@@ -20334,14 +20332,19 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px 12px !important;
     margin: 8px 0 20px !important;
-    padding: 0 20px !important;
+    padding: 0 12px !important;
     width: 100% !important;
+    max-width: 100% !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
   }
 
   .mobileCoeFilters .filter {
     gap: 4px !important;
     min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .mobileCoeFilters .filter span {
@@ -20363,6 +20366,15 @@ body {
     background-color: #ffffff !important;
     color: #001f2a !important;
     font-size: 0.68rem !important;
+  }
+
+  .mobileCoeProcessRows::-webkit-scrollbar {
+    width: 4px !important;
+  }
+
+  .mobileCoeProcessRows::-webkit-scrollbar-thumb {
+    background: #00b8b5 !important;
+    border-radius: 999px !important;
   }
 
   .mobileCoeMatrixCard {

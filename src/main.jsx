@@ -2498,7 +2498,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
         <MobileInsightCard
           title={`Actividades ${mobileActivitySide === "asis" ? "AS IS" : "TO BE"}`}
           badge={`${mobileActivitySide === "asis" ? filteredAsIs.length : filteredToBe.length} actividades`}
-          sideLabel={mobileActivitySide === "asis" ? "AS IS" : "TO BE"}
+          sideLabel={mobileActivitySide === "asis" ? "Actividades actuales" : "Actividades propuestas"}
           onPrev={() => toggleSide(mobileActivitySide, setMobileActivitySide)}
           onNext={() => toggleSide(mobileActivitySide, setMobileActivitySide)}
           nextLabel={`Actividades ${mobileActivitySide === "asis" ? "TO BE" : "AS IS"}`}
@@ -2512,7 +2512,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
         <MobileInsightCard
           title={`NAV ${mobileNavSide === "asis" ? "AS IS" : "TO BE"}`}
           badge={`${mobileNavSide === "asis" ? filteredAsIs.length : filteredToBe.length} actividades`}
-          sideLabel={mobileNavSide === "asis" ? "AS IS" : "TO BE"}
+          sideLabel="Clasificación de actividades que generan o no generan valor"
           onPrev={() => toggleSide(mobileNavSide, setMobileNavSide)}
           onNext={() => toggleSide(mobileNavSide, setMobileNavSide)}
           nextLabel={`NAV ${mobileNavSide === "asis" ? "TO BE" : "AS IS"}`}
