@@ -20982,3 +20982,32 @@ body {
   height: 42px !important;
   stroke-width: 1.7 !important;
 }
+
+/* ROUTE_DESKTOP_TRANSPARENT_SHELL_FIX */
+.content.view-ruta > .routeProjectSection,
+.content.view-ruta > .card.routeProjectSection,
+.content.view-ruta > .premiumSectionCard.routeProjectSection,
+.routeProjectSection.card.premiumSectionCard {
+  padding: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.content.view-ruta .routeProjectSection::before,
+.content.view-ruta .routeProjectSection::after,
+.routeProjectSection.card.premiumSectionCard::before,
+.routeProjectSection.card.premiumSectionCard::after {
+  display: none !important;
+  content: none !important;
+}
+
+.content.view-ruta .routeProjectSection .sectionHeader {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
