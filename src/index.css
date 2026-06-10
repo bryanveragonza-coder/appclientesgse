@@ -1,4 +1,4 @@
-
+﻿
 :root {
   --brand: #00b8b5;
   --brand-dark: #007f80;
@@ -609,14 +609,14 @@ h1, h2, h3, p { margin-top: 0; }
   line-height: 1.55;
 }
 
-/* Evita que la etiqueta de sistema se vea como círculo exagerado */
+/* Evita que la etiqueta de sistema se vea como cÃ­rculo exagerado */
 .badge {
   border-radius: 14px;
   min-width: auto;
 }
 
 
-/* V6: etiquetas homogéneas, hitos desplegables y pendientes con detalle */
+/* V6: etiquetas homogÃ©neas, hitos desplegables y pendientes con detalle */
 .badge {
   min-height: 24px;
   min-width: 88px;
@@ -739,7 +739,7 @@ h1, h2, h3, p { margin-top: 0; }
 }
 
 
-/* V7: botón visible para desplegar hitos */
+/* V7: botÃ³n visible para desplegar hitos */
 .detailButton {
   margin-top: 12px;
   width: 100%;
@@ -837,7 +837,7 @@ h1, h2, h3, p { margin-top: 0; }
 }
 
 
-/* V9: resumen más limpio y ruta desplegable por clic */
+/* V9: resumen mÃ¡s limpio y ruta desplegable por clic */
 .detailButton {
   display: none !important;
 }
@@ -944,7 +944,7 @@ h1, h2, h3, p { margin-top: 0; }
 }
 
 
-/* V10: 4 hitos por fila en resumen + acordeón robusto en ruta */
+/* V10: 4 hitos por fila en resumen + acordeÃ³n robusto en ruta */
 .timelineSummary {
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
@@ -1064,7 +1064,7 @@ h1, h2, h3, p { margin-top: 0; }
 }
 
 
-/* V11: acordeón nativo para hitos + 4 por fila en resumen */
+/* V11: acordeÃ³n nativo para hitos + 4 por fila en resumen */
 .timelineSummary {
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
@@ -1608,7 +1608,7 @@ h1, h2, h3, p { margin-top: 0; }
   z-index: 1;
 }
 
-/* Si la observación es muy larga, que no empuje ni tape el botón */
+/* Si la observaciÃ³n es muy larga, que no empuje ni tape el botÃ³n */
 .deliverableCard {
   display: flex;
   flex-direction: column;
@@ -2072,8 +2072,8 @@ body {
 
 
 /* ==========================================================
-   PREMIUM HOMOGÉNEA V2 · GSE
-   Paleta basada únicamente en #00b8b5
+   PREMIUM HOMOGÃ‰NEA V2 Â· GSE
+   Paleta basada Ãºnicamente en #00b8b5
    ========================================================== */
 
 :root {
@@ -2109,7 +2109,7 @@ body {
     linear-gradient(135deg, #f1fffe 0%, #ffffff 42%, #eefdfc 100%) !important;
 }
 
-/* Sidebar homogénea */
+/* Sidebar homogÃ©nea */
 .premiumSidebar {
   background:
     radial-gradient(circle at 0% 0%, rgba(0, 184, 181, 0.42), transparent 19rem),
@@ -2155,7 +2155,7 @@ body {
   color: var(--ink) !important;
 }
 
-/* Portal se mantiene, pero más homogéneo */
+/* Portal se mantiene, pero mÃ¡s homogÃ©neo */
 .portalHero {
   background: var(--gradient-card) !important;
   box-shadow: 0 34px 95px rgba(0, 63, 62, 0.24) !important;
@@ -2198,7 +2198,7 @@ body {
   background: linear-gradient(90deg, transparent, rgba(0,184,181,0.55), transparent);
 }
 
-/* Tarjetas destacadas con degradado dentro de las pestañas */
+/* Tarjetas destacadas con degradado dentro de las pestaÃ±as */
 .kpi:nth-child(1),
 .premiumKpi:nth-child(1),
 .kpiCard:nth-child(1),
@@ -2232,7 +2232,7 @@ body {
   background: rgba(255,255,255,0.22) !important;
 }
 
-/* KPI más elegantes */
+/* KPI mÃ¡s elegantes */
 .kpi,
 .premiumKpi,
 .kpiCard {
@@ -2330,7 +2330,7 @@ body {
   border-radius: 24px !important;
 }
 
-/* Cada 5ta tarjeta puede ser degradada para dar variación elegante */
+/* Cada 5ta tarjeta puede ser degradada para dar variaciÃ³n elegante */
 .timelineDetailed .milestone:nth-child(5n + 1) {
   background: var(--gradient-card) !important;
   color: white !important;
@@ -2541,8 +2541,8 @@ a.secondaryLink {
 }
 
 /* ==========================================================
-   V3 FINAL CORREGIDA · HOMOGENEIDAD GSE
-   Ajustes solicitados por Belén:
+   V3 FINAL CORREGIDA Â· HOMOGENEIDAD GSE
+   Ajustes solicitados por BelÃ©n:
    - KPIs del resumen con fondo degradado uniforme
    - Todas las etiquetas/badges solo en tonos #00b8b5
    - Hallazgos cerrados y desplegados con degradado
@@ -2702,7 +2702,7 @@ a.secondaryLink {
   border-radius: 18px !important;
 }
 
-/* Ruta del proyecto: mantener diseño, solo etiquetas en marca */
+/* Ruta del proyecto: mantener diseÃ±o, solo etiquetas en marca */
 .timelineDetailed .milestone,
 .timelineSummary .milestone,
 .milestone {
@@ -2766,7 +2766,7 @@ a.secondaryLink {
   border-color: rgba(255,255,255,0.24) !important;
 }
 
-/* Pendientes: cerrado y desplegado con degradado, sin fondos detrás del título */
+/* Pendientes: cerrado y desplegado con degradado, sin fondos detrÃ¡s del tÃ­tulo */
 .pendingCard,
 .premiumPendingCard,
 .pendingItem,
@@ -2821,7 +2821,7 @@ a.secondaryLink {
   border-color: rgba(255,255,255,0.24) !important;
 }
 
-/* Entregables: todas las tarjetas con el diseño del primero */
+/* Entregables: todas las tarjetas con el diseÃ±o del primero */
 .deliverableCard,
 .premiumDeliverableCard {
   background: var(--gse-gradient) !important;
@@ -2881,7 +2881,7 @@ a.secondaryLink {
   border-color: rgba(255,255,255,0.24) !important;
 }
 
-/* Evitar fondos claros tipo resaltador detrás de textos sobre tarjetas premium */
+/* Evitar fondos claros tipo resaltador detrÃ¡s de textos sobre tarjetas premium */
 .findingItem .itemTitle,
 .findingItem .muted,
 .pendingCard .itemTitle,
@@ -2896,7 +2896,7 @@ a.secondaryLink {
   box-shadow: none !important;
 }
 
-/* Selects/filtros siguen limpios y homogéneos */
+/* Selects/filtros siguen limpios y homogÃ©neos */
 .filters select,
 .filterSelect select {
   border: 1px solid rgba(0,184,181,0.24) !important;
@@ -2905,8 +2905,8 @@ a.secondaryLink {
 
 
 /* ==========================================================
-   V4 · CARGA DE DOCUMENTOS
-   Mantiene diseño premium degradado GSE
+   V4 Â· CARGA DE DOCUMENTOS
+   Mantiene diseÃ±o premium degradado GSE
    ========================================================== */
 
 .documentsPage {
@@ -3168,7 +3168,7 @@ a.secondaryLink {
 
 
 /* ==========================================================
-   V5 · RESPUESTA DEL CLIENTE EN CHECKLIST DOCUMENTAL
+   V5 Â· RESPUESTA DEL CLIENTE EN CHECKLIST DOCUMENTAL
    ========================================================== */
 .documentResponseBox {
   margin-top: 14px;
@@ -3221,8 +3221,8 @@ a.secondaryLink {
 }
 
 /* ==========================================================
-   V5.1 · MENÚ MÓVIL PREMIUM HOMOGÉNEO
-   Corrección de navegación móvil: botones iguales, scroll suave
+   V5.1 Â· MENÃš MÃ“VIL PREMIUM HOMOGÃ‰NEO
+   CorrecciÃ³n de navegaciÃ³n mÃ³vil: botones iguales, scroll suave
    ========================================================== */
 @media (max-width: 900px) {
   .mobileTabs {
@@ -3306,11 +3306,11 @@ a.secondaryLink {
 
 
 /* ==========================================================
-   V5.4 · HEADER UNIFICADO PREMIUM
+   V5.4 Â· HEADER UNIFICADO PREMIUM
    Fusiona header + tarjeta de tablero conectado
    ========================================================== */
 
-/* Oculta la tarjeta duplicada tipo "Tablero conectado" en desktop y móvil */
+/* Oculta la tarjeta duplicada tipo "Tablero conectado" en desktop y mÃ³vil */
 .duplicatedProjectCard,
 .mobileStaticHero.duplicatedProjectCard,
 .connectedBoardCard,
@@ -3320,7 +3320,7 @@ a.secondaryLink {
   display: none !important;
 }
 
-/* Header principal como bloque premium único */
+/* Header principal como bloque premium Ãºnico */
 .unifiedProjectHeader,
 .premiumHeader,
 .appHeader,
@@ -3399,7 +3399,7 @@ a.secondaryLink {
   color: rgba(255, 255, 255, 0.82) !important;
 }
 
-/* Título principal más potente */
+/* TÃ­tulo principal mÃ¡s potente */
 .unifiedProjectHeader h1,
 .premiumHeader h1,
 .appHeader h1,
@@ -3476,7 +3476,7 @@ a.secondaryLink {
   border-radius: 24px !important;
 }
 
-/* Botón reunión en header */
+/* BotÃ³n reuniÃ³n en header */
 .unifiedProjectHeader a[href*="meet"],
 .unifiedProjectHeader a[href*="calendar"],
 .unifiedProjectHeader .meetButton,
@@ -3515,7 +3515,7 @@ a.secondaryLink {
   padding-top: 0 !important;
 }
 
-/* Móvil: header compacto y claro */
+/* MÃ³vil: header compacto y claro */
 @media (max-width: 768px) {
   .unifiedProjectHeader,
   .premiumHeader,
@@ -3566,7 +3566,7 @@ a.secondaryLink {
   }
 }
 
-/* Seguridad: la ruta del proyecto no debe ocultarse en móvil */
+/* Seguridad: la ruta del proyecto no debe ocultarse en mÃ³vil */
 @media (max-width: 768px) {
   .timelineSummary,
   .timelineDetailed,
@@ -3583,7 +3583,7 @@ a.secondaryLink {
 
 
 /* ==========================================================
-   V5.5 · SOLO HEADER DEGRADADO
+   V5.5 Â· SOLO HEADER DEGRADADO
    Oculta definitivamente la tarjeta blanca duplicada
    ========================================================== */
 
@@ -3599,7 +3599,7 @@ a.secondaryLink {
   display: none !important;
 }
 
-/* Mantiene el header degradado como única cabecera visible */
+/* Mantiene el header degradado como Ãºnica cabecera visible */
 .unifiedProjectHeader,
 .premiumHeader,
 .appHeader,
@@ -3646,7 +3646,7 @@ a.secondaryLink {
   color: white !important;
 }
 
-/* En móvil no se reintroduce la tarjeta blanca */
+/* En mÃ³vil no se reintroduce la tarjeta blanca */
 @media (max-width: 768px) {
   .hideDuplicatedProjectCard,
   .duplicatedProjectCard,
@@ -3684,8 +3684,8 @@ a.secondaryLink {
 
 
 /* ==========================================================
-   V6.0 · DASHBOARD EJECUTIVO VISUAL (PASO 1)
-   Rediseño premium de la pestaña Resumen
+   V6.0 Â· DASHBOARD EJECUTIVO VISUAL (PASO 1)
+   RediseÃ±o premium de la pestaÃ±a Resumen
    ========================================================== */
 :root {
   --brand: #00b8b5;
@@ -3811,7 +3811,7 @@ a.secondaryLink {
 
 
 /* ==========================================================
-   V6.1 REAL · RESUMEN EJECUTIVO LIMPIO
+   V6.1 REAL Â· RESUMEN EJECUTIVO LIMPIO
    Quita duplicados y deja: KPIs + desorden + hitos + lateral blanco
    ========================================================== */
 
@@ -4055,7 +4055,7 @@ a.secondaryLink {
 
 
 /* ==========================================================
-   V6.2 · RESUMEN CON 4 TARJETAS + HITOS GRANDES
+   V6.2 Â· RESUMEN CON 4 TARJETAS + HITOS GRANDES
    ========================================================== */
 .dashboardKpiGrid.fourCards {
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4246,7 +4246,7 @@ a.secondaryLink {
 
 
 /* ==========================================================
-   FINAL · RESUMEN_HITOS_BARRA_FINAL + RADAR_5_SISTEMAS_GSE
+   FINAL Â· RESUMEN_HITOS_BARRA_FINAL + RADAR_5_SISTEMAS_GSE
    ========================================================== */
 .hitosNamesCard .hitosProgressHeader p {
   margin: 6px 0 0;
@@ -4422,7 +4422,7 @@ a.secondaryLink {
 
 
 /* ==========================================================
-   FINAL · BUSCADOR_ENTREGABLES_EDUCACION_FINAL
+   FINAL Â· BUSCADOR_ENTREGABLES_EDUCACION_FINAL
    Barras buscadoras para Entregables y Lo que vas a recibir
    ========================================================== */
 .premiumFilters {
@@ -4492,7 +4492,7 @@ a.secondaryLink {
 
 /* ==========================================================
    RUTA_HITOS_DETALLE_VISIBLE_FINAL
-   Tarjetas de ruta anchas + descripción / qué incluye / link visibles
+   Tarjetas de ruta anchas + descripciÃ³n / quÃ© incluye / link visibles
    ========================================================== */
 .timelineDetailed {
   grid-template-columns: repeat(2, minmax(460px, 1fr)) !important;
@@ -4612,7 +4612,7 @@ a.secondaryLink {
   align-items: stretch;
 }
 
-/* Tarjetas de hitos en la ruta: fondo homogéneo blanco */
+/* Tarjetas de hitos en la ruta: fondo homogÃ©neo blanco */
 .routeGrid article,
 .timelineGrid article,
 .milestonesGrid article,
@@ -4697,7 +4697,7 @@ a.secondaryLink {
   border: 1px solid rgba(255,255,255,0.18) !important;
 }
 
-/* Cajas internas de descripción/qué incluye/link */
+/* Cajas internas de descripciÃ³n/quÃ© incluye/link */
 .routeGrid .milestoneDetail,
 .timelineGrid .milestoneDetail,
 .milestonesGrid .milestoneDetail,
@@ -4731,7 +4731,7 @@ a.secondaryLink {
   text-decoration: none;
 }
 
-/* Layout más ancho: 2 tarjetas por fila en escritorio */
+/* Layout mÃ¡s ancho: 2 tarjetas por fila en escritorio */
 .routeGrid,
 .timelineGrid,
 .milestonesGrid,
@@ -4867,7 +4867,7 @@ a.secondaryLink {
 
 /* ==========================================================
    RUTA_DETALLE_TEXTO_Y_LINK_COMPACTO_FINAL
-   Corrige texto blanco en descripción/qué incluye y botón de enlace gigante.
+   Corrige texto blanco en descripciÃ³n/quÃ© incluye y botÃ³n de enlace gigante.
    ========================================================== */
 
 .timelineDetailed .milestone,
@@ -4939,7 +4939,7 @@ a.secondaryLink {
   gap: 6px !important;
 }
 
-/* Evita que los contenedores vacíos crezcan cuando no hay descripción */
+/* Evita que los contenedores vacÃ­os crezcan cuando no hay descripciÃ³n */
 .timelineDetailed .milestoneDetails:empty,
 .timelineDetailed .detailBox:empty,
 .timelineDetailed .milestoneDetail:empty {
@@ -4948,7 +4948,7 @@ a.secondaryLink {
 
 /* ==========================================================
    PENDIENTES_VALIDAR_BOTON_SUPERIOR_FINAL
-   Botón Validar arriba, similar a la etiqueta de estado.
+   BotÃ³n Validar arriba, similar a la etiqueta de estado.
    ========================================================== */
 
 .pendingActionRow {
@@ -4994,7 +4994,7 @@ a.secondaryLink {
   border-color: rgba(0, 184, 181, 0.34) !important;
 }
 
-/* Oculta la caja vieja de validación si quedara por caché de estilos */
+/* Oculta la caja vieja de validaciÃ³n si quedara por cachÃ© de estilos */
 .pendingValidationBox {
   display: none !important;
 }
@@ -5002,11 +5002,11 @@ a.secondaryLink {
 
 /* ==========================================================
    RUTA_PRIMERA_TARJETA_TEXTO_OSCURO_FINAL
-   Corrección definitiva: texto oscuro en detalles de TODAS las tarjetas,
+   CorrecciÃ³n definitiva: texto oscuro en detalles de TODAS las tarjetas,
    especialmente la primera tarjeta finalizada/seleccionada.
    ========================================================== */
 
-/* Fuerza fondo blanco homogéneo para cualquier tarjeta de ruta */
+/* Fuerza fondo blanco homogÃ©neo para cualquier tarjeta de ruta */
 .timelineDetailed > *,
 .timelineDetailed article,
 .timelineDetailed .milestone,
@@ -5036,7 +5036,7 @@ a.secondaryLink {
   color: #002f36 !important;
 }
 
-/* Detalles internos: descripción, qué incluye y entregables siempre legibles */
+/* Detalles internos: descripciÃ³n, quÃ© incluye y entregables siempre legibles */
 .timelineDetailed .milestoneDetails,
 .timelineDetailed .milestoneDetails *,
 .timelineDetailed .milestoneDetails.alwaysVisible,
@@ -5060,7 +5060,7 @@ a.secondaryLink {
   color: #315a60 !important;
 }
 
-/* Títulos dentro de detalles */
+/* TÃ­tulos dentro de detalles */
 .timelineDetailed .milestoneDetails strong,
 .timelineDetailed .milestoneDetails h3,
 .timelineDetailed .milestoneDetails h4,
@@ -5112,7 +5112,7 @@ a.secondaryLink {
   border: 1px solid rgba(0, 184, 181, 0.16) !important;
 }
 
-/* Badges sí mantienen letra blanca */
+/* Badges sÃ­ mantienen letra blanca */
 .timelineDetailed .badge,
 .timelineDetailed .badge *,
 .timelineDetailed [class*="badge"],
@@ -5179,7 +5179,7 @@ a.secondaryLink {
 
 /* ==========================================================
    RUTA_JSX_TEXTO_OSCURO_FINAL
-   Corrección por clases exactas del JSX: elimina texto blanco en detalles.
+   CorrecciÃ³n por clases exactas del JSX: elimina texto blanco en detalles.
    ========================================================== */
 
 .timelineDetailed .routeDetailsFixed,
@@ -5249,7 +5249,7 @@ a.secondaryLink {
   line-height: 1.2 !important;
 }
 
-/* Limpia rectángulos internos innecesarios */
+/* Limpia rectÃ¡ngulos internos innecesarios */
 .timelineDetailed .routeDetailTextBlock {
   border: 0 !important;
   background: transparent !important;
@@ -5340,7 +5340,7 @@ a.secondaryLink {
 
 /* ==========================================================
    RUTA_ACORDEONES_DETALLE_FINAL
-   Descripción, Qué incluye y Entregables como desplegables.
+   DescripciÃ³n, QuÃ© incluye y Entregables como desplegables.
    ========================================================== */
 
 .timelineDetailed .routeAccordionDetails {
@@ -5431,12 +5431,12 @@ a.secondaryLink {
   margin-top: 4px !important;
 }
 
-/* Elimina altura excesiva del detalle cuando todos están cerrados */
+/* Elimina altura excesiva del detalle cuando todos estÃ¡n cerrados */
 .timelineDetailed .routeDetailsFixed.routeAccordionDetails {
   min-height: 0 !important;
 }
 
-/* Móvil */
+/* MÃ³vil */
 @media (max-width: 720px) {
   .timelineDetailed .routeAccordionHeader {
     padding: 14px 15px;
@@ -5451,16 +5451,16 @@ a.secondaryLink {
 
 /* ==========================================================
    GRAFICOS_ESTADOS_TERMINADO_RADAR_S_FIX_FINAL
-   Estados reales, bloqueos dinámicos, hitos con color marca y radar S1-S5.
+   Estados reales, bloqueos dinÃ¡micos, hitos con color marca y radar S1-S5.
    ========================================================== */
 
-/* Número grande de hitos en color de marca */
+/* NÃºmero grande de hitos en color de marca */
 .hitosProgressValue {
   color: #007f7d !important;
   -webkit-text-fill-color: #007f7d !important;
 }
 
-/* Mini gráfico de bloqueos: indicador visual cambia con bloqueos */
+/* Mini grÃ¡fico de bloqueos: indicador visual cambia con bloqueos */
 .miniBlockerWidget.hasBlocks .miniSmileGauge {
   filter: saturate(1.15);
 }
@@ -5545,7 +5545,7 @@ a.secondaryLink {
   white-space: nowrap !important;
 }
 
-/* Gráfico de barras: título/leyenda más ordenados */
+/* GrÃ¡fico de barras: tÃ­tulo/leyenda mÃ¡s ordenados */
 .dashboardChartCard .dashboardChartTitle {
   margin-bottom: 14px !important;
 }
@@ -5555,7 +5555,7 @@ a.secondaryLink {
   margin-bottom: 14px !important;
 }
 
-/* Móvil: leyendas de radar pueden respirar */
+/* MÃ³vil: leyendas de radar pueden respirar */
 @media (max-width: 720px) {
   .radarSystemLegend {
     grid-template-columns: repeat(5, minmax(44px, 1fr)) !important;
@@ -5583,7 +5583,7 @@ a.secondaryLink {
 
 /* ==========================================================
    HALLAZGOS_MATRIZ_FIX_FINAL
-   Hallazgos alineados a matriz técnica con buscador, filtros y detalle fijo.
+   Hallazgos alineados a matriz tÃ©cnica con buscador, filtros y detalle fijo.
    ========================================================== */
 .findingsPremiumSection .sectionHeader {
   align-items: flex-start;
@@ -5735,7 +5735,7 @@ a.secondaryLink {
 
 /* ==========================================================
    LISTA_MAESTRA_PROCESOS_FINAL
-   Nueva pestaña: Lista Maestra de Procesos AS IS / TO BE.
+   Nueva pestaÃ±a: Lista Maestra de Procesos AS IS / TO BE.
    ========================================================== */
 .processMasterSection {
   border-radius: 30px;
@@ -6109,7 +6109,7 @@ a.secondaryLink {
 
 /* ==========================================================
    MATRICES_SCROLL_FIJO_FINAL
-   Matrices con tamaño fijo + scroll horizontal y vertical.
+   Matrices con tamaÃ±o fijo + scroll horizontal y vertical.
    Aplica a Lista Maestra de Procesos y COE.
    ========================================================== */
 
@@ -6134,7 +6134,7 @@ a.secondaryLink {
   position: relative !important;
 }
 
-/* Contenedores por título de matriz, aunque el código tenga nombres distintos */
+/* Contenedores por tÃ­tulo de matriz, aunque el cÃ³digo tenga nombres distintos */
 .processesSection .tableWrap,
 .processesSection .tableWrapper,
 .processesSection .matrixWrap,
@@ -6146,7 +6146,7 @@ a.secondaryLink {
   max-width: 100%;
 }
 
-/* Tablas: ancho mínimo para que no se aplasten ni desborden fuera del contenedor */
+/* Tablas: ancho mÃ­nimo para que no se aplasten ni desborden fuera del contenedor */
 .fixedMatrixTable,
 .processTable,
 .masterProcessTable,
@@ -6214,7 +6214,7 @@ table.coeTable {
   line-height: 1.25 !important;
 }
 
-/* Columnas más amplias para nombre/actividad/observación */
+/* Columnas mÃ¡s amplias para nombre/actividad/observaciÃ³n */
 .processTable th:nth-child(4),
 .processTable td:nth-child(4),
 .processTable th:nth-child(6),
@@ -6245,7 +6245,7 @@ table.coeTable {
   text-align: center !important;
 }
 
-/* COE: columnas específicas */
+/* COE: columnas especÃ­ficas */
 .coeTable th:nth-child(1),
 .coeTable td:nth-child(1),
 .coeMatrixTable th:nth-child(1),
@@ -6343,7 +6343,7 @@ table.coeTable {
   text-overflow: ellipsis !important;
 }
 
-/* En pantallas pequeñas mantiene scroll en vez de romper el layout */
+/* En pantallas pequeÃ±as mantiene scroll en vez de romper el layout */
 @media (max-width: 900px) {
   .fixedMatrixWrap,
   .processTableWrap,
@@ -6392,7 +6392,7 @@ table.coeTable {
    en cada matriz de Lista Maestra y COE.
    ========================================================== */
 
-/* El contenedor de toda la sección NO debe hacer scroll compartido */
+/* El contenedor de toda la secciÃ³n NO debe hacer scroll compartido */
 .processesSection,
 .masterProcessesSection,
 .coeSection,
@@ -6471,7 +6471,7 @@ div:has(> table.processesTable) {
   max-height: none !important;
 }
 
-/* Las tablas mantienen ancho mínimo; el scroll horizontal ocurre dentro de cada matriz */
+/* Las tablas mantienen ancho mÃ­nimo; el scroll horizontal ocurre dentro de cada matriz */
 .processTable,
 .masterProcessTable,
 .coeTable,
@@ -6489,7 +6489,7 @@ table.processesTable {
   table-layout: fixed !important;
 }
 
-/* Lista Maestra: ancho suficiente para ver datos sin romper página */
+/* Lista Maestra: ancho suficiente para ver datos sin romper pÃ¡gina */
 .processTable,
 .masterProcessTable,
 .processesTable,
@@ -6599,7 +6599,7 @@ table.coeMatrixTable {
   max-width: 420px !important;
 }
 
-/* Imagen Proceso y Ficha Técnica separadas y compactas */
+/* Imagen Proceso y Ficha TÃ©cnica separadas y compactas */
 .processTable th:nth-last-child(2),
 .processTable td:nth-last-child(2),
 .processTable th:last-child,
@@ -6721,7 +6721,7 @@ div:has(> table.coeMatrixTable)::-webkit-scrollbar-track {
   overflow: visible !important;
 }
 
-/* Móvil */
+/* MÃ³vil */
 @media (max-width: 900px) {
   .individualMatrixScroll,
   .processTableWrap,
@@ -6794,7 +6794,7 @@ div:has(> table.coeMatrixTable)::-webkit-scrollbar-track {
   box-shadow: none !important;
 }
 
-/* Neutraliza regla antigua que convertía el div padre con las 2 tablas en scroll */
+/* Neutraliza regla antigua que convertÃ­a el div padre con las 2 tablas en scroll */
 .processMasterSection.card:has(.processTable) > .processTablesStack,
 .coeSection.card:has(.coeTable) > .processTablesStack,
 .coeSection.card:has(.processTable) > .processTablesStack,
@@ -6807,7 +6807,7 @@ div:has(> table.coeMatrixTable)::-webkit-scrollbar-track {
   background: transparent !important;
 }
 
-/* Neutraliza cualquier scroll asignado accidentalmente a la sección completa */
+/* Neutraliza cualquier scroll asignado accidentalmente a la secciÃ³n completa */
 .processMasterSection,
 .coeSection {
   overflow: visible !important;
@@ -6834,7 +6834,7 @@ div:has(> table.coeMatrixTable)::-webkit-scrollbar-track {
   min-width: 1320px !important;
 }
 
-/* Encabezado fijo dentro de cada matriz, no de toda la página */
+/* Encabezado fijo dentro de cada matriz, no de toda la pÃ¡gina */
 .processTableCard > .processTableWrap th,
 .coeTableCard > .processTableWrap th,
 .coeTableCard > .coeTableWrap th {
@@ -6882,7 +6882,7 @@ div:has(> table.coeMatrixTable)::-webkit-scrollbar-track {
    en Lista Maestra de Procesos y COE.
    ========================================================== */
 
-/* Ningún padre de las matrices debe desbordar la página */
+/* NingÃºn padre de las matrices debe desbordar la pÃ¡gina */
 .listaMaestraSection,
 .processesSection,
 .masterProcessesSection,
@@ -6967,7 +6967,7 @@ div:has(> table.matrixInternalScrollTable) {
   gap: 28px !important;
 }
 
-/* La tabla puede ser más ancha que su caja; por eso aparece scroll interno */
+/* La tabla puede ser mÃ¡s ancha que su caja; por eso aparece scroll interno */
 .matrixInternalScrollTable,
 .processTable,
 .masterProcessTable,
@@ -6988,7 +6988,7 @@ table.coeMatrixTable {
   margin: 0 !important;
 }
 
-/* Lista maestra: ancho mínimo interno */
+/* Lista maestra: ancho mÃ­nimo interno */
 .processTable,
 .masterProcessTable,
 .processesTable,
@@ -6998,7 +6998,7 @@ table.processesTable {
   min-width: 1550px !important;
 }
 
-/* COE: ancho mínimo interno para sus 8 columnas */
+/* COE: ancho mÃ­nimo interno para sus 8 columnas */
 .coeTable,
 .coeMatrixTable,
 table.coeTable,
@@ -7027,7 +7027,7 @@ table.coeMatrixTable {
   box-shadow: 0 1px 0 rgba(0,184,181,0.10) !important;
 }
 
-/* Celdas: nunca agrandan la página, solo la tabla interna */
+/* Celdas: nunca agrandan la pÃ¡gina, solo la tabla interna */
 .matrixInternalScrollTable th,
 .matrixInternalScrollTable td,
 .processTable th,
@@ -7099,7 +7099,7 @@ table.coeMatrixTable {
   max-width: 360px !important;
 }
 
-/* columnas finales imagen / ficha / status según tabla */
+/* columnas finales imagen / ficha / status segÃºn tabla */
 .processTable th:nth-last-child(2), .processTable td:nth-last-child(2),
 .processTable th:last-child, .processTable td:last-child,
 .masterProcessTable th:nth-last-child(2), .masterProcessTable td:nth-last-child(2),
@@ -7257,11 +7257,11 @@ div:has(> table.coeMatrixTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    MATRICES_SCROLL_REAL_SIN_DESBORDE_FINAL
-   Corrección real: el grid/card ya no crece con la tabla.
+   CorrecciÃ³n real: el grid/card ya no crece con la tabla.
    Cada matriz AS IS y TO BE mantiene scroll interno propio.
    ========================================================== */
 
-/* 1) Cortar desborde horizontal global de la página */
+/* 1) Cortar desborde horizontal global de la pÃ¡gina */
 html,
 body,
 #root,
@@ -7306,7 +7306,7 @@ body,
   box-sizing: border-box !important;
 }
 
-/* 3) Esta es la única caja que debe scrollear: una por cada matriz */
+/* 3) Esta es la Ãºnica caja que debe scrollear: una por cada matriz */
 .processTableWrap,
 .coeTableWrap,
 .masterProcessTableWrap,
@@ -7341,7 +7341,7 @@ div:has(> table.coeMatrixTable) {
   margin-top: 14px !important;
 }
 
-/* 4) La tabla es más ancha que su caja, pero queda contenida dentro del scroll */
+/* 4) La tabla es mÃ¡s ancha que su caja, pero queda contenida dentro del scroll */
 .processTable,
 .masterProcessTable,
 .processesTable,
@@ -7362,7 +7362,7 @@ table.coeMatrixTable {
   margin: 0 !important;
 }
 
-/* Lista Maestra más ancha para forzar scroll interno, no desborde externo */
+/* Lista Maestra mÃ¡s ancha para forzar scroll interno, no desborde externo */
 .processTable:not(.coeTable),
 .masterProcessTable,
 .processesTable,
@@ -7504,7 +7504,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    RESUMEN_TRES_TARJETAS_FINAL
-   Tres tarjetas simétricas debajo de Hitos: radar, procesos/hallazgos y COE.
+   Tres tarjetas simÃ©tricas debajo de Hitos: radar, procesos/hallazgos y COE.
    ========================================================== */
 .summaryInsightGrid {
   display: grid;
@@ -7629,7 +7629,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   font-size: 1.35rem;
 }
 
-/* Oculta el gráfico anterior de desorden si alguna versión lo deja montado accidentalmente en resumen */
+/* Oculta el grÃ¡fico anterior de desorden si alguna versiÃ³n lo deja montado accidentalmente en resumen */
 .executiveSummaryMain > .disorderInsightsCard .dashboardSplitGrid > .dashboardChartCard:first-child {
   display: none !important;
 }
@@ -7812,7 +7812,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    COE_V3_TITULOS_ACTIVIDADES_FILTROS_FINAL
-   Ajustes visuales COE: títulos, actividades AS IS/TO BE,
+   Ajustes visuales COE: tÃ­tulos, actividades AS IS/TO BE,
    listas con altura fija y filtros en una sola fila.
    ========================================================== */
 .coeSection .coeExecutiveCard span,
@@ -7966,7 +7966,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
    Ajuste visual de tarjetas superiores COE.
    ========================================================== */
 
-/* Grid superior COE homogéneo */
+/* Grid superior COE homogÃ©neo */
 .coeSummaryGrid,
 .coeKpiGrid,
 .coeTopCards,
@@ -7993,7 +7993,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   overflow: hidden !important;
 }
 
-/* Tarjetas blancas: títulos #102F37 y números #0B4E58 */
+/* Tarjetas blancas: tÃ­tulos #102F37 y nÃºmeros #0B4E58 */
 .coeSummaryGrid > *:not(.accent):not(.featured):not(.highlight):not(.difference),
 .coeKpiGrid > *:not(.accent):not(.featured):not(.highlight):not(.difference),
 .coeTopCards > *:not(.accent):not(.featured):not(.highlight):not(.difference),
@@ -8038,7 +8038,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   -webkit-text-fill-color: #ffffff !important;
 }
 
-/* Títulos de las tarjetas blancas */
+/* TÃ­tulos de las tarjetas blancas */
 .coeSummaryGrid > *:not(:nth-child(2)) h3,
 .coeSummaryGrid > *:not(:nth-child(2)) h4,
 .coeSummaryGrid > *:not(:nth-child(2)) .cardTitle,
@@ -8062,7 +8062,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   font-weight: 900 !important;
 }
 
-/* Números grandes tarjetas blancas */
+/* NÃºmeros grandes tarjetas blancas */
 .coeSummaryGrid > *:not(:nth-child(2)) .metricValue,
 .coeSummaryGrid > *:not(:nth-child(2)) .coeValue,
 .coeSummaryGrid > *:not(:nth-child(2)) .bigNumber,
@@ -8095,7 +8095,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   letter-spacing: -0.06em !important;
 }
 
-/* Número grande diferencia estimada */
+/* NÃºmero grande diferencia estimada */
 .coeSummaryGrid > *:nth-child(2) .metricValue,
 .coeSummaryGrid > *:nth-child(2) .coeValue,
 .coeSummaryGrid > *:nth-child(2) .bigNumber,
@@ -8128,7 +8128,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   letter-spacing: -0.06em !important;
 }
 
-/* Descripciones más pequeñas y mejor distribuidas */
+/* Descripciones mÃ¡s pequeÃ±as y mejor distribuidas */
 .coeSummaryGrid p,
 .coeKpiGrid p,
 .coeTopCards p,
@@ -8150,7 +8150,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   max-width: 92% !important;
 }
 
-/* Layout interno más equilibrado para tarjetas */
+/* Layout interno mÃ¡s equilibrado para tarjetas */
 .coeSummaryGrid > *,
 .coeKpiGrid > *,
 .coeTopCards > *,
@@ -8295,7 +8295,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   max-width: 92% !important;
 }
 
-/* Diferencia estimada: degradado con letras y número blancos */
+/* Diferencia estimada: degradado con letras y nÃºmero blancos */
 .coeExecutiveCard.difference,
 .coeExecutiveCard.coeDifferenceCard {
   background: linear-gradient(135deg, #006C66 0%, #00B8B5 100%) !important;
@@ -8315,7 +8315,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   margin: 34px 0 20px !important;
 }
 
-/* Actividades: más compacta y legible */
+/* Actividades: mÃ¡s compacta y legible */
 .coeExecutiveCard.activities,
 .coeExecutiveCard.coeActivitiesCard {
   background: radial-gradient(circle at top left, rgba(0, 184, 181, 0.08), transparent 16rem), #ffffff !important;
@@ -8571,7 +8571,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   margin: 0 !important;
 }
 
-/* Menos sangría visual en números grandes */
+/* Menos sangrÃ­a visual en nÃºmeros grandes */
 .coeExecutiveCard > strong {
   margin-left: 0 !important;
   padding-left: 0 !important;
@@ -8605,7 +8605,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    COE_V7_HOMOGENEO_NAV_FILTER_FINAL
-   COE con estilo homogéneo tipo Lista Maestra + filtro NAV.
+   COE con estilo homogÃ©neo tipo Lista Maestra + filtro NAV.
    ========================================================== */
 
 /* Estilo general de las tarjetas superiores COE parecido a Lista Maestra */
@@ -8632,7 +8632,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   overflow: hidden !important;
 }
 
-/* Títulos como Lista Maestra */
+/* TÃ­tulos como Lista Maestra */
 .coeExecutiveGrid.threeCards .coeExecutiveCard > span {
   color: #102F37 !important;
   -webkit-text-fill-color: #102F37 !important;
@@ -8644,7 +8644,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   text-transform: none !important;
 }
 
-/* Números grandes sin sangría */
+/* NÃºmeros grandes sin sangrÃ­a */
 .coeExecutiveGrid.threeCards .coeExecutiveCard > strong {
   color: #00877f !important;
   -webkit-text-fill-color: #00877f !important;
@@ -8659,7 +8659,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   text-align: left !important;
 }
 
-/* Descripción compacta */
+/* DescripciÃ³n compacta */
 .coeExecutiveGrid.threeCards .coeExecutiveCard > p {
   color: #46636b !important;
   -webkit-text-fill-color: #46636b !important;
@@ -8669,7 +8669,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   max-width: 94% !important;
 }
 
-/* COE mensual: única tarjeta con degradado */
+/* COE mensual: Ãºnica tarjeta con degradado */
 .coeExecutiveGrid.threeCards .coeDifferenceCard,
 .coeExecutiveGrid.threeCards .coeExecutiveCard.difference {
   background: linear-gradient(135deg, #006C66 0%, #00B8B5 100%) !important;
@@ -8810,10 +8810,10 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    COE_V8_TIPOGRAFIA_SUAVE_FINAL
-   Títulos más suaves y números sin negrita excesiva.
+   TÃ­tulos mÃ¡s suaves y nÃºmeros sin negrita excesiva.
    ========================================================== */
 
-/* Títulos de tarjetas COE */
+/* TÃ­tulos de tarjetas COE */
 .coeExecutiveGrid.threeCards .coeExecutiveCard > span,
 .coeInsightCard > span,
 .coeInsightRow > span,
@@ -8826,27 +8826,27 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   font-weight: 800 !important;
 }
 
-/* Números principales en tarjetas blancas: sin negrita pesada */
+/* NÃºmeros principales en tarjetas blancas: sin negrita pesada */
 .coeExecutiveGrid.threeCards .coeExecutiveCard:not(.difference) > strong,
 .coeExecutiveGrid.threeCards .coeCostCard > strong {
   font-weight: 700 !important;
   letter-spacing: -0.045em !important;
 }
 
-/* Número de COE mensual: blanco pero menos pesado */
+/* NÃºmero de COE mensual: blanco pero menos pesado */
 .coeExecutiveGrid.threeCards .coeDifferenceCard > strong,
 .coeExecutiveGrid.threeCards .coeExecutiveCard.difference > strong {
   font-weight: 700 !important;
   letter-spacing: -0.045em !important;
 }
 
-/* Porcentaje COE mensual más suave */
+/* Porcentaje COE mensual mÃ¡s suave */
 .coeExecutiveGrid.threeCards .coeDifferenceCard > em,
 .coeExecutiveGrid.threeCards .coeExecutiveCard.difference > em {
   font-weight: 700 !important;
 }
 
-/* Números de Actividades y NAV más suaves */
+/* NÃºmeros de Actividades y NAV mÃ¡s suaves */
 .coeMiniCounterGrid strong,
 .coeActivitiesMiniGrid strong,
 .coeInsightCard strong {
@@ -8854,7 +8854,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   letter-spacing: -0.025em !important;
 }
 
-/* Títulos internos de filtros/encabezados en COE */
+/* TÃ­tulos internos de filtros/encabezados en COE */
 .coeSection .filter span,
 .coeSection .searchFilter > span,
 .coeSection .processTableHeader p,
@@ -8991,7 +8991,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   -webkit-text-fill-color: #557176 !important;
 }
 
-/* Mantiene tarjetas blancas y homogéneas */
+/* Mantiene tarjetas blancas y homogÃ©neas */
 .findingWhiteCard {
   background: radial-gradient(circle at top left, rgba(0, 184, 181, 0.07), transparent 16rem), #ffffff !important;
   border: 1px solid rgba(0, 184, 181, 0.22) !important;
@@ -9033,7 +9033,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    RESUMEN_V2_HOMOGENEO_4X4_FINAL
-   Resumen homogéneo: 4 tarjetas arriba + hitos/pendientes centro
+   Resumen homogÃ©neo: 4 tarjetas arriba + hitos/pendientes centro
    + 4 tarjetas abajo.
    ========================================================== */
 
@@ -9329,7 +9329,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   min-height: 0 !important;
 }
 
-/* Compacta las tarjetas de Próximo paso y Pendiente prioritario */
+/* Compacta las tarjetas de PrÃ³ximo paso y Pendiente prioritario */
 .summaryTopMirrorGrid .nextStepCard,
 .summaryTopMirrorGrid .priorityPendingCard,
 .summaryTopMirrorGrid .sidePanelCard,
@@ -9352,7 +9352,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   align-content: stretch !important;
 }
 
-/* Reduce tamaño de tipografía y botón en panel derecho para que no se haga gigante */
+/* Reduce tamaÃ±o de tipografÃ­a y botÃ³n en panel derecho para que no se haga gigante */
 .summaryTopMirrorGrid .nextStepCard h3,
 .summaryTopMirrorGrid .priorityPendingCard h3,
 .summaryTopMirrorGrid .sidePanelCard h3,
@@ -9423,7 +9423,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   min-height: 78px !important;
 }
 
-/* COE se mantiene diferenciado pero con el mismo tamaño */
+/* COE se mantiene diferenciado pero con el mismo tamaÃ±o */
 .summaryMirrorPage .summaryCOECard {
   min-height: 295px !important;
 }
@@ -9472,8 +9472,8 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    RESUMEN_V4_TITULOS_LIMPIOS_FINAL
-   Tarjetas inferiores del resumen: un solo título, sin etiqueta derecha
-   y con tipografía menos pesada.
+   Tarjetas inferiores del resumen: un solo tÃ­tulo, sin etiqueta derecha
+   y con tipografÃ­a menos pesada.
    ========================================================== */
 
 /* Oculta cualquier badge dentro de las tarjetas inferiores del resumen */
@@ -9483,18 +9483,18 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   display: none !important;
 }
 
-/* Oculta el subtítulo pequeño superior si quedara por caché o versión previa */
+/* Oculta el subtÃ­tulo pequeÃ±o superior si quedara por cachÃ© o versiÃ³n previa */
 .summaryBottomCard .summaryBottomHeader span {
   display: none !important;
 }
 
-/* Header más limpio: solo título */
+/* Header mÃ¡s limpio: solo tÃ­tulo */
 .summaryBottomCard .summaryBottomHeader {
   display: block !important;
   margin-bottom: 12px !important;
 }
 
-/* Títulos más suaves, sin tanta negrita */
+/* TÃ­tulos mÃ¡s suaves, sin tanta negrita */
 .summaryBottomCard .summaryBottomHeader h3 {
   color: #102F37 !important;
   -webkit-text-fill-color: #102F37 !important;
@@ -9506,7 +9506,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   margin: 0 !important;
 }
 
-/* En la tarjeta COE también solo título blanco */
+/* En la tarjeta COE tambiÃ©n solo tÃ­tulo blanco */
 .summaryCOECard .summaryBottomHeader h3,
 .summaryCOECard .summaryBottomHeader h3 * {
   color: #ffffff !important;
@@ -9514,19 +9514,19 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   font-weight: 750 !important;
 }
 
-/* Radar: elimina espacio reservado de badge/título duplicado */
+/* Radar: elimina espacio reservado de badge/tÃ­tulo duplicado */
 .summaryRadarCard .summaryBottomHeader {
   min-height: auto !important;
 }
 
-/* Números y textos un poco menos pesados */
+/* NÃºmeros y textos un poco menos pesados */
 .summaryBigNumber,
 .summaryCOEValue,
 .summaryActivityCreative strong {
   font-weight: 650 !important;
 }
 
-/* Ajuste de radar para que no se comprima con el título limpio */
+/* Ajuste de radar para que no se comprima con el tÃ­tulo limpio */
 .summaryRadarCard .summaryRadarMini {
   margin-top: 2px !important;
 }
@@ -9536,7 +9536,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   font-weight: 700 !important;
 }
 
-/* Hallazgos: barras más limpias */
+/* Hallazgos: barras mÃ¡s limpias */
 .summaryMiniRow span,
 .summaryMiniRow strong {
   font-weight: 650 !important;
@@ -9546,10 +9546,10 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 /* ==========================================================
    RESUMEN_V5_PENDIENTE_PRIORITARIO_LIMPIO_FINAL
    Limpia la tarjeta Pendiente prioritario del resumen:
-   sin "Bloquea..." y sin badge pequeño de estado.
+   sin "Bloquea..." y sin badge pequeÃ±o de estado.
    ========================================================== */
 
-/* Oculta línea "Bloquea..." solo en el panel derecho del resumen */
+/* Oculta lÃ­nea "Bloquea..." solo en el panel derecho del resumen */
 .summaryTopMirrorGrid .priorityPendingCard .muted,
 .summaryTopMirrorGrid .priorityPendingCard p,
 .summaryTopMirrorGrid aside .priorityPendingCard .muted,
@@ -9573,7 +9573,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   display: revert !important;
 }
 
-/* Oculta badge de estado pequeño dentro de Pendiente prioritario del resumen */
+/* Oculta badge de estado pequeÃ±o dentro de Pendiente prioritario del resumen */
 .summaryTopMirrorGrid .priorityPendingCard .badgeRow,
 .summaryTopMirrorGrid .priorityPendingCard .badge,
 .summaryTopMirrorGrid .priorityPendingCard [class*="badge"],
@@ -9585,7 +9585,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   display: none !important;
 }
 
-/* Ajusta espacio después de quitar descripción y badge */
+/* Ajusta espacio despuÃ©s de quitar descripciÃ³n y badge */
 .summaryTopMirrorGrid .priorityPendingCard {
   gap: 12px !important;
 }
@@ -9594,7 +9594,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   margin-bottom: 14px !important;
 }
 
-/* Mantiene visible el botón de abrir documento */
+/* Mantiene visible el botÃ³n de abrir documento */
 .summaryTopMirrorGrid .priorityPendingCard a,
 .summaryTopMirrorGrid .priorityPendingCard .primaryAction,
 .summaryTopMirrorGrid .priorityPendingCard button,
@@ -9607,7 +9607,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    RUTA_V3_RESTAURA_MENU_STATUS_FINAL
-   Ruta V3: conserva todas las pestañas, incluye GSE/cliente,
+   Ruta V3: conserva todas las pestaÃ±as, incluye GSE/cliente,
    filtros y estados Finalizado/Pendiente/En desarrollo.
    ========================================================== */
 
@@ -9738,7 +9738,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   font-size: 11px !important;
 }
 
-/* Círculo del hito: vacío hasta que esté finalizado */
+/* CÃ­rculo del hito: vacÃ­o hasta que estÃ© finalizado */
 .timelineDetailed .routeMilestoneIcon.empty,
 .routeMilestoneIcon.empty {
   background: rgba(0, 184, 181, 0.12) !important;
@@ -9756,7 +9756,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   -webkit-text-fill-color: #003f3e !important;
 }
 
-/* Acordeones más compactos y menos pesados */
+/* Acordeones mÃ¡s compactos y menos pesados */
 .timelineDetailed .routeAccordionCompact {
   gap: 10px !important;
   padding: 12px !important;
@@ -10034,7 +10034,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   text-shadow: none !important;
 }
 
-/* Si el texto del badge está en span/strong interno, también debe verse */
+/* Si el texto del badge estÃ¡ en span/strong interno, tambiÃ©n debe verse */
 .deliverablesSection .deliverableCard .badgeRow .badge *,
 .deliverablesSection .deliverableCard .badgeRow [class*="badge"] *,
 .deliverablesGrid .deliverableCard .badgeRow .badge *,
@@ -10045,7 +10045,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   visibility: visible !important;
 }
 
-/* Separación del badge para que no quede pegado al título */
+/* SeparaciÃ³n del badge para que no quede pegado al tÃ­tulo */
 .deliverablesSection .deliverableCard .badgeRow,
 .deliverablesGrid .deliverableCard .badgeRow {
   display: flex !important;
@@ -10096,7 +10096,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   border-radius: 15px !important;
 }
 
-/* Números de las tres tarjetas superiores COE más grandes, estilo lista maestra */
+/* NÃºmeros de las tres tarjetas superiores COE mÃ¡s grandes, estilo lista maestra */
 .coeExecutiveGrid.threeCards .coeExecutiveCard > strong {
   font-size: clamp(4.4rem, 6.2vw, 6.4rem) !important;
   line-height: 0.86 !important;
@@ -10156,7 +10156,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    COE_V10_FILTROS_DOS_FILAS_NUMEROS_AJUSTADOS
-   - Reduce tamaño de números en tarjetas COE
+   - Reduce tamaÃ±o de nÃºmeros en tarjetas COE
    - Mueve filtros COE a dos filas en desktop
    ========================================================== */
 
@@ -10181,7 +10181,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   width: 100% !important;
 }
 
-/* 3 tarjetas arriba: números más contenidos */
+/* 3 tarjetas arriba: nÃºmeros mÃ¡s contenidos */
 .coeExecutiveGrid.threeCards .coeExecutiveCard > strong,
 .coeExecutiveGrid.threeCards .coeCostCard > strong,
 .coeExecutiveGrid.threeCards .coeExecutiveCard:not(.difference) > strong {
@@ -10222,7 +10222,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    COE_V11_NUMEROS_IGUAL_LISTA_MAESTRA
-   Mantiene en COE el mismo tamaño de números usado en Lista Maestra.
+   Mantiene en COE el mismo tamaÃ±o de nÃºmeros usado en Lista Maestra.
    ========================================================== */
 
 .coeExecutiveGrid.threeCards .coeExecutiveCard > strong,
@@ -10419,7 +10419,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    PENDIENTES_V3_BADGES_DESCRIPCION_VISIBLE_FINAL
-   Corrige badges de estado y descripción desplegable.
+   Corrige badges de estado y descripciÃ³n desplegable.
    ========================================================== */
 
 .pendingClientSection .pendingCard .pendingActionRow .badge,
@@ -10567,10 +10567,10 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 /* ==========================================================
    HALLAZGOS_V3_ESTADOS_TITULOS_FINAL
    Estados: Pendiente / En proceso / Completado
-   y títulos de tarjetas más pequeños.
+   y tÃ­tulos de tarjetas mÃ¡s pequeÃ±os.
    ========================================================== */
 
-/* Tarjetas de hallazgos: títulos más pequeños y menos pesados */
+/* Tarjetas de hallazgos: tÃ­tulos mÃ¡s pequeÃ±os y menos pesados */
 .findingsGridWhite .findingWhiteCard .findingWhiteHeader h3,
 .findingWhiteCard .findingWhiteHeader h3 {
   font-size: clamp(1.12rem, 1.55vw, 1.48rem) !important;
@@ -10591,7 +10591,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   padding: 24px 28px !important;
 }
 
-/* Badges de estado visibles y homogéneos */
+/* Badges de estado visibles y homogÃ©neos */
 .findingWhiteCard .badgeRow .badge,
 .findingWhiteCard .badgeRow [class*="badge"],
 .findingsGridWhite .badgeRow .badge,
@@ -10609,7 +10609,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   font-size: 0.72rem !important;
 }
 
-/* Títulos de resumen más suaves */
+/* TÃ­tulos de resumen mÃ¡s suaves */
 .findingsSummaryCard > span {
   color: #557176 !important;
   -webkit-text-fill-color: #557176 !important;
@@ -10763,7 +10763,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   background: linear-gradient(90deg, #7b8b91, #a6b1b6) !important;
 }
 
-/* Hitos más compactos para que conviva con matriz */
+/* Hitos mÃ¡s compactos para que conviva con matriz */
 .summaryTopMirrorGrid .hitosProgressCard .hitosProgressLayout {
   grid-template-columns: minmax(145px, 0.42fr) minmax(0, 1fr) !important;
   gap: 18px !important;
@@ -10800,15 +10800,15 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 /* ==========================================================
    RESUMEN_V7_PROPORCIONES_PREMIUM_FINAL
    Ajuste visual tipo referencia: centro en una sola tarjeta
-   con Hitos + matriz interna, alturas homogéneas y KPIs compactos.
+   con Hitos + matriz interna, alturas homogÃ©neas y KPIs compactos.
    ========================================================== */
 
-/* Página resumen más densa y de un solo vistazo */
+/* PÃ¡gina resumen mÃ¡s densa y de un solo vistazo */
 .summaryMirrorPage {
   gap: 20px !important;
 }
 
-/* 4 tarjetas superiores iguales, más compactas */
+/* 4 tarjetas superiores iguales, mÃ¡s compactas */
 .dashboardKpiGrid.fourCards,
 .dashboardKpiGrid {
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -11121,7 +11121,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   gap: 3px !important;
 }
 
-/* Tarjetas inferiores espejo: altura más proporcionada */
+/* Tarjetas inferiores espejo: altura mÃ¡s proporcionada */
 .summaryMirrorPage .summaryBottomGrid.fourCards,
 .summaryMirrorPage .summaryBottomGrid {
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -11232,10 +11232,10 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    RESUMEN_V8_COMPACTO_NUMEROS_ACTIVIDADES_FINAL
-   Ajusta contenido para que no se corte y corrige números de actividades.
+   Ajusta contenido para que no se corte y corrige nÃºmeros de actividades.
    ========================================================== */
 
-/* Tarjetas superiores: contenido más compacto y visible */
+/* Tarjetas superiores: contenido mÃ¡s compacto y visible */
 .dashboardKpiGrid.fourCards,
 .dashboardKpiGrid {
   gap: 14px !important;
@@ -11279,7 +11279,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   white-space: normal !important;
 }
 
-/* Mini gauge más pequeño para que entre pie de tarjeta */
+/* Mini gauge mÃ¡s pequeÃ±o para que entre pie de tarjeta */
 .dashboardGaugeTrack {
   width: 88px !important;
   height: 44px !important;
@@ -11306,7 +11306,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   margin-top: 2px !important;
 }
 
-/* Termómetro más compacto */
+/* TermÃ³metro mÃ¡s compacto */
 .thermoWidget {
   grid-template-columns: 26px 28px minmax(58px, 74px) !important;
   gap: 6px !important;
@@ -11403,7 +11403,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   height: 24px !important;
 }
 
-/* Panel derecho: textos y botones más pequeños para que no se pierdan */
+/* Panel derecho: textos y botones mÃ¡s pequeÃ±os para que no se pierdan */
 .summaryTopMirrorGrid .executiveRightPanel {
   gap: 14px !important;
 }
@@ -11468,7 +11468,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   margin-top: auto !important;
 }
 
-/* Asegura que los números de actividades aparezcan y no hereden colores invisibles */
+/* Asegura que los nÃºmeros de actividades aparezcan y no hereden colores invisibles */
 .summaryActivitiesCard .summaryActivityCreative strong {
   display: block !important;
   color: #00877f !important;
@@ -11506,12 +11506,12 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    RESUMEN_V9_HOMOGENEO_CLICK_PENDIENTE_FINAL
-   - Pendiente prioritario sin botón: toda la tarjeta abre Pendientes.
-   - Tarjetas inferiores homogéneas con las superiores.
-   - Termómetro centrado.
+   - Pendiente prioritario sin botÃ³n: toda la tarjeta abre Pendientes.
+   - Tarjetas inferiores homogÃ©neas con las superiores.
+   - TermÃ³metro centrado.
    ========================================================== */
 
-/* Tarjeta Pendiente prioritario como acción completa */
+/* Tarjeta Pendiente prioritario como acciÃ³n completa */
 .summaryTopMirrorGrid .priorityPendingWhiteCard.clickable {
   cursor: pointer !important;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease !important;
@@ -11523,7 +11523,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   border-color: rgba(0, 184, 181, 0.34) !important;
 }
 
-/* Oculta cualquier botón heredado dentro del pendiente prioritario en Resumen */
+/* Oculta cualquier botÃ³n heredado dentro del pendiente prioritario en Resumen */
 .summaryTopMirrorGrid .priorityPendingWhiteCard.clickable .sideLinkButton,
 .summaryTopMirrorGrid .priorityPendingWhiteCard.clickable a.sideLinkButton {
   display: none !important;
@@ -11574,7 +11574,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   -webkit-text-fill-color: #557176 !important;
 }
 
-/* Termómetro centrado dentro de la segunda tarjeta */
+/* TermÃ³metro centrado dentro de la segunda tarjeta */
 .dashboardWidgetCard .thermoWidget,
 .thermoWidget {
   width: max-content !important;
@@ -11605,7 +11605,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   min-width: 70px !important;
 }
 
-/* 4 tarjetas inferiores: mismo tamaño visual que las 4 superiores */
+/* 4 tarjetas inferiores: mismo tamaÃ±o visual que las 4 superiores */
 .summaryMirrorPage .summaryBottomGrid.fourCards,
 .summaryMirrorPage .summaryBottomGrid {
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -11625,7 +11625,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   margin-bottom: 2px !important;
 }
 
-/* Radar inferior más pequeño para que encaje en altura de KPI */
+/* Radar inferior mÃ¡s pequeÃ±o para que encaje en altura de KPI */
 .summaryMirrorPage .summaryRadarCard .summaryRadarMini {
   transform: scale(0.48) !important;
   transform-origin: top center !important;
@@ -11691,7 +11691,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   -webkit-text-fill-color: #ffffff !important;
 }
 
-/* Actividades: números visibles y proporcionales */
+/* Actividades: nÃºmeros visibles y proporcionales */
 .summaryActivityCreative {
   gap: 6px !important;
   margin: 8px 0 5px !important;
@@ -11735,7 +11735,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   }
 }
 
-/* Fallback para navegadores sin :has: mantiene termómetro razonablemente centrado */
+/* Fallback para navegadores sin :has: mantiene termÃ³metro razonablemente centrado */
 .dashboardWidgetGraphic > .thermoWidget {
   position: relative !important;
   left: 50% !important;
@@ -11756,7 +11756,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   letter-spacing: normal;
 }
 
-/* 1. Avance general: gauge pintado según avance */
+/* 1. Avance general: gauge pintado segÃºn avance */
 .dashboardGaugeWrap.paintedGauge {
   width: 128px !important;
   max-width: 100% !important;
@@ -11797,7 +11797,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   fill: #516d72 !important;
 }
 
-/* 2. Termómetro centrado, leyenda conservada a la derecha sin montarse */
+/* 2. TermÃ³metro centrado, leyenda conservada a la derecha sin montarse */
 .dashboardWidgetCard:has(.thermoWidget) .dashboardWidgetGraphic {
   justify-content: center !important;
   align-items: center !important;
@@ -11836,7 +11836,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   white-space: nowrap !important;
 }
 
-/* 3. Bloqueos: sin ola, solo carita + línea */
+/* 3. Bloqueos: sin ola, solo carita + lÃ­nea */
 .cleanBlocker .miniSmileGauge {
   display: none !important;
 }
@@ -11867,7 +11867,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   margin-top: 0 !important;
 }
 
-/* 4. Pendiente prioritario: elimina cualquier píldora/botón turquesa residual */
+/* 4. Pendiente prioritario: elimina cualquier pÃ­ldora/botÃ³n turquesa residual */
 .summaryTopMirrorGrid .priorityPendingWhiteCard .badgeRow,
 .summaryTopMirrorGrid .priorityPendingWhiteCard .badge,
 .summaryTopMirrorGrid .priorityPendingWhiteCard [class*="badge"],
@@ -11881,7 +11881,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   padding-bottom: 20px !important;
 }
 
-/* 5. Radar: gráfico a la izquierda y leyenda al lado para que no se pierda abajo */
+/* 5. Radar: grÃ¡fico a la izquierda y leyenda al lado para que no se pierda abajo */
 .summaryMirrorPage .summaryRadarCard .summaryRadarMini,
 .summaryRadarCard .summaryRadarMini {
   transform: none !important;
@@ -11977,7 +11977,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
    Ajusta radar hacia arriba y homogeneiza textos de Hitos.
    ========================================================== */
 
-/* Tarjeta Avance por sistemas: sube el gráfico dentro de la tarjeta */
+/* Tarjeta Avance por sistemas: sube el grÃ¡fico dentro de la tarjeta */
 .summaryRadarCard {
   justify-content: flex-start !important;
 }
@@ -12016,7 +12016,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   margin-top: 5px !important;
 }
 
-/* Hitos completados: todos los textos como tarjetas KPI, excepto el número 1/5 */
+/* Hitos completados: todos los textos como tarjetas KPI, excepto el nÃºmero 1/5 */
 .summaryHitosCombinedCard .hitosProgressHeader h2,
 .summaryHitosCombinedCard .hitosProgressHeader h2 *,
 .summaryHitosCombinedCard .hitosProgressLabel,
@@ -12084,7 +12084,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   max-width: 94% !important;
 }
 
-/* Mantener el número principal de hitos con jerarquía grande */
+/* Mantener el nÃºmero principal de hitos con jerarquÃ­a grande */
 .summaryHitosCombinedCard .hitosProgressValue {
   font-size: clamp(3.2rem, 5.2vw, 5.7rem) !important;
   line-height: 0.9 !important;
@@ -12094,7 +12094,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    HALLAZGOS_V4_GERENCIA_ENTREGABLES_MENU_FINAL
-   Hallazgos: Gerencia/Área/Responsable + entregables GSE/Cliente.
+   Hallazgos: Gerencia/Ãrea/Responsable + entregables GSE/Cliente.
    ========================================================== */
 
 .findingsDeliverablesSummaryCard {
@@ -12350,7 +12350,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   -webkit-text-fill-color: #00877f !important;
 }
 
-/* Mantiene oculto el diseño anterior si quedara en caché por clases previas */
+/* Mantiene oculto el diseÃ±o anterior si quedara en cachÃ© por clases previas */
 .findingsDeliverablesSummaryCard {
   display: none !important;
 }
@@ -12370,7 +12370,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 /* ==========================================================
    HALLAZGOS_V6_FILTRO_ENTREGABLE_META_VISIBLE_FINAL
    Ajustes solicitados: sin textos internos de columnas para cliente,
-   filtro por entregable, título más liviano y metadatos visibles.
+   filtro por entregable, tÃ­tulo mÃ¡s liviano y metadatos visibles.
    ========================================================== */
 
 .findingsDeliverableTotalCard > p,
@@ -12406,7 +12406,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   border-radius: 16px !important;
 }
 
-/* Títulos de hallazgos como subtítulo, menos pesados */
+/* TÃ­tulos de hallazgos como subtÃ­tulo, menos pesados */
 .findingWhiteCard .findingWhiteHeader h3,
 .findingsGridWhite .findingWhiteCard .findingWhiteHeader h3 {
   font-size: clamp(1rem, 1.25vw, 1.22rem) !important;
@@ -12551,7 +12551,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   border-radius: 16px !important;
 }
 
-/* Título del hallazgo como subtítulo, menos pesado */
+/* TÃ­tulo del hallazgo como subtÃ­tulo, menos pesado */
 .findingWhiteCard .findingWhiteHeader h3,
 .findingsGridWhite .findingWhiteCard .findingWhiteHeader h3 {
   font-size: clamp(1.02rem, 1.35vw, 1.28rem) !important;
@@ -12812,7 +12812,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    HALLAZGOS_V10_TAGS_INLINE_2_FILAS_FINAL
-   Metadatos como etiquetas pequeñas junto a prioridad/estado.
+   Metadatos como etiquetas pequeÃ±as junto a prioridad/estado.
    ========================================================== */
 
 .findingWhiteCard .findingBadgesTwoRows {
@@ -12857,7 +12857,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
   -webkit-text-fill-color: #ffffff !important;
 }
 
-/* Oculta la grilla grande anterior si queda por caché o versión previa */
+/* Oculta la grilla grande anterior si queda por cachÃ© o versiÃ³n previa */
 .findingWhiteCard .findingVisibleMetaGrid.findingTagList.findingCompactTags,
 .findingWhiteCard .findingTagList.findingCompactTags {
   display: none !important;
@@ -12892,7 +12892,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    HALLAZGOS_V11_TAGS_LEGIBLES_TOTAL_SIN_DUPLICAR_FINAL
-   Tags más legibles y total de entregables sin doble conteo.
+   Tags mÃ¡s legibles y total de entregables sin doble conteo.
    ========================================================== */
 
 .findingWhiteCard .findingBadgesTwoRows {
@@ -12983,7 +12983,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    ENTREGABLES_GSE_V5_BOTON_TURQUESA_FINAL
-   Botón Ver entregable en Entregables GSE con estilo turquesa.
+   BotÃ³n Ver entregable en Entregables GSE con estilo turquesa.
    ========================================================== */
 
 .deliverablesSection .deliverableCard a.secondaryLink,
@@ -13041,7 +13041,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 
 /* ==========================================================
    HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
-   Filtros: fecha/tipo/prioridad/gerencia/área/estado.
+   Filtros: fecha/tipo/prioridad/gerencia/Ã¡rea/estado.
    Tarjetas: solo prioridad, estado y fecha de entrega.
    ========================================================== */
 .findingsFiltersOrdered,
@@ -17865,7 +17865,7 @@ body {
 
 /* ==========================================================
    EDUCATION_RECEIVE_UNIFIED_BRAND_STYLE_V1
-   Lo que vas a recibir con resumen, filtros y tarjetas homogéneas
+   Lo que vas a recibir con resumen, filtros y tarjetas homogÃ©neas
    ========================================================== */
 .educationSection.premiumSectionCard {
   padding: 0 !important;
@@ -19569,9 +19569,6 @@ body {
   display: none;
 }
 
-.mobileFindingsView {
-  display: none;
-}
 
 @media (max-width: 760px) {
   .content.view-ruta > .mobileTabs {
@@ -19582,9 +19579,6 @@ body {
     display: none !important;
   }
 
-  .content.view-hallazgos > .mobileTabs {
-    display: none !important;
-  }
 
   .desktopRouteView {
     display: none !important;
@@ -20494,407 +20488,5 @@ body {
     border-radius: 999px !important;
   }
 
-  .mobileFindingsView {
-    display: block !important;
-    min-height: 100vh !important;
-    margin: 0 !important;
-    padding-bottom: 94px !important;
-    background: #eaf5f4 !important;
-    color: #001f2a !important;
-    overflow-x: hidden !important;
-  }
-
-  .mobileFindingsView + .findingsPremiumSection {
-    display: none !important;
-  }
-
-  .mobileFindingsHero {
-    display: grid !important;
-    justify-items: center !important;
-    gap: 12px !important;
-    padding: 24px 18px 26px !important;
-    background: #00b8b5 !important;
-    color: #ffffff !important;
-  }
-
-  .mobileFindingsHero h1 {
-    margin: 0 !important;
-    color: #ffffff !important;
-    font-size: 1.55rem !important;
-    line-height: 1.05 !important;
-    font-weight: 700 !important;
-    letter-spacing: 0 !important;
-    text-align: center !important;
-  }
-
-  .mobileFindingsHero label {
-    width: min(172px, 62vw) !important;
-    height: 29px !important;
-    display: grid !important;
-    grid-template-columns: 32px 1fr !important;
-    align-items: center !important;
-    border: 1px solid rgba(255, 255, 255, 0.78) !important;
-    border-radius: 999px !important;
-    color: #ffffff !important;
-  }
-
-  .mobileFindingsHero svg {
-    justify-self: center !important;
-  }
-
-  .mobileFindingsHero input {
-    min-width: 0 !important;
-    border: 0 !important;
-    background: transparent !important;
-    color: #ffffff !important;
-    outline: none !important;
-    font-size: 0.76rem !important;
-  }
-
-  .mobileFindingsHero input::placeholder {
-    color: rgba(255, 255, 255, 0.86) !important;
-  }
-
-  .mobileFindingsBody {
-    margin-top: -10px !important;
-    padding: 10px 20px 34px !important;
-    border-radius: 8px 8px 0 0 !important;
-    background: #eaf5f4 !important;
-  }
-
-  .mobileFindingsBody::before {
-    content: "" !important;
-    display: block !important;
-    width: 100% !important;
-    height: 4px !important;
-    margin: 0 0 14px !important;
-    background: #00b8b5 !important;
-  }
-
-  .mobileFindingsStatusCards {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 8px !important;
-    margin-bottom: 16px !important;
-  }
-
-  .mobileFindingsStatusCards article,
-  .mobileFindingsTotalCard,
-  .mobileFindingsDeliverableCard,
-  .mobileFindingCard {
-    background: #ffffff !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
-    color: #001f2a !important;
-  }
-
-  .mobileFindingsStatusCards article {
-    min-height: 70px !important;
-    display: grid !important;
-    align-content: start !important;
-    gap: 6px !important;
-    padding: 10px 10px 9px !important;
-  }
-
-  .mobileFindingsStatusCards i,
-  .mobileFindingCard > i,
-  .mobileFindingsDeliverableCard > i {
-    display: block !important;
-    width: 100% !important;
-    height: 3px !important;
-    background: #00b8b5 !important;
-  }
-
-  .mobileFindingsStatusCards span {
-    color: #001f2a !important;
-    font-size: 0.62rem !important;
-    font-weight: 400 !important;
-  }
-
-  .mobileFindingsStatusCards strong {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 2px !important;
-    color: #001f2a !important;
-    font-size: 0.95rem !important;
-    font-weight: 400 !important;
-  }
-
-  .mobileFindingsTotalCard {
-    display: grid !important;
-    grid-template-columns: 68px 1fr auto !important;
-    align-items: center !important;
-    gap: 12px !important;
-    min-height: 82px !important;
-    margin-bottom: 14px !important;
-  }
-
-  .mobileFindingsTotalCard div {
-    height: 82px !important;
-    display: grid !important;
-    place-items: center !important;
-    background: #00b8b5 !important;
-    color: #ffffff !important;
-  }
-
-  .mobileFindingsTotalCard span {
-    color: #001f2a !important;
-    font-size: 0.9rem !important;
-    line-height: 1.05 !important;
-  }
-
-  .mobileFindingsTotalCard strong {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    padding-right: 18px !important;
-    color: #001f2a !important;
-    font-size: 1.75rem !important;
-    font-weight: 400 !important;
-  }
-
-  .mobileFindingsSectionTitle {
-    margin: 16px 0 8px !important;
-    color: #405258 !important;
-    font-size: 1.2rem !important;
-    line-height: 1.2 !important;
-    font-weight: 400 !important;
-  }
-
-  .mobileFindingsDeliverableCard {
-    position: relative !important;
-    min-height: 164px !important;
-    margin-bottom: 16px !important;
-    padding: 12px 36px 16px !important;
-    touch-action: pan-y pinch-zoom !important;
-  }
-
-  .mobileFindingsDeliverableHead {
-    display: grid !important;
-    grid-template-columns: 1fr auto !important;
-    align-items: center !important;
-    gap: 12px !important;
-    margin: 14px 12px 12px !important;
-  }
-
-  .mobileFindingsDeliverableHead span {
-    color: #001f2a !important;
-    font-size: 0.9rem !important;
-    font-weight: 400 !important;
-  }
-
-  .mobileFindingsDeliverableHead b {
-    min-width: 112px !important;
-    padding: 6px 12px !important;
-    border-radius: 999px !important;
-    background: #00b8b5 !important;
-    color: #ffffff !important;
-    font-size: 0.62rem !important;
-    font-weight: 500 !important;
-    text-align: center !important;
-  }
-
-  .mobileFindingsDeliverableRows {
-    display: grid !important;
-    gap: 7px !important;
-    padding: 0 12px !important;
-  }
-
-  .mobileFindingsDeliverableRows > div {
-    display: grid !important;
-    grid-template-columns: 82px minmax(72px, 1fr) 28px !important;
-    align-items: center !important;
-    gap: 8px !important;
-  }
-
-  .mobileFindingsDeliverableRows span,
-  .mobileFindingsDeliverableRows strong {
-    color: #001f2a !important;
-    font-size: 0.62rem !important;
-    font-weight: 400 !important;
-  }
-
-  .mobileFindingsDeliverableRows div div {
-    height: 7px !important;
-    background: #e5f4f3 !important;
-  }
-
-  .mobileFindingsDeliverableRows em {
-    display: block !important;
-    height: 100% !important;
-    background: #00b8b5 !important;
-  }
-
-  .mobileFindingsDeliverableArrow {
-    position: absolute !important;
-    top: 50% !important;
-    width: 30px !important;
-    height: 52px !important;
-    display: grid !important;
-    place-items: center !important;
-    border: 0 !important;
-    background: transparent !important;
-    color: #001f2a !important;
-    transform: translateY(-28%) !important;
-  }
-
-  .mobileFindingsDeliverableArrow.left {
-    left: 5px !important;
-  }
-
-  .mobileFindingsDeliverableArrow.right {
-    right: 5px !important;
-  }
-
-  .mobileFindingsNextDeliverable {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 3px !important;
-    float: right !important;
-    margin: 12px 10px 0 0 !important;
-    border: 0 !important;
-    background: transparent !important;
-    color: #00a7a4 !important;
-    font-size: 0.64rem !important;
-    font-weight: 400 !important;
-  }
-
-  .mobileFindingsFilters {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px 12px !important;
-    margin: 8px 0 18px !important;
-    padding: 0 10px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-  }
-
-  .mobileFindingsFilters .filter {
-    min-width: 0 !important;
-    width: 100% !important;
-    gap: 4px !important;
-  }
-
-  .mobileFindingsFilters .filter span {
-    display: block !important;
-    width: 100% !important;
-    color: #405258 !important;
-    text-align: center !important;
-    font-size: 0.58rem !important;
-    font-weight: 400 !important;
-  }
-
-  .mobileFindingsFilters select {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    height: 26px !important;
-    min-height: 26px !important;
-    padding: 0 24px 0 10px !important;
-    border: 1px solid #cbdadb !important;
-    border-radius: 0 !important;
-    background-color: #ffffff !important;
-    color: #001f2a !important;
-    font-size: 0.62rem !important;
-  }
-
-  .mobileFindingsGrid {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px !important;
-  }
-
-  .mobileFindingCard {
-    position: relative !important;
-    min-height: 174px !important;
-    padding: 11px 12px 12px !important;
-  }
-
-  .mobileFindingCard > i {
-    margin-bottom: 10px !important;
-  }
-
-  .mobileFindingOpen {
-    position: absolute !important;
-    top: 12px !important;
-    right: 8px !important;
-    border: 0 !important;
-    background: transparent !important;
-    color: #001f2a !important;
-  }
-
-  .mobileFindingCard span,
-  .mobileFindingCard small {
-    display: block !important;
-    color: #53676b !important;
-    font-size: 0.52rem !important;
-    line-height: 1.15 !important;
-    text-transform: uppercase !important;
-  }
-
-  .mobileFindingCard h3 {
-    margin: 8px 0 !important;
-    color: #001f2a !important;
-    font-size: 0.74rem !important;
-    line-height: 1.08 !important;
-    font-weight: 400 !important;
-  }
-
-  .mobileFindingCard p {
-    margin: 0 0 8px !important;
-    color: #53676b !important;
-    font-size: 0.56rem !important;
-    line-height: 1.2 !important;
-  }
-
-  .mobileFindingCard a {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 3px !important;
-    color: #00a7a4 !important;
-    font-size: 0.56rem !important;
-    text-decoration: none !important;
-  }
-
-  .mobileFindingBadges {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 6px !important;
-    margin-top: 10px !important;
-  }
-
-  .mobileFindingBadges b {
-    min-height: 18px !important;
-    display: grid !important;
-    place-items: center !important;
-    border-radius: 999px !important;
-    background: #c8d0d3 !important;
-    color: #ffffff !important;
-    font-size: 0.54rem !important;
-    font-weight: 600 !important;
-  }
-
-  .mobileFindingBadges b.priority,
-  .mobileFindingBadges b.done {
-    background: #00b8b5 !important;
-  }
-
-  .mobileFindingsLoadMore {
-    display: grid !important;
-    justify-items: center !important;
-    gap: 2px !important;
-    margin: 14px auto 0 !important;
-    border: 0 !important;
-    background: transparent !important;
-    color: #00a7a4 !important;
-    font-size: 0.72rem !important;
-    font-weight: 400 !important;
-  }
-
-  .mobileFindingsLoadMore svg {
-    transform: rotate(90deg) !important;
-  }
 }
+
