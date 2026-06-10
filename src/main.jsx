@@ -2658,7 +2658,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
   );
 }
 
-function Findings({ findings = [] }) {
+function Findings({ findings = [], pending = [], setView, previousView = "portal" }) {
   const [open, setOpen] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("Todos");
@@ -2667,6 +2667,9 @@ function Findings({ findings = [] }) {
   const [managementFilter, setManagementFilter] = useState("Todos");
   const [areaFilter, setAreaFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
+  const [mobileDeliverableSide, setMobileDeliverableSide] = useState("gse");
+  const [mobileFindingsVisible, setMobileFindingsVisible] = useState(6);
+  const [mobileFindingsTouchStart, setMobileFindingsTouchStart] = useState(null);
 
   const getFindingStatusGroup = (status = "") => {
     const value = normalizeSystemName(status);
@@ -2849,7 +2852,176 @@ function Findings({ findings = [] }) {
     }, { gse: 0, client: 0 });
   }, [visibleDeliverableSummary]);
 
+  useEffect(() => {
+    setMobileFindingsVisible(6);
+  }, [searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
+
+  const activePending = pending.filter(isPendingActive).length;
+  const findingsBackView = previousView === "coe" ? "coe" : "portal";
+  const maxDeliverableCount = Math.max(
+    1,
+    ...Object.values(visibleDeliverableSummary).map((item) => Math.max(item.gse, item.client))
+  );
+
+  const finishFindingsSwipe = (touch) => {
+    if (!mobileFindingsTouchStart) return;
+    const diffX = mobileFindingsTouchStart.x - touch.clientX;
+    const diffY = mobileFindingsTouchStart.y - touch.clientY;
+    if (Math.abs(diffX) > 24 && Math.abs(diffX) > Math.abs(diffY) * 1.05) {
+      setMobileDeliverableSide((current) => current === "gse" ? "client" : "gse");
+    }
+    setMobileFindingsTouchStart(null);
+  };
+
+  const mobileStatusRows = [
+    { label: "Completado", value: statusSummary.completed },
+    { label: "Pendiente", value: statusSummary.pending },
+    { label: "En desarrollo", value: statusSummary.inProcess },
+  ];
+
+  const mobileDeliverableRows = Object.values(visibleDeliverableSummary).map((item) => ({
+    label: item.label,
+    value: mobileDeliverableSide === "gse" ? item.gse : item.client,
+  }));
+
+  const MobileFindingCard = ({ item }) => {
+    const process = item.processArea || item.process || item.area || "Proceso no definido";
+    const link = safeUrl(item.link || item.image);
+    const status = item.status || "Pendiente";
+    const deliveryDate = getFindingField(item, "date");
+    return (
+      <article className="mobileFindingCard">
+        <i />
+        <ChevronRight className="mobileFindingOpen" size={17} />
+        <span>ID {item.id}</span>
+        <small>{process}</small>
+        <h3>{item.finding || "Hallazgo sin título"}</h3>
+        {deliveryDate && <p>Fecha de entrega: {deliveryDate}</p>}
+        {link && (
+          <a href={link} target="_blank" rel="noreferrer">
+            Abrir evidencia o carpeta <ExternalLink size={11} />
+          </a>
+        )}
+        <div className="mobileFindingBadges">
+          {item.priority && <b className="priority">{item.priority}</b>}
+          <b className={getFindingStatusGroup(status) === "Completado" ? "done" : ""}>{status}</b>
+        </div>
+      </article>
+    );
+  };
+
   return (
+    <>
+    <section className="mobileFindingsView">
+      <div className="mobileRouteTopbar">
+        <button type="button" onClick={() => setView?.(findingsBackView)}><ChevronLeft size={18} /> Atrás</button>
+        <button type="button" onClick={() => setView?.("pendientes")}>Siguiente <ChevronRight size={18} /></button>
+      </div>
+
+      <header className="mobileFindingsHero">
+        <h1>Hallazgos encontrados</h1>
+        <label>
+          <Search size={17} />
+          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar" />
+        </label>
+      </header>
+
+      <div className="mobileFindingsBody">
+        <div className="mobileFindingsStatusCards">
+          {mobileStatusRows.map((item) => (
+            <article key={item.label}>
+              <i />
+              <span>{item.label}</span>
+              <strong><ChevronRight size={17} />{item.value}</strong>
+            </article>
+          ))}
+        </div>
+
+        <article className="mobileFindingsTotalCard">
+          <div><Search size={34} /></div>
+          <span>Total de<br />Hallazgos</span>
+          <strong><ChevronRight size={26} />{filteredFindings.length}</strong>
+        </article>
+
+        <h2 className="mobileFindingsSectionTitle">Entregables</h2>
+        <article
+          className="mobileFindingsDeliverableCard"
+          onTouchStart={(event) => {
+            const touch = event.touches[0];
+            setMobileFindingsTouchStart(touch ? { x: touch.clientX, y: touch.clientY } : null);
+          }}
+          onTouchEnd={(event) => {
+            const touch = event.changedTouches[0];
+            if (touch) finishFindingsSwipe(touch);
+          }}
+          onPointerDown={(event) => setMobileFindingsTouchStart({ x: event.clientX, y: event.clientY })}
+          onPointerUp={(event) => finishFindingsSwipe(event)}
+        >
+          <i />
+          <div className="mobileFindingsDeliverableHead">
+            <span>{mobileDeliverableSide === "gse" ? "GSE" : "Cliente"}</span>
+            <b>{mobileDeliverableSide === "gse" ? visibleDeliverableTotals.gse : visibleDeliverableTotals.client} entregables</b>
+          </div>
+          <button className="mobileFindingsDeliverableArrow left" type="button" onClick={() => setMobileDeliverableSide(mobileDeliverableSide === "gse" ? "client" : "gse")}><ChevronLeft size={26} /></button>
+          <div className="mobileFindingsDeliverableRows">
+            {mobileDeliverableRows.map((item) => (
+              <div key={item.label}>
+                <span>{item.label}</span>
+                <div><em style={{ width: `${Math.max(item.value ? 4 : 0, (item.value / maxDeliverableCount) * 100)}%` }} /></div>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
+          </div>
+          <button className="mobileFindingsDeliverableArrow right" type="button" onClick={() => setMobileDeliverableSide(mobileDeliverableSide === "gse" ? "client" : "gse")}><ChevronRight size={26} /></button>
+          <button className="mobileFindingsNextDeliverable" type="button" onClick={() => setMobileDeliverableSide(mobileDeliverableSide === "gse" ? "client" : "gse")}>
+            Entregables {mobileDeliverableSide === "gse" ? "clientes" : "GSE"} <ChevronRight size={14} />
+          </button>
+        </article>
+
+        <div className="mobileFindingsFilters">
+          <FilterSelect label="Fecha de entrega" value={dateFilter} onChange={setDateFilter} options={dateOptions} />
+          <FilterSelect label="Tipo de entregable" value={deliverableTypeFilter} onChange={setDeliverableTypeFilter} options={deliverableTypes} />
+          <FilterSelect label="Prioridad" value={priorityFilter} onChange={setPriorityFilter} options={priorities} />
+          <FilterSelect label="Gerencia" value={managementFilter} onChange={setManagementFilter} options={managements} />
+          <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areas} />
+          <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statuses} />
+        </div>
+
+        <div className="mobileFindingsGrid">
+          {filteredFindings.slice(0, mobileFindingsVisible).map((item) => (
+            <MobileFindingCard key={`${item.id}-${item.finding || item.description}`} item={item} />
+          ))}
+        </div>
+
+        {mobileFindingsVisible < filteredFindings.length && (
+          <button className="mobileFindingsLoadMore" type="button" onClick={() => setMobileFindingsVisible((current) => current + 6)}>
+            Cargar más <ChevronRight size={24} />
+          </button>
+        )}
+
+        {!filteredFindings.length && <div className="mobileRouteEmpty">No hay hallazgos con esos filtros.</div>}
+      </div>
+
+      <nav className="mobileBottomNav visible">
+        {[
+          { label: "Inicio", view: "portal", icon: BarChart3 },
+          { label: "Ruta", view: "ruta", icon: MapPin },
+          { label: "COE", view: "coe", icon: Brain },
+          { label: "Hallazgos", view: "hallazgos", icon: Search },
+          { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <button type="button" key={item.view} onClick={() => setView?.(item.view)}>
+              <Icon size={18} />
+              <span>{item.label}</span>
+              {item.view === "pendientes" && activePending > 0 && <i>{activePending}</i>}
+            </button>
+          );
+        })}
+      </nav>
+    </section>
+
     <section className="card premiumSectionCard findingsPremiumSection">
       <div className="sectionHeader">
         <div>
@@ -3010,6 +3182,7 @@ function Findings({ findings = [] }) {
         <div className="emptyState">No hay hallazgos que coincidan con los filtros seleccionados.</div>
       )}
     </section>
+    </>
   );
 }
 
@@ -4856,7 +5029,7 @@ function App() {
           )}
           {view === "procesos" && <ProcessesMasterList processesAsIs={processesAsIs} processesToBe={processesToBe} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
-          {view === "hallazgos" && <Findings findings={findings} />}
+          {view === "hallazgos" && <Findings findings={findings} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "pendientes" && <PendingClient pending={pending} />}
           {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} />}
           {view === "documentos" && <DocumentsUpload documents={documents} project={project} />}

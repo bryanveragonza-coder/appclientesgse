@@ -17,6 +17,416 @@
   font-family: "Roboto", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+@media (max-width: 760px) {
+  .content.view-hallazgos > .mobileTabs {
+    display: none !important;
+  }
+
+  .mobileFindingsView {
+    display: block !important;
+    min-height: 100vh !important;
+    padding-bottom: 94px !important;
+    background: #eaf5f4 !important;
+    color: #001f2a !important;
+    overflow-x: hidden !important;
+  }
+
+  .mobileFindingsView + .findingsPremiumSection {
+    display: none !important;
+  }
+
+  .mobileFindingsHero {
+    display: grid !important;
+    justify-items: center !important;
+    gap: 12px !important;
+    padding: 26px 18px 25px !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobileFindingsHero h1 {
+    margin: 0 !important;
+    color: #ffffff !important;
+    font-size: 1.55rem !important;
+    line-height: 1.05 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+    text-align: center !important;
+  }
+
+  .mobileFindingsHero label {
+    display: grid !important;
+    grid-template-columns: 32px 1fr !important;
+    align-items: center !important;
+    width: min(172px, 62vw) !important;
+    height: 29px !important;
+    border: 1px solid rgba(255, 255, 255, 0.78) !important;
+    border-radius: 999px !important;
+    color: #ffffff !important;
+  }
+
+  .mobileFindingsHero svg {
+    justify-self: center !important;
+  }
+
+  .mobileFindingsHero input {
+    min-width: 0 !important;
+    border: 0 !important;
+    outline: none !important;
+    background: transparent !important;
+    color: #ffffff !important;
+    font-size: 0.76rem !important;
+  }
+
+  .mobileFindingsHero input::placeholder {
+    color: rgba(255, 255, 255, 0.86) !important;
+  }
+
+  .mobileFindingsBody {
+    position: relative !important;
+    margin-top: -10px !important;
+    padding: 10px 20px 34px !important;
+    border-radius: 8px 8px 0 0 !important;
+    background: #eaf5f4 !important;
+  }
+
+  .mobileFindingsBody::before {
+    content: "" !important;
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin: 0 0 14px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileFindingsStatusCards {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin: 0 0 16px !important;
+  }
+
+  .mobileFindingsStatusCards article,
+  .mobileFindingsTotalCard,
+  .mobileFindingsDeliverableCard,
+  .mobileFindingCard {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
+    color: #001f2a !important;
+  }
+
+  .mobileFindingsStatusCards article {
+    min-height: 70px !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 6px !important;
+    padding: 10px 10px 9px !important;
+  }
+
+  .mobileFindingsStatusCards i,
+  .mobileFindingCard > i,
+  .mobileFindingsDeliverableCard > i {
+    display: block !important;
+    width: 100% !important;
+    height: 3px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileFindingsStatusCards span {
+    color: #001f2a !important;
+    font-size: 0.62rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileFindingsStatusCards strong {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+    color: #001f2a !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileFindingsTotalCard {
+    display: grid !important;
+    grid-template-columns: 68px 1fr auto !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-height: 82px !important;
+    margin: 0 0 14px !important;
+  }
+
+  .mobileFindingsTotalCard div {
+    height: 82px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobileFindingsTotalCard span {
+    color: #001f2a !important;
+    font-size: 0.9rem !important;
+    line-height: 1.05 !important;
+  }
+
+  .mobileFindingsTotalCard strong {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding-right: 18px !important;
+    color: #001f2a !important;
+    font-size: 1.75rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileFindingsSectionTitle {
+    margin: 16px 0 8px !important;
+    color: #405258 !important;
+    font-size: 1.12rem !important;
+    line-height: 1.2 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileFindingsDeliverableCard {
+    position: relative !important;
+    min-height: 164px !important;
+    margin: 0 0 16px !important;
+    padding: 12px 36px 16px !important;
+    touch-action: pan-y pinch-zoom !important;
+  }
+
+  .mobileFindingsDeliverableHead {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin: 14px 12px 12px !important;
+  }
+
+  .mobileFindingsDeliverableHead span {
+    color: #001f2a !important;
+    font-size: 0.9rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileFindingsDeliverableHead b {
+    min-width: 112px !important;
+    padding: 6px 12px !important;
+    border-radius: 999px !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+    font-size: 0.62rem !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+  }
+
+  .mobileFindingsDeliverableRows {
+    display: grid !important;
+    gap: 7px !important;
+    padding: 0 12px !important;
+  }
+
+  .mobileFindingsDeliverableRows > div {
+    display: grid !important;
+    grid-template-columns: 82px minmax(72px, 1fr) 28px !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .mobileFindingsDeliverableRows span,
+  .mobileFindingsDeliverableRows strong {
+    color: #001f2a !important;
+    font-size: 0.62rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileFindingsDeliverableRows div div {
+    height: 7px !important;
+    background: #e5f4f3 !important;
+  }
+
+  .mobileFindingsDeliverableRows em {
+    display: block !important;
+    height: 100% !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileFindingsDeliverableArrow {
+    position: absolute !important;
+    top: 50% !important;
+    width: 30px !important;
+    height: 52px !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #001f2a !important;
+    transform: translateY(-28%) !important;
+  }
+
+  .mobileFindingsDeliverableArrow.left {
+    left: 5px !important;
+  }
+
+  .mobileFindingsDeliverableArrow.right {
+    right: 5px !important;
+  }
+
+  .mobileFindingsNextDeliverable {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    float: right !important;
+    margin: 12px 10px 0 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #00a7a4 !important;
+    font-size: 0.64rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileFindingsFilters {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 8px 0 18px !important;
+    padding: 0 2px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .mobileFindingsFilters .filter {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 4px !important;
+  }
+
+  .mobileFindingsFilters .filter span {
+    display: block !important;
+    width: 100% !important;
+    color: #405258 !important;
+    text-align: center !important;
+    font-size: 0.58rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileFindingsFilters select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    padding: 0 24px 0 10px !important;
+    border: 1px solid #cbdadb !important;
+    border-radius: 0 !important;
+    background-color: #ffffff !important;
+    color: #001f2a !important;
+    font-size: 0.62rem !important;
+  }
+
+  .mobileFindingsGrid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .mobileFindingCard {
+    position: relative !important;
+    min-height: 174px !important;
+    padding: 11px 12px 12px !important;
+  }
+
+  .mobileFindingCard > i {
+    margin-bottom: 10px !important;
+  }
+
+  .mobileFindingOpen {
+    position: absolute !important;
+    top: 14px !important;
+    right: 10px !important;
+    color: #001f2a !important;
+  }
+
+  .mobileFindingCard span,
+  .mobileFindingCard small {
+    display: block !important;
+    padding-right: 20px !important;
+    color: #53676b !important;
+    font-size: 0.52rem !important;
+    line-height: 1.15 !important;
+    text-transform: uppercase !important;
+  }
+
+  .mobileFindingCard h3 {
+    margin: 8px 0 !important;
+    color: #001f2a !important;
+    font-size: 0.74rem !important;
+    line-height: 1.08 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileFindingCard p {
+    margin: 0 0 8px !important;
+    color: #53676b !important;
+    font-size: 0.56rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .mobileFindingCard a {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    color: #00a7a4 !important;
+    font-size: 0.56rem !important;
+    text-decoration: none !important;
+  }
+
+  .mobileFindingBadges {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin-top: 10px !important;
+  }
+
+  .mobileFindingBadges b {
+    min-height: 18px !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 999px !important;
+    background: #c8d0d3 !important;
+    color: #ffffff !important;
+    font-size: 0.54rem !important;
+    font-weight: 600 !important;
+  }
+
+  .mobileFindingBadges b.priority,
+  .mobileFindingBadges b.done {
+    background: #00b8b5 !important;
+  }
+
+  .mobileFindingsLoadMore {
+    display: grid !important;
+    justify-items: center !important;
+    gap: 2px !important;
+    margin: 14px auto 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #00a7a4 !important;
+    font-size: 0.72rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileFindingsLoadMore svg {
+    transform: rotate(90deg) !important;
+  }
+}
+
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--slate); }
 button, select { font: inherit; }
@@ -19566,6 +19976,10 @@ body {
 }
 
 .mobileCoeView {
+  display: none;
+}
+
+.mobileFindingsView {
   display: none;
 }
 
