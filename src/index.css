@@ -20298,7 +20298,7 @@ body {
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: thin !important;
     scrollbar-color: #00b8b5 #e5f4f3 !important;
-    touch-action: none !important;
+    touch-action: pan-y !important;
   }
 
   .mobileCoeProcessRow {
@@ -20306,7 +20306,7 @@ body {
     grid-template-columns: minmax(86px, 1fr) minmax(62px, 86px) 34px !important;
     align-items: center !important;
     gap: 8px !important;
-    touch-action: none !important;
+    touch-action: pan-y !important;
   }
 
   .mobileCoeProcessRow span {
