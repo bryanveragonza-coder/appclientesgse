@@ -3067,38 +3067,52 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
       <div className="sectionHeader">
         <div>
           <h2>Hallazgos encontrados</h2>
-          <p>Busca, filtra y revisa los hallazgos crÃ­ticos de la matriz tÃ©cnica.</p>
+          <p>Busca, filtra y revisa los hallazgos críticos de la matriz técnica.</p>
         </div>
-        <Badge status="En validaciÃ³n">{filteredFindings.length} visibles</Badge>
+        <Badge status="En validación">{filteredFindings.length} visibles</Badge>
       </div>
 
       <div className="findingsSummaryGrid">
         <article className="findingsSummaryCard">
-          <span>Hallazgos totales</span>
-          <strong>{filteredFindings.length}</strong>
-          <p>Total visible segÃºn los filtros activos.</p>
+          <div>
+            <span>Total de Hallazgos</span>
+            <strong>{filteredFindings.length}</strong>
+          </div>
+          <div className="findingsSummaryIcon" aria-hidden="true">
+            <Search size={28} />
+          </div>
+          <p>Total visible según los filtros activos.</p>
         </article>
 
-        <article className="findingsSummaryCard">
-          <span>Estado de hallazgos</span>
-          <div className="findingsMiniCounterGrid">
-            <div><strong>{statusSummary.pending}</strong><small>Pendiente</small></div>
-            <div><strong>{statusSummary.inProcess}</strong><small>En proceso</small></div>
-            <div><strong>{statusSummary.completed}</strong><small>Completado</small></div>
+        <article className="findingsSummaryCard findingsStatusSummaryCard">
+          <span>Estado de Hallazgos</span>
+          <div className="findingsStatusRows">
+            <div>
+              <span>Pendiente</span>
+              <div><i style={{ width: `${filteredFindings.length ? (statusSummary.pending / filteredFindings.length) * 100 : 0}%` }} /></div>
+              <strong>{statusSummary.pending}</strong>
+            </div>
+            <div>
+              <span>En proceso</span>
+              <div><i style={{ width: `${filteredFindings.length ? (statusSummary.inProcess / filteredFindings.length) * 100 : 0}%` }} /></div>
+              <strong>{statusSummary.inProcess}</strong>
+            </div>
+            <div>
+              <span>Completado</span>
+              <div><i style={{ width: `${filteredFindings.length ? (statusSummary.completed / filteredFindings.length) * 100 : 0}%` }} /></div>
+              <strong>{statusSummary.completed}</strong>
+            </div>
           </div>
           <p>Lectura actual de avance de los hallazgos filtrados.</p>
         </article>
       </div>
 
       <div className="findingsDeliverablesSplitGrid compactDeliverableCards">
-        <article className="findingsDeliverableTotalCard">
-          <span>Total entregables GSE</span>
-          <strong>{visibleDeliverableTotals.gse}</strong>
-          <p>Entregables internos visibles.</p>
-        </article>
-
-        <article className="findingsDeliverableBreakdownCard">
-          <span>Cantidad GSE</span>
+        <article className="findingsDeliverableDashboardCard">
+          <div className="findingsDeliverableDashboardHeader">
+            <span>Entregables GSE</span>
+            <strong>{visibleDeliverableTotals.gse}</strong>
+          </div>
           <div className="findingsDeliverableBreakdownRows">
             {Object.values(visibleDeliverableSummary).map((item) => (
               <div key={`gse-${item.label}`}>
@@ -3110,14 +3124,11 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
           </div>
         </article>
 
-        <article className="findingsDeliverableTotalCard client">
-          <span>Total entregables cliente</span>
-          <strong>{visibleDeliverableTotals.client}</strong>
-          <p>Entregables requeridos visibles.</p>
-        </article>
-
-        <article className="findingsDeliverableBreakdownCard client">
-          <span>Cantidad cliente</span>
+        <article className="findingsDeliverableDashboardCard client">
+          <div className="findingsDeliverableDashboardHeader">
+            <span>Entregables cliente</span>
+            <strong>{visibleDeliverableTotals.client}</strong>
+          </div>
           <div className="findingsDeliverableBreakdownRows">
             {Object.values(visibleDeliverableSummary).map((item) => (
               <div key={`client-${item.label}`}>
@@ -3146,7 +3157,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
         <FilterSelect label="Tipo de entregable" value={deliverableTypeFilter} onChange={setDeliverableTypeFilter} options={deliverableTypes} />
         <FilterSelect label="Prioridad" value={priorityFilter} onChange={setPriorityFilter} options={priorities} />
         <FilterSelect label="Gerencia" value={managementFilter} onChange={setManagementFilter} options={managements} />
-        <FilterSelect label="Ãrea" value={areaFilter} onChange={setAreaFilter} options={areas} />
+        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areas} />
         <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statuses} />
       </div>
 
@@ -3169,10 +3180,10 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
                     <span>ID {item.id}</span>
                     <span>{process}</span>
                   </div>
-                  <h3>{item.finding || "Hallazgo sin tÃ­tulo"}</h3>
+                  <h3>{item.finding || "Hallazgo sin título"}</h3>
                   {deliveryDate && <p className="findingDeliveryDate">Fecha de entrega: {deliveryDate}</p>}
                   <div className="badgeRow findingBadgesCompactOnly">
-                    {item.priority && <Badge status={item.priority === "Alta" ? "Bloqueado" : "En validaciÃ³n"}>Prioridad: {item.priority}</Badge>}
+                    {item.priority && <Badge status={item.priority === "Alta" ? "Bloqueado" : "En validación"}>Prioridad: {item.priority}</Badge>}
                     <Badge status={status}>{status}</Badge>
                   </div>
                 </div>
@@ -3190,26 +3201,26 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
                   <div className="findingFixedScroll">
                     {item.description && (
                       <div className="findingDetailBlock">
-                        <strong>DescripciÃ³n tÃ©cnica del hallazgo</strong>
+                        <strong>Descripción técnica del hallazgo</strong>
                         <p>{item.description}</p>
                       </div>
                     )}
                     {recommendation && (
                       <div className="findingDetailBlock">
-                        <strong>RecomendaciÃ³n tÃ©cnica</strong>
+                        <strong>Recomendación técnica</strong>
                         <p>{recommendation}</p>
                       </div>
                     )}
                     <div className="findingDetailGrid">
                       {solutionType && (
                         <div>
-                          <strong>Tipo de soluciÃ³n</strong>
+                          <strong>Tipo de solución</strong>
                           <span>{solutionType}</span>
                         </div>
                       )}
                     </div>
                     {!item.description && !recommendation && !solutionType && !link && (
-                      <p className="muted">Agrega descripciÃ³n, recomendaciÃ³n o link en la pestaÃ±a Hallazgos para mostrar mÃ¡s detalle.</p>
+                      <p className="muted">Agrega descripción, recomendación o link en la pestaña Hallazgos para mostrar más detalle.</p>
                     )}
                   </div>
                 </div>

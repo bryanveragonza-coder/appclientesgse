@@ -20972,3 +20972,13 @@ body {
 
 }
 
+
+
+/* FINDINGS_SINGLE_ICON_CENTER_FIX */
+.findingsPremiumSection .findingsSummaryIcon svg:only-child {
+  position: relative !important;
+  inset: auto !important;
+  width: 42px !important;
+  height: 42px !important;
+  stroke-width: 1.7 !important;
+}
