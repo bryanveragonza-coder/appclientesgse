@@ -19761,7 +19761,7 @@ body {
   }
 
   .mobileRouteFilters .filter {
-    gap: 4px !important;
+    gap: 6px !important;
     min-width: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -19769,18 +19769,23 @@ body {
   }
 
   .mobileRouteFilters .filter span {
+    display: block !important;
+    width: 100% !important;
     text-align: center !important;
     color: #001f2a !important;
-    font-size: 0.62rem !important;
-    font-weight: 400 !important;
+    font-size: 0.74rem !important;
+    line-height: 1 !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
   }
 
   .mobileRouteFilters select {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    height: 28px !important;
-    min-height: 28px !important;
+    height: 31px !important;
+    min-height: 31px !important;
     padding: 0 28px 0 12px !important;
     border: 1px solid #cbdadb !important;
     border-radius: 0 !important;
