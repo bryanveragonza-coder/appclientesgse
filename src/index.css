@@ -20297,7 +20297,8 @@ body {
     overscroll-behavior-y: contain !important;
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: thin !important;
-    touch-action: pan-y !important;
+    scrollbar-color: #00b8b5 #e5f4f3 !important;
+    touch-action: none !important;
   }
 
   .mobileCoeProcessRow {
@@ -20305,6 +20306,7 @@ body {
     grid-template-columns: minmax(86px, 1fr) minmax(62px, 86px) 34px !important;
     align-items: center !important;
     gap: 8px !important;
+    touch-action: none !important;
   }
 
   .mobileCoeProcessRow span {
@@ -20371,11 +20373,16 @@ body {
   }
 
   .mobileCoeProcessRows::-webkit-scrollbar {
-    width: 4px !important;
+    width: 6px !important;
   }
 
   .mobileCoeProcessRows::-webkit-scrollbar-thumb {
     background: #00b8b5 !important;
+    border-radius: 999px !important;
+  }
+
+  .mobileCoeProcessRows::-webkit-scrollbar-track {
+    background: #e5f4f3 !important;
     border-radius: 999px !important;
   }
 

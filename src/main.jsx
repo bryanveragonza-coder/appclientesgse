@@ -2380,7 +2380,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
     if (mobileCoeTouchStart === null) return;
     const diffX = mobileCoeTouchStart.x - touch.clientX;
     const diffY = mobileCoeTouchStart.y - touch.clientY;
-    if (Math.abs(diffX) > 36 && Math.abs(diffX) > Math.abs(diffY) * 1.25) {
+    if (Math.abs(diffX) > 22 && Math.abs(diffX) > Math.abs(diffY) * 1.05) {
       diffX > 0 ? onNext() : onPrev();
     }
     setMobileCoeTouchStart(null);
@@ -2405,6 +2405,11 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
         const touch = event.changedTouches[0];
         if (touch) finishCoeSwipe(touch, onPrev, onNext);
       }}
+      onPointerDown={(event) => {
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+        setMobileCoeTouchStart({ x: event.clientX, y: event.clientY });
+      }}
+      onPointerUp={(event) => finishCoeSwipe(event, onPrev, onNext)}
     >
       <i className="mobileCoeAccent" />
       <div className="mobileCoeInsightHead">
@@ -2423,7 +2428,14 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
     return (
       <div className="mobileCoeProcessRows">
         {rows.map((item, index) => (
-          <div className="mobileCoeProcessRow" key={`${item.process}-${index}`}>
+          <div
+            className="mobileCoeProcessRow"
+            key={`${item.process}-${index}`}
+            onTouchStart={(event) => event.stopPropagation()}
+            onTouchEnd={(event) => event.stopPropagation()}
+            onPointerDown={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
+          >
             <span>{index + 1}. {item.process}</span>
             <div><i style={{ width: `${Math.max(4, (item.total / maxProcessCost) * 100)}%` }} /></div>
             <strong>${formatCurrency(item.total)}</strong>
