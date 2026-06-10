@@ -2679,17 +2679,17 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
   };
 
   const categories = [
-    { key: "politica", label: "PolÃ­tica", words: ["politica", "politicas", "polÃ­tica", "polÃ­ticas"] },
+    { key: "politica", label: "Política", words: ["politica", "politicas", "política", "políticas"] },
     { key: "procedimiento", label: "Procedimiento", words: ["procedimiento", "procedimientos", "manual", "manuales", "instructivo", "instructivos"] },
-    { key: "indicador", label: "Indicador", words: ["indicador", "indicadores", "kpi", "kpÃ­s", "kpis"] },
+    { key: "indicador", label: "Indicador", words: ["indicador", "indicadores", "kpi", "kpís", "kpis"] },
     { key: "perfiles", label: "Perfiles", words: ["perfil", "perfiles", "cargo", "cargos"] },
-    { key: "rediseno", label: "RediseÃ±o de procesos", words: ["rediseno", "rediseÃ±o", "redisenio", "rediseÃ±ar", "redisenar", "rediseÃ±o de procesos"] },
+    { key: "rediseno", label: "Rediseño de procesos", words: ["rediseno", "rediseño", "redisenio", "rediseñar", "redisenar", "rediseño de procesos"] },
     { key: "dimensionamiento", label: "Dimensionamiento", words: ["dimensionamiento", "dimensionar", "dimension"] },
   ];
 
   const cleanOptionValue = (value = "") => {
     const text = String(value || "").trim();
-    if (!text || text === "-" || text === "â€”" || text.toLowerCase() === "n/a") return "";
+    if (!text || text === "-" || text === "—" || text.toLowerCase() === "n/a") return "";
     return text;
   };
 
@@ -2879,20 +2879,42 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     { label: "En desarrollo", value: statusSummary.inProcess },
   ];
 
-  const mobileDeliverableRows = Object.values(visibleDeliverableSummary).map((item) => ({
-    label: item.label,
-    value: mobileDeliverableSide === "gse" ? item.gse : item.client,
-  }));
+  const mobileGseDeliverableKeys = ["indicador", "perfiles", "rediseno", "dimensionamiento"];
+  const mobileClientDeliverableKeys = ["politica", "procedimiento"];
+  const mobileDeliverableLabels = {
+    politica: "Políticas",
+    procedimiento: "Procedimientos",
+  };
+  const mobileDeliverableRows = (mobileDeliverableSide === "gse" ? mobileGseDeliverableKeys : mobileClientDeliverableKeys)
+    .map((key) => {
+      const item = visibleDeliverableSummary[key];
+      return item ? { ...item, label: mobileDeliverableLabels[key] || item.label } : null;
+    })
+    .filter(Boolean)
+    .map((item) => ({
+      label: item.label,
+      value: mobileDeliverableSide === "gse" ? item.gse : item.client,
+    }));
 
   const MobileFindingCard = ({ item }) => {
     const process = item.processArea || item.process || item.area || "Proceso no definido";
     const link = safeUrl(item.link || item.image);
     const status = item.status || "Pendiente";
     const deliveryDate = getFindingField(item, "date");
+    const recommendation = item.recommendation || item.solution;
+    const key = `mobile-${item.id}-${item.finding || item.description}`;
+    const isOpen = open === key;
     return (
-      <article className="mobileFindingCard">
+      <article className={`mobileFindingCard ${isOpen ? "open" : ""}`}>
         <i />
-        <ChevronRight className="mobileFindingOpen" size={17} />
+        <button
+          type="button"
+          className="mobileFindingOpen"
+          onClick={() => setOpen(isOpen ? "" : key)}
+          aria-label={isOpen ? "Ocultar detalle" : "Ver detalle"}
+        >
+          <ChevronRight size={17} />
+        </button>
         <span>ID {item.id}</span>
         <small>{process}</small>
         <h3>{item.finding || "Hallazgo sin título"}</h3>
@@ -2906,6 +2928,25 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
           {item.priority && <b className="priority">{item.priority}</b>}
           <b className={getFindingStatusGroup(status) === "Completado" ? "done" : ""}>{status}</b>
         </div>
+        {isOpen && (
+          <div className="mobileFindingDetail">
+            {item.description && (
+              <div>
+                <strong>Descripción</strong>
+                <p>{item.description}</p>
+              </div>
+            )}
+            {recommendation && (
+              <div>
+                <strong>Recomendación</strong>
+                <p>{recommendation}</p>
+              </div>
+            )}
+            {!item.description && !recommendation && (
+              <p>No hay descripción o recomendación cargada.</p>
+            )}
+          </div>
+        )}
       </article>
     );
   };
