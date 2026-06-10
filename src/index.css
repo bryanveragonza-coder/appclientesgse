@@ -19336,6 +19336,23 @@ body {
     box-shadow: 0 18px 34px rgba(0, 88, 86, 0.2) !important;
   }
 
+  .mobileTopPopover .mobilePopoverClose {
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    width: 26px !important;
+    height: 26px !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    place-items: center !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: rgba(0, 184, 181, 0.08) !important;
+    color: #31575c !important;
+  }
+
   .mobileTopPopover h3 {
     margin: 0 0 4px !important;
     color: #001f2a !important;
@@ -19537,5 +19554,805 @@ body {
     color: #ffffff !important;
     font-size: 0.52rem !important;
     font-style: normal !important;
+  }
+}
+
+.mobileRouteView {
+  display: none;
+}
+
+.desktopRouteView {
+  display: block;
+}
+
+.mobileCoeView {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .desktopRouteView {
+    display: none !important;
+  }
+
+  .mobileRouteView {
+    display: block !important;
+    min-height: 100vh !important;
+    margin: -18px -18px 0 !important;
+    padding-bottom: 82px !important;
+    background: #eaf5f4 !important;
+    color: #001f2a !important;
+  }
+
+  .mobileRouteTopbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 35 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    min-height: 44px !important;
+    padding: 0 12px !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 0 rgba(0, 31, 42, 0.06) !important;
+  }
+
+  .mobileRouteTopbar button {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #001f2a !important;
+    font-size: 0.75rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileRouteHero {
+    display: grid !important;
+    justify-items: center !important;
+    gap: 12px !important;
+    padding: 22px 18px 26px !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobileRouteHero h1 {
+    margin: 0 !important;
+    color: #ffffff !important;
+    font-size: 1.65rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .mobileRouteHero label {
+    width: min(160px, 58vw) !important;
+    height: 28px !important;
+    display: grid !important;
+    grid-template-columns: 28px 1fr !important;
+    align-items: center !important;
+    border: 1px solid rgba(255, 255, 255, 0.78) !important;
+    border-radius: 999px !important;
+    color: #ffffff !important;
+  }
+
+  .mobileRouteHero label svg {
+    justify-self: center !important;
+  }
+
+  .mobileRouteHero input {
+    min-width: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #ffffff !important;
+    outline: none !important;
+    font-size: 0.76rem !important;
+  }
+
+  .mobileRouteHero input::placeholder {
+    color: rgba(255, 255, 255, 0.88) !important;
+  }
+
+  .mobileRouteBody {
+    position: relative !important;
+    margin-top: -10px !important;
+    padding: 10px 18px 28px !important;
+    border-radius: 8px 8px 0 0 !important;
+    background: #eaf5f4 !important;
+  }
+
+  .mobileRouteBody::before {
+    content: "" !important;
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin: 0 0 14px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileRouteStatusCards {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .mobileRouteStatusCards article {
+    min-height: 70px !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 6px !important;
+    padding: 10px 10px 9px !important;
+    background: #ffffff !important;
+    box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
+  }
+
+  .mobileRouteStatusCards i {
+    width: 100% !important;
+    height: 3px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileRouteStatusCards span {
+    color: #001f2a !important;
+    font-size: 0.68rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileRouteStatusCards strong {
+    color: #001f2a !important;
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileRouteTotalCard {
+    display: grid !important;
+    grid-template-columns: 68px 1fr auto !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-height: 76px !important;
+    margin-bottom: 14px !important;
+    background: #ffffff !important;
+    box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
+  }
+
+  .mobileRouteTotalCard div {
+    height: 76px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobileRouteTotalCard span {
+    color: #001f2a !important;
+    font-size: 0.88rem !important;
+    line-height: 1.05 !important;
+  }
+
+  .mobileRouteTotalCard strong {
+    padding-right: 18px !important;
+    color: #001f2a !important;
+    font-size: 1.75rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileRouteFilters {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 24px !important;
+    margin: 0 16px 14px !important;
+  }
+
+  .mobileRouteFilters .filter {
+    gap: 4px !important;
+  }
+
+  .mobileRouteFilters .filter span {
+    text-align: center !important;
+    color: #001f2a !important;
+    font-size: 0.62rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileRouteFilters select {
+    height: 25px !important;
+    min-height: 25px !important;
+    padding: 0 22px 0 10px !important;
+    border: 1px solid #cbdadb !important;
+    border-radius: 0 !important;
+    background-color: #ffffff !important;
+    color: #001f2a !important;
+    font-size: 0.68rem !important;
+  }
+
+  .mobileRouteCarousel {
+    display: grid !important;
+    grid-template-columns: 26px minmax(0, 1fr) 26px !important;
+    gap: 2px !important;
+    align-items: center !important;
+  }
+
+  .mobileRouteArrow {
+    width: 26px !important;
+    height: 52px !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #001f2a !important;
+  }
+
+  .mobileRouteMilestoneCard {
+    position: relative !important;
+    min-height: 188px !important;
+    padding: 16px 24px 18px !important;
+    background: #ffffff !important;
+    box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
+  }
+
+  .mobileRouteAccent {
+    display: block !important;
+    width: 100% !important;
+    height: 3px !important;
+    margin-bottom: 16px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileRouteMilestoneHead {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 10px !important;
+    align-items: start !important;
+  }
+
+  .mobileRouteMilestoneHead h2 {
+    margin: 0 0 4px !important;
+    color: #001f2a !important;
+    font-size: 0.86rem !important;
+    font-weight: 400 !important;
+    line-height: 1.15 !important;
+  }
+
+  .mobileRouteMilestoneHead p {
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    color: #3f5960 !important;
+    font-size: 0.62rem !important;
+  }
+
+  .mobileRouteMilestoneHead .badge {
+    min-width: 96px !important;
+    justify-content: center !important;
+    padding: 5px 12px !important;
+    border-radius: 999px !important;
+    font-size: 0.58rem !important;
+    font-weight: 700 !important;
+  }
+
+  .mobileRouteMilestoneCard .progressBar {
+    height: 8px !important;
+    margin-top: 14px !important;
+    border-radius: 0 !important;
+    background: #dff1f0 !important;
+  }
+
+  .mobileRouteMilestoneCard .progressBar div {
+    border-radius: 0 !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileRouteMilestoneCard .progressText {
+    margin-top: 4px !important;
+    color: #001f2a !important;
+    font-size: 0.62rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileRouteAccordionButtons {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin-top: 15px !important;
+  }
+
+  .mobileRouteAccordionButtons button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    min-height: 28px !important;
+    padding: 0 2px !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #001f2a !important;
+    font-size: 0.58rem !important;
+    font-weight: 400 !important;
+    white-space: nowrap !important;
+  }
+
+  .mobileRouteAccordionPanel {
+    margin: 12px -6px 0 !important;
+    padding: 12px 14px !important;
+    background: #eaf5f4 !important;
+    color: #23464c !important;
+    white-space: pre-line !important;
+  }
+
+  .mobileRouteAccordionPanel h3 {
+    margin: 0 0 6px !important;
+    color: #001f2a !important;
+    font-size: 0.78rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileRouteAccordionPanel p {
+    margin: 0 !important;
+    color: #23464c !important;
+    font-size: 0.74rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .mobileRouteAccordionPanel button {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    margin-top: 10px !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #00a7a4 !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+  }
+
+  .mobileRouteEmpty {
+    margin: 14px 28px 0 !important;
+    padding: 12px !important;
+    background: #ffffff !important;
+    color: #52686c !important;
+    font-size: 0.74rem !important;
+    text-align: center !important;
+  }
+
+  .mobileCoeView {
+    display: block !important;
+    min-height: 100vh !important;
+    margin: -18px -18px 0 !important;
+    padding-bottom: 82px !important;
+    background: #eaf5f4 !important;
+    color: #001f2a !important;
+  }
+
+  .mobileCoeView + .desktopCoeView {
+    display: none !important;
+  }
+
+  .mobileCoeHero {
+    display: grid !important;
+    justify-items: center !important;
+    gap: 7px !important;
+    padding: 18px 18px 24px !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobileCoeHero h1 {
+    margin: 0 !important;
+    color: #ffffff !important;
+    font-size: 1.75rem !important;
+    line-height: 1 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .mobileCoeHero span {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 0.68rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeHero label {
+    width: min(172px, 62vw) !important;
+    height: 29px !important;
+    display: grid !important;
+    grid-template-columns: 32px 1fr !important;
+    align-items: center !important;
+    margin-top: 7px !important;
+    border: 1px solid rgba(255, 255, 255, 0.78) !important;
+    border-radius: 999px !important;
+    color: #ffffff !important;
+  }
+
+  .mobileCoeHero svg {
+    justify-self: center !important;
+  }
+
+  .mobileCoeHero input {
+    min-width: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #ffffff !important;
+    outline: none !important;
+    font-size: 0.76rem !important;
+  }
+
+  .mobileCoeHero input::placeholder {
+    color: rgba(255, 255, 255, 0.86) !important;
+  }
+
+  .mobileCoeBody {
+    margin-top: -10px !important;
+    padding: 10px 18px 28px !important;
+    border-radius: 8px 8px 0 0 !important;
+    background: #eaf5f4 !important;
+  }
+
+  .mobileCoeBody::before {
+    content: "" !important;
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin: 0 0 14px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileCoeKpis {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .mobileCoeKpis article {
+    min-height: 72px !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 6px !important;
+    padding: 10px 9px 9px !important;
+    background: #ffffff !important;
+    box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
+  }
+
+  .mobileCoeKpis i,
+  .mobileCoeAccent {
+    display: block !important;
+    width: 100% !important;
+    height: 3px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileCoeKpis span {
+    color: #001f2a !important;
+    font-size: 0.62rem !important;
+    line-height: 1.2 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeKpis strong {
+    color: #001f2a !important;
+    font-size: 0.84rem !important;
+    line-height: 1.1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeMainCard {
+    display: grid !important;
+    grid-template-columns: 68px 1fr auto !important;
+    align-items: center !important;
+    min-height: 82px !important;
+    margin-bottom: 14px !important;
+    background: #ffffff !important;
+    box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
+  }
+
+  .mobileCoeMainCard div {
+    height: 82px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobileCoeMainCard span {
+    padding-left: 18px !important;
+    color: #001f2a !important;
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeMainCard strong {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    padding-right: 20px !important;
+    color: #001f2a !important;
+    font-size: 1.9rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeMainCard strong::before {
+    content: ">" !important;
+    font-size: 2rem !important;
+    line-height: 1 !important;
+  }
+
+  .mobileCoeSectionTitle {
+    margin: 16px 0 8px !important;
+    color: #405258 !important;
+    font-size: 1.2rem !important;
+    line-height: 1.2 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeInsightCard {
+    position: relative !important;
+    margin: 0 10px 16px !important;
+    padding: 12px 22px 16px !important;
+    background: #ffffff !important;
+    box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
+  }
+
+  .mobileCoeInsightHead {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin: 14px 20px 8px !important;
+  }
+
+  .mobileCoeInsightHead span {
+    color: #001f2a !important;
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeInsightHead b {
+    min-width: 110px !important;
+    padding: 6px 12px !important;
+    border-radius: 999px !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+    font-size: 0.64rem !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+  }
+
+  .mobileCoeSideLabel {
+    margin: -2px 20px 8px !important;
+    color: #53676b !important;
+    font-size: 0.58rem !important;
+    line-height: 1.12 !important;
+  }
+
+  .mobileCoeInsightBody {
+    display: grid !important;
+    gap: 7px !important;
+    padding: 0 28px !important;
+  }
+
+  .mobileCoeSlideArrow {
+    position: absolute !important;
+    top: 50% !important;
+    width: 30px !important;
+    height: 52px !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #001f2a !important;
+    transform: translateY(-38%) !important;
+  }
+
+  .mobileCoeSlideArrow.left {
+    left: 5px !important;
+  }
+
+  .mobileCoeSlideArrow.right {
+    right: 5px !important;
+  }
+
+  .mobileCoeNextLabel {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-self: end !important;
+    gap: 3px !important;
+    margin: 12px 14px 0 auto !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #00a7a4 !important;
+    font-size: 0.66rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeBarMetric {
+    display: grid !important;
+    grid-template-columns: 84px minmax(86px, 1fr) 28px !important;
+    align-items: center !important;
+    gap: 9px !important;
+  }
+
+  .mobileCoeBarMetric span {
+    color: #001f2a !important;
+    font-size: 0.66rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .mobileCoeBarMetric div,
+  .mobileCoeProcessRow div {
+    height: 7px !important;
+    background: #e5f4f3 !important;
+  }
+
+  .mobileCoeBarMetric i,
+  .mobileCoeProcessRow i {
+    display: block !important;
+    height: 100% !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileCoeBarMetric strong {
+    color: #001f2a !important;
+    font-size: 0.66rem !important;
+    font-weight: 400 !important;
+    text-align: right !important;
+  }
+
+  .mobileCoeProcessRows {
+    display: grid !important;
+    gap: 6px !important;
+  }
+
+  .mobileCoeProcessRow {
+    display: grid !important;
+    grid-template-columns: minmax(92px, 1fr) minmax(64px, 92px) 34px !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .mobileCoeProcessRow span {
+    overflow: hidden !important;
+    color: #001f2a !important;
+    font-size: 0.62rem !important;
+    line-height: 1.16 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .mobileCoeProcessRow strong {
+    color: #001f2a !important;
+    font-size: 0.62rem !important;
+    font-weight: 400 !important;
+    text-align: right !important;
+  }
+
+  .mobileCoeProcessRows p {
+    margin: 0 !important;
+    color: #53676b !important;
+    font-size: 0.68rem !important;
+  }
+
+  .mobileCoeFilters {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px 24px !important;
+    margin: 8px 26px 20px !important;
+  }
+
+  .mobileCoeFilters .filter {
+    gap: 4px !important;
+  }
+
+  .mobileCoeFilters .filter span {
+    color: #405258 !important;
+    text-align: center !important;
+    font-size: 0.62rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeFilters select {
+    height: 26px !important;
+    min-height: 26px !important;
+    padding: 0 24px 0 10px !important;
+    border: 1px solid #cbdadb !important;
+    border-radius: 0 !important;
+    background-color: #ffffff !important;
+    color: #001f2a !important;
+    font-size: 0.68rem !important;
+  }
+
+  .mobileCoeMatrixCard {
+    margin: 0 10px 16px !important;
+    padding: 16px 18px 14px !important;
+    background: #ffffff !important;
+    box-shadow: 5px 7px 14px rgba(0, 88, 86, 0.14) !important;
+  }
+
+  .mobileCoeMatrixHead {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    align-items: start !important;
+    gap: 10px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .mobileCoeMatrixHead h3 {
+    margin: 0 !important;
+    color: #001f2a !important;
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileCoeMatrixHead p {
+    margin: 2px 0 0 !important;
+    color: #53676b !important;
+    font-size: 0.56rem !important;
+    line-height: 1.16 !important;
+  }
+
+  .mobileCoeMatrixHead .badge {
+    min-width: 104px !important;
+    justify-content: center !important;
+    border-radius: 999px !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+    font-size: 0.62rem !important;
+    font-weight: 500 !important;
+  }
+
+  .mobileCoeMatrixWrap {
+    max-height: 116px !important;
+    overflow: auto !important;
+    border-bottom: 4px solid #00b8b5 !important;
+  }
+
+  .mobileCoeMatrixWrap table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+  }
+
+  .mobileCoeMatrixWrap th,
+  .mobileCoeMatrixWrap td {
+    padding: 5px 6px !important;
+    color: #001f2a !important;
+    font-size: 0.54rem !important;
+    line-height: 1.16 !important;
+    vertical-align: top !important;
+  }
+
+  .mobileCoeMatrixWrap th {
+    background: #bdf1ef !important;
+    font-weight: 500 !important;
+  }
+
+  .mobileCoeMatrixWrap th:nth-child(1),
+  .mobileCoeMatrixWrap td:nth-child(1) {
+    width: 25% !important;
+  }
+
+  .mobileCoeMatrixWrap th:nth-child(2),
+  .mobileCoeMatrixWrap td:nth-child(2) {
+    width: 25% !important;
+  }
+
+  .mobileCoeMatrixWrap th:nth-child(3),
+  .mobileCoeMatrixWrap td:nth-child(3) {
+    width: 17% !important;
+  }
+
+  .mobileCoeMatrixWrap th:nth-child(4),
+  .mobileCoeMatrixWrap td:nth-child(4) {
+    width: 33% !important;
+  }
+
+  .mobileCoeMatrixWrap::-webkit-scrollbar {
+    width: 4px !important;
+    height: 4px !important;
+  }
+
+  .mobileCoeMatrixWrap::-webkit-scrollbar-thumb {
+    background: #00b8b5 !important;
+    border-radius: 999px !important;
   }
 }

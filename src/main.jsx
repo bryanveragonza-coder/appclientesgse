@@ -15,6 +15,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardCheck,
+  ChevronLeft,
   ChevronRight,
   Clock3,
   Eye,
@@ -40,6 +41,7 @@ import {
   Unlock,
   Users,
   Video,
+  X,
   MessageCircle,
 } from "lucide-react";
 import { loadSheetData, demoData, getActiveSpreadsheetId } from "./sheets";
@@ -2123,12 +2125,16 @@ function formatCurrency(value) {
   return number.toLocaleString("es-EC", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
+function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [processFilter, setProcessFilter] = useState("Todos");
   const [typeFilter, setTypeFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [navFilter, setNavFilter] = useState("Todos");
+  const [mobileActivitySide, setMobileActivitySide] = useState("asis");
+  const [mobileNavSide, setMobileNavSide] = useState("asis");
+  const [mobileProcessSide, setMobileProcessSide] = useState("asis");
+  const [mobileBottomNavVisible, setMobileBottomNavVisible] = useState(false);
 
   const enrichRows = (rows) => rows.map((item) => {
     const time = parseNumericValue(item.time);
@@ -2359,8 +2365,191 @@ function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
     </div>
   );
 
+  useEffect(() => {
+    const onScroll = () => setMobileBottomNavVisible(window.scrollY > 220);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const toggleSide = (current, setter) => setter(current === "asis" ? "tobe" : "asis");
+  const activePending = pending.filter(isPendingActive).length;
+
+  const MobileBarMetric = ({ label, value, max }) => (
+    <div className="mobileCoeBarMetric">
+      <span>{label}</span>
+      <div><i style={{ width: `${Math.max(value > 0 ? 4 : 0, (value / Math.max(1, max)) * 100)}%` }} /></div>
+      <strong>{value}</strong>
+    </div>
+  );
+
+  const MobileInsightCard = ({ title, badge, sideLabel, children, onPrev, onNext, nextLabel }) => (
+    <article className="mobileCoeInsightCard">
+      <i className="mobileCoeAccent" />
+      <div className="mobileCoeInsightHead">
+        <span>{title}</span>
+        <b>{badge}</b>
+      </div>
+      <div className="mobileCoeSideLabel">{sideLabel}</div>
+      <button className="mobileCoeSlideArrow left" type="button" onClick={onPrev} aria-label="Anterior"><ChevronLeft size={27} /></button>
+      <div className="mobileCoeInsightBody">{children}</div>
+      <button className="mobileCoeSlideArrow right" type="button" onClick={onNext} aria-label="Siguiente"><ChevronRight size={27} /></button>
+      <button className="mobileCoeNextLabel" type="button" onClick={onNext}>{nextLabel} <ChevronRight size={15} /></button>
+    </article>
+  );
+
+  const MobileProcessRows = ({ rows }) => {
+    const visibleRows = rows.slice(0, 5);
+    return (
+      <div className="mobileCoeProcessRows">
+        {visibleRows.map((item, index) => (
+          <div className="mobileCoeProcessRow" key={`${item.process}-${index}`}>
+            <span>{index + 1}. {item.process}</span>
+            <div><i style={{ width: `${Math.max(4, (item.total / maxProcessCost) * 100)}%` }} /></div>
+            <strong>${formatCurrency(item.total)}</strong>
+          </div>
+        ))}
+        {!visibleRows.length && <p>No hay datos para mostrar.</p>}
+      </div>
+    );
+  };
+
+  const MobileMatrix = ({ title, subtitle, rows }) => (
+    <article className="mobileCoeMatrixCard">
+      <div className="mobileCoeMatrixHead">
+        <div>
+          <h3>{title}</h3>
+          <p>{subtitle}</p>
+        </div>
+        <Badge status="En validación">{rows.length} visibles</Badge>
+      </div>
+      <div className="mobileCoeMatrixWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>CÓDIGO</th>
+              <th>Proceso</th>
+              <th>Tipo</th>
+              <th>Actividad</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.slice(0, 8).map((item, index) => (
+              <tr key={`${title}-${item.code}-${index}`}>
+                <td>{item.code}</td>
+                <td>{item.process}</td>
+                <td>{item.processType}</td>
+                <td>{item.activity}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {!rows.length && <div className="mobileRouteEmpty">No hay actividades con esos filtros.</div>}
+    </article>
+  );
+
   return (
-    <section className="card premiumSectionCard coeSection">
+    <>
+    <section className="mobileCoeView">
+      <div className="mobileRouteTopbar">
+        <button type="button" onClick={() => setView?.("portal")}><ChevronLeft size={18} /> Atrás</button>
+        <button type="button" onClick={() => setView?.("hallazgos")}>Siguiente <ChevronRight size={18} /></button>
+      </div>
+
+      <header className="mobileCoeHero">
+        <h1>COE</h1>
+        <span>Costo Operativo Estructural</span>
+        <label>
+          <Search size={17} />
+          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar" />
+        </label>
+      </header>
+
+      <div className="mobileCoeBody">
+        <div className="mobileCoeKpis">
+          <article><i /><span>Costo procesos AS IS</span><strong>${formatCurrency(asIsTotal)}</strong></article>
+          <article><i /><span>COE mensual</span><strong>${formatCurrency(Math.abs(difference))}</strong></article>
+          <article><i /><span>Costo procesos TO BE</span><strong>${formatCurrency(toBeTotal)}</strong></article>
+        </div>
+
+        <article className="mobileCoeMainCard">
+          <div><BarChart3 size={34} /></div>
+          <span>COE</span>
+          <strong>{Math.abs(reductionPercent).toFixed(0)}%</strong>
+        </article>
+
+        <h2 className="mobileCoeSectionTitle">Actividades</h2>
+        <MobileInsightCard
+          title={`Actividades ${mobileActivitySide === "asis" ? "AS IS" : "TO BE"}`}
+          badge={`${mobileActivitySide === "asis" ? filteredAsIs.length : filteredToBe.length} actividades`}
+          sideLabel={mobileActivitySide === "asis" ? "AS IS" : "TO BE"}
+          onPrev={() => toggleSide(mobileActivitySide, setMobileActivitySide)}
+          onNext={() => toggleSide(mobileActivitySide, setMobileActivitySide)}
+          nextLabel={`Actividades ${mobileActivitySide === "asis" ? "TO BE" : "AS IS"}`}
+        >
+          <MobileBarMetric label="Mantenidas" value={(mobileActivitySide === "asis" ? asIsActivityStatusSummary : toBeActivityStatusSummary).maintained} max={maxActivityCount} />
+          <MobileBarMetric label="Eliminadas" value={(mobileActivitySide === "asis" ? asIsActivityStatusSummary : toBeActivityStatusSummary).deleted} max={maxActivityCount} />
+          <MobileBarMetric label="Agregadas" value={(mobileActivitySide === "asis" ? asIsActivityStatusSummary : toBeActivityStatusSummary).added} max={maxActivityCount} />
+        </MobileInsightCard>
+
+        <h2 className="mobileCoeSectionTitle">NAV</h2>
+        <MobileInsightCard
+          title={`NAV ${mobileNavSide === "asis" ? "AS IS" : "TO BE"}`}
+          badge={`${mobileNavSide === "asis" ? filteredAsIs.length : filteredToBe.length} actividades`}
+          sideLabel={mobileNavSide === "asis" ? "AS IS" : "TO BE"}
+          onPrev={() => toggleSide(mobileNavSide, setMobileNavSide)}
+          onNext={() => toggleSide(mobileNavSide, setMobileNavSide)}
+          nextLabel={`NAV ${mobileNavSide === "asis" ? "TO BE" : "AS IS"}`}
+        >
+          <MobileBarMetric label="Generan Valor" value={(mobileNavSide === "asis" ? asIsNavSummary : toBeNavSummary).value} max={maxNavCount} />
+          <MobileBarMetric label="No Generan Valor" value={(mobileNavSide === "asis" ? asIsNavSummary : toBeNavSummary).noValue} max={maxNavCount} />
+        </MobileInsightCard>
+
+        <h2 className="mobileCoeSectionTitle">Procesos</h2>
+        <MobileInsightCard
+          title={`Procesos ${mobileProcessSide === "asis" ? "AS IS" : "TO BE"}`}
+          badge={`${mobileProcessSide === "asis" ? asIsProcesses.length : toBeProcesses.length} procesos`}
+          sideLabel={mobileProcessSide === "asis" ? "Costo total por proceso actual" : "Costo total por proceso propuesto"}
+          onPrev={() => toggleSide(mobileProcessSide, setMobileProcessSide)}
+          onNext={() => toggleSide(mobileProcessSide, setMobileProcessSide)}
+          nextLabel={`Procesos ${mobileProcessSide === "asis" ? "TO BE" : "AS IS"}`}
+        >
+          <MobileProcessRows rows={mobileProcessSide === "asis" ? asIsProcesses : toBeProcesses} />
+        </MobileInsightCard>
+
+        <div className="mobileCoeFilters">
+          <FilterSelect label="Proceso" value={processFilter} onChange={setProcessFilter} options={processOptions} />
+          <FilterSelect label="Tipo" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
+          <FilterSelect label="Status" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
+          <FilterSelect label="NAV" value={navFilter} onChange={setNavFilter} options={navOptions} />
+        </div>
+
+        <MobileMatrix title="Matriz COE AS IS" subtitle="Actividades levantadas en la situación actual." rows={filteredAsIs} />
+        <MobileMatrix title="Matriz COE TO BE" subtitle="Actividades propuestas para la operación objetivo." rows={filteredToBe} />
+      </div>
+
+      <nav className={`mobileBottomNav ${mobileBottomNavVisible ? "visible" : ""}`}>
+        {[
+          { label: "Inicio", view: "portal", icon: BarChart3 },
+          { label: "Ruta", view: "ruta", icon: MapPin },
+          { label: "COE", view: "coe", icon: Brain },
+          { label: "Hallazgos", view: "hallazgos", icon: Search },
+          { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <button type="button" key={item.view} onClick={() => setView?.(item.view)}>
+              <Icon size={18} />
+              <span>{item.label}</span>
+              {item.view === "pendientes" && activePending > 0 && <i>{activePending}</i>}
+            </button>
+          );
+        })}
+      </nav>
+    </section>
+
+    <section className="card premiumSectionCard coeSection desktopCoeView">
       <div className="sectionHeader">
         <div>
           <h2>COE</h2>
@@ -2431,6 +2620,7 @@ function COEDashboard({ coeAsIs = [], coeToBe = [] }) {
         <COETable title="Matriz COE TO BE" subtitle="Actividades propuestas para la operación objetivo." rows={filteredToBe} />
       </div>
     </section>
+    </>
   );
 }
 
@@ -3969,7 +4159,10 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
         </div>
 
         {openMobilePanel && (
-          <div className="mobileTopPopover">
+          <div className="mobileTopPopover" onClick={(event) => event.stopPropagation()}>
+            <button className="mobilePopoverClose" type="button" onClick={() => setOpenMobilePanel("")} aria-label="Cerrar">
+              <X size={15} />
+            </button>
             <h3>{openMobilePanel === "meetings" ? "Reuniones" : "Pendientes"}</h3>
             {(openMobilePanel === "meetings" ? meetingItems : pendingItems).map((item, index) => (
               <button
@@ -4141,6 +4334,216 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
             <button type="button" key={item.view} onClick={() => setView(item.view)}>
               <Icon size={18} />
               <span>{item.short}</span>
+              {item.view === "pendientes" && activePending > 0 && <i>{activePending}</i>}
+            </button>
+          );
+        })}
+      </nav>
+    </section>
+  );
+}
+
+function MobileRouteView({ milestones = [], deliverables = [], pending = [], setView, setSelectedDeliverable }) {
+  const [routeSearchTerm, setRouteSearchTerm] = useState("");
+  const [routeStatusFilter, setRouteStatusFilter] = useState("Todos");
+  const [routeHitoFilter, setRouteHitoFilter] = useState("Todos");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [openPanel, setOpenPanel] = useState("");
+  const [showBottomNav, setShowBottomNav] = useState(false);
+
+  const statusOptions = useMemo(() => [...new Set(milestones.map((item) => item.status).filter(Boolean))], [milestones]);
+  const hitoOptions = useMemo(() => milestones.map((item) => item.title).filter(Boolean), [milestones]);
+
+  const statusCounts = useMemo(() => {
+    return milestones.reduce((acc, milestone) => {
+      const status = normalizeSystemName(milestone.status || "");
+      if (status.includes("finalizado") || status.includes("aprobado") || status.includes("completado") || status.includes("terminado")) {
+        acc.finished += 1;
+      } else if (status.includes("desarrollo") || status.includes("progreso")) {
+        acc.development += 1;
+      } else {
+        acc.pending += 1;
+      }
+      return acc;
+    }, { finished: 0, pending: 0, development: 0 });
+  }, [milestones]);
+
+  const filteredMilestones = useMemo(() => {
+    const query = normalizeSystemName(routeSearchTerm);
+    return milestones.filter((item) => {
+      const matchesStatus = routeStatusFilter === "Todos" || item.status === routeStatusFilter;
+      const matchesHito = routeHitoFilter === "Todos" || item.title === routeHitoFilter;
+      const searchable = normalizeSystemName([
+        item.id,
+        item.title,
+        item.status,
+        item.description,
+        item.includesClient,
+        item.includesGSE || item.includes,
+      ].join(" "));
+      return matchesStatus && matchesHito && (!query || searchable.includes(query));
+    });
+  }, [milestones, routeSearchTerm, routeStatusFilter, routeHitoFilter]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+    setOpenPanel("");
+  }, [routeSearchTerm, routeStatusFilter, routeHitoFilter]);
+
+  useEffect(() => {
+    const onScroll = () => setShowBottomNav(window.scrollY > 220);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const activeMilestone = filteredMilestones[activeIndex] || filteredMilestones[0] || milestones[0] || {};
+  const relatedDeliverables = deliverables.filter((item) =>
+    normalizeSystemName(item.milestone).includes(normalizeSystemName(activeMilestone.title)) ||
+    normalizeSystemName(activeMilestone.title).includes(normalizeSystemName(item.milestone))
+  );
+  const progress = Number(activeMilestone.progress) || (isCompletedStatus(activeMilestone.status) ? 100 : 0);
+  const activePending = pending.filter(isPendingActive).length;
+  const total = Math.max(filteredMilestones.length, 1);
+  const code = String(activeMilestone.id || activeIndex).replace(/^E/i, "");
+  const date = activeMilestone.targetDate || activeMilestone.date || "Por definir";
+  const statRows = [
+    { label: "Finalizado", value: statusCounts.finished },
+    { label: "Pendiente", value: statusCounts.pending },
+    { label: "En desarrollo", value: statusCounts.development },
+  ];
+  const panels = [
+    {
+      key: "descripcion",
+      label: "Descripción",
+      text: formatSheetText(activeMilestone.description) || "Sin descripción registrada para este hito.",
+    },
+    {
+      key: "cliente",
+      label: "Incluye Cliente",
+      text: formatSheetText(activeMilestone.includesClient) || "Sin información registrada para el cliente.",
+    },
+    {
+      key: "entregables",
+      label: "Entregables",
+      text: relatedDeliverables.length
+        ? relatedDeliverables.map((item) => item.deliverable || item.title).filter(Boolean).join("\n")
+        : "Sin entregables registrados para este hito.",
+    },
+  ];
+
+  const move = (direction) => {
+    setOpenPanel("");
+    setActiveIndex((current) => {
+      if (!filteredMilestones.length) return 0;
+      return (current + direction + filteredMilestones.length) % filteredMilestones.length;
+    });
+  };
+
+  return (
+    <section className="mobileRouteView">
+      <div className="mobileRouteTopbar">
+        <button type="button" onClick={() => setView("portal")}><ChevronLeft size={18} /> Atrás</button>
+        <button type="button" onClick={() => move(1)}>Siguiente <ChevronRight size={18} /></button>
+      </div>
+
+      <header className="mobileRouteHero">
+        <h1>Ruta del proyecto</h1>
+        <label>
+          <Search size={17} />
+          <input value={routeSearchTerm} onChange={(event) => setRouteSearchTerm(event.target.value)} placeholder="Buscar" />
+        </label>
+      </header>
+
+      <div className="mobileRouteBody">
+        <div className="mobileRouteStatusCards">
+          {statRows.map((item) => (
+            <article key={item.label}>
+              <i />
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+            </article>
+          ))}
+        </div>
+
+        <article className="mobileRouteTotalCard">
+          <div><Flag size={32} /></div>
+          <span>Hitos<br />Completados</span>
+          <strong>{milestones.length}</strong>
+        </article>
+
+        <div className="mobileRouteFilters">
+          <FilterSelect label="Estado" value={routeStatusFilter} onChange={setRouteStatusFilter} options={statusOptions} />
+          <FilterSelect label="Hito" value={routeHitoFilter} onChange={setRouteHitoFilter} options={hitoOptions} />
+        </div>
+
+        <div className="mobileRouteCarousel">
+          <button className="mobileRouteArrow" type="button" onClick={() => move(-1)} aria-label="Hito anterior">
+            <ChevronLeft size={30} />
+          </button>
+
+          <article className="mobileRouteMilestoneCard">
+            <i className="mobileRouteAccent" />
+            <div className="mobileRouteMilestoneHead">
+              <div>
+                <h2>E{code}: {activeMilestone.title || "Por definir"}</h2>
+                <p><Clock3 size={13} /> Fecha: {date}</p>
+              </div>
+              <Badge status={activeMilestone.status || "Pendiente"}>{activeMilestone.status || "Pendiente"}</Badge>
+            </div>
+
+            <ProgressBar value={progress} />
+            <div className="progressText">{progress}% de avance</div>
+
+            <div className="mobileRouteAccordionButtons">
+              {panels.map((panel) => (
+                <button type="button" key={panel.key} onClick={() => setOpenPanel(openPanel === panel.key ? "" : panel.key)}>
+                  {panel.label} <ChevronRight size={15} />
+                </button>
+              ))}
+            </div>
+
+            {openPanel && (
+              <div className="mobileRouteAccordionPanel">
+                <h3>{panels.find((panel) => panel.key === openPanel)?.label}</h3>
+                <p>{panels.find((panel) => panel.key === openPanel)?.text}</p>
+                {openPanel === "entregables" && relatedDeliverables.map((item, index) => safeUrl(item.link) && (
+                  <button
+                    type="button"
+                    key={`${item.deliverable}-${index}`}
+                    onClick={() => {
+                      setSelectedDeliverable?.(item.deliverable);
+                      setView("entregables");
+                    }}
+                  >
+                    Ver entregable <ExternalLink size={13} />
+                  </button>
+                ))}
+              </div>
+            )}
+          </article>
+
+          <button className="mobileRouteArrow" type="button" onClick={() => move(1)} aria-label="Siguiente hito">
+            <ChevronRight size={30} />
+          </button>
+        </div>
+
+        {!filteredMilestones.length && <div className="mobileRouteEmpty">No hay hitos con esos filtros.</div>}
+      </div>
+
+      <nav className={`mobileBottomNav ${showBottomNav ? "visible" : ""}`}>
+        {[
+          { label: "Inicio", view: "portal", icon: BarChart3 },
+          { label: "Ruta", view: "ruta", icon: MapPin },
+          { label: "COE", view: "coe", icon: Brain },
+          { label: "Hallazgos", view: "hallazgos", icon: Search },
+          { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <button type="button" key={item.view} onClick={() => setView(item.view)}>
+              <Icon size={18} />
+              <span>{item.label}</span>
               {item.view === "pendientes" && activePending > 0 && <i>{activePending}</i>}
             </button>
           );
@@ -4405,9 +4808,16 @@ function App() {
             />
           )}
 
-          {view === "ruta" && <Timeline milestones={milestones} deliverables={deliverables} detailed setView={setView} setSelectedDeliverable={setSelectedDeliverable} selectedHito={selectedHito} setSelectedHito={setSelectedHito} />}
+          {view === "ruta" && (
+            <>
+              <MobileRouteView milestones={milestones} deliverables={deliverables} pending={pending} setView={setView} setSelectedDeliverable={setSelectedDeliverable} />
+              <div className="desktopRouteView">
+                <Timeline milestones={milestones} deliverables={deliverables} detailed setView={setView} setSelectedDeliverable={setSelectedDeliverable} selectedHito={selectedHito} setSelectedHito={setSelectedHito} />
+              </div>
+            </>
+          )}
           {view === "procesos" && <ProcessesMasterList processesAsIs={processesAsIs} processesToBe={processesToBe} />}
-          {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} />}
+          {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={setView} />}
           {view === "hallazgos" && <Findings findings={findings} />}
           {view === "pendientes" && <PendingClient pending={pending} />}
           {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} />}
