@@ -3396,7 +3396,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
       <section className="mobilePendingView">
         <div className="mobileRouteTopbar">
           <button type="button" onClick={() => setView?.(mobileBackView)}><ChevronLeft size={18} /> Atrás</button>
-          <button type="button" onClick={() => setView?.("portal")}>Siguiente <ChevronRight size={18} /></button>
+          <button type="button" onClick={() => setView?.("entregables")}>Siguiente <ChevronRight size={18} /></button>
         </div>
 
         <header className="mobilePendingHero">
