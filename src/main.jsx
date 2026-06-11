@@ -75,6 +75,23 @@ function safeUrl(url = "") {
   return "";
 }
 
+function isCheckedSheetValue(value = "") {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  return ["si", "true", "1", "x", "ok", "validado", "validada", "yes"].includes(normalized);
+}
+
+function getClientSession() {
+  try {
+    return JSON.parse(window.localStorage.getItem("gseClientSession") || "null") || {};
+  } catch {
+    return {};
+  }
+}
+
 function Badge({ children, status }) {
   return <span className={`badge ${getStatusType(status || children)}`}>{children}</span>;
 }
@@ -1992,6 +2009,112 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
   );
   const processBackView = previousView === "pendientes" ? "pendientes" : "portal";
   const activePending = pending.filter(isPendingActive).length;
+  const validationWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
+  const spreadsheetId = getActiveSpreadsheetId();
+  const [processValidation, setProcessValidation] = useState({});
+  const [savingProcessValidation, setSavingProcessValidation] = useState({});
+
+  const getProcessValidationKey = (item, variant, field) => [
+    variant,
+    field,
+    item.processCode || item.id || "sin-codigo",
+    item.processName || "sin-proceso",
+  ].join("|");
+
+  const getProcessValidationValue = (item, variant, field) => {
+    const key = getProcessValidationKey(item, variant, field);
+    if (Object.prototype.hasOwnProperty.call(processValidation, key)) return processValidation[key];
+    return field === "image"
+      ? isCheckedSheetValue(item.imageValidated)
+      : isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated);
+  };
+
+  const handleValidateProcessAsset = async (item, variant, field, nextChecked) => {
+    if (!nextChecked) return;
+
+    const fieldName = field === "image" ? "imagen" : "ficha";
+    const confirmMessage = `¿Confirmas que validas esta ${fieldName} del proceso ${item.processName || item.processCode || "seleccionado"}?`;
+    if (!window.confirm(confirmMessage)) return;
+
+    const key = getProcessValidationKey(item, variant, field);
+    const previous = getProcessValidationValue(item, variant, field);
+    setProcessValidation((current) => ({ ...current, [key]: true }));
+    setSavingProcessValidation((current) => ({ ...current, [key]: true }));
+
+    if (!validationWebhookUrl) {
+      setProcessValidation((current) => ({ ...current, [key]: previous }));
+      setSavingProcessValidation((current) => ({ ...current, [key]: false }));
+      window.alert("Falta configurar VITE_DOCUMENTS_WEBHOOK_URL para guardar esta validación.");
+      return;
+    }
+
+    try {
+      const session = getClientSession();
+      const response = await fetch(validationWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "updateProcessValidation",
+          spreadsheetId,
+          variant,
+          sheetName: variant === "asis" ? "ProcesosASIS" : "ProcesosTOBE",
+          field: field === "image" ? "ImagenValidada" : "FichaValidada",
+          value: "SI",
+          id: item.id,
+          codigoProceso: item.processCode,
+          proceso: item.processName,
+          descripcion: variant === "asis" ? item.description : item.changes,
+          validatedAt: new Date().toISOString(),
+          validatedBy: session.nombre || session.usuario || session.cliente || "Cliente",
+          user: session.usuario || "",
+        }),
+      });
+
+      const text = await response.text();
+      let result = {};
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = { ok: response.ok, message: text };
+      }
+
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.message || "No se pudo guardar la validación.");
+      }
+    } catch (error) {
+      console.error(error);
+      setProcessValidation((current) => ({ ...current, [key]: previous }));
+      window.alert(error.message || "No se pudo guardar la validación.");
+    } finally {
+      setSavingProcessValidation((current) => ({ ...current, [key]: false }));
+    }
+  };
+
+  const ProcessAssetCell = ({ item, variant, field, url }) => {
+    const key = getProcessValidationKey(item, variant, field);
+    const checked = getProcessValidationValue(item, variant, field);
+    const saving = Boolean(savingProcessValidation[key]);
+    const label = field === "image" ? "Validar imagen" : "Validar ficha";
+
+    return (
+      <div className="processAssetActions">
+        {url ? (
+          <a className="processPreviewLink" href={url} target="_blank" rel="noreferrer">Ver</a>
+        ) : (
+          <span className="processNoPreview">Sin enlace</span>
+        )}
+        <label className={`processValidationCheck ${checked ? "validated" : ""} ${saving ? "saving" : ""}`} title={label}>
+          <input
+            type="checkbox"
+            checked={checked}
+            disabled={saving}
+            onChange={(event) => handleValidateProcessAsset(item, variant, field, event.target.checked)}
+          />
+          <span>{checked ? "Validado" : "Validar"}</span>
+        </label>
+      </div>
+    );
+  };
 
   const ProcessTable = ({ title, subtitle, rows, variant }) => (
     <div className="processTableCard">
@@ -2031,22 +2154,10 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
                 <td>{variant === "asis" ? item.description : item.changes}</td>
                 {variant === "tobe" && <td><Badge status={item.status}>{item.status || "Sin status"}</Badge></td>}
                 <td className="imageProcessCell">
-                  {safeUrl(item.imageProcess || item.link) ? (
-                    <a className="processPreviewLink" href={safeUrl(item.imageProcess || item.link)} target="_blank" rel="noreferrer">
-                      Ver
-                    </a>
-                  ) : (
-                    <span className="processNoPreview"></span>
-                  )}
+                  <ProcessAssetCell item={item} variant={variant} field="image" url={safeUrl(item.imageProcess || item.link)} />
                 </td>
                 <td className="techSheetCell">
-                  {safeUrl(item.technicalSheet || item.ficha || item.fichaTecnica || item.linkFicha) ? (
-                    <a className="processPreviewLink" href={safeUrl(item.technicalSheet || item.ficha || item.fichaTecnica || item.linkFicha)} target="_blank" rel="noreferrer">
-                      Ver
-                    </a>
-                  ) : (
-                    <span className="processNoPreview"></span>
-                  )}
+                  <ProcessAssetCell item={item} variant={variant} field="sheet" url={safeUrl(item.technicalSheet || item.ficha || item.fichaTecnica || item.linkFicha)} />
                 </td>
               </tr>
             ))}
@@ -2088,8 +2199,8 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
                   <td>{item.processCode || item.id}</td>
                   <td>{item.processName || "Por definir"}</td>
                   <td>{variant === "asis" ? item.description : item.changes}</td>
-                  <td>{imageUrl ? <a href={imageUrl} target="_blank" rel="noreferrer">Ver</a> : ""}</td>
-                  <td>{sheetUrl ? <a href={sheetUrl} target="_blank" rel="noreferrer">Ver</a> : ""}</td>
+                  <td><ProcessAssetCell item={item} variant={variant} field="image" url={imageUrl} /></td>
+                  <td><ProcessAssetCell item={item} variant={variant} field="sheet" url={sheetUrl} /></td>
                 </tr>
               );
             })}
@@ -5922,5 +6033,9 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
+
+
 
 

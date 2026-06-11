@@ -23007,3 +23007,67 @@ body {
     font-weight: 400 !important;
   }
 }
+
+/* Validacion de imagenes y fichas de procesos */
+.processAssetActions {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.processValidationCheck {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.72rem !important;
+  line-height: 1 !important;
+  font-weight: 400 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+}
+
+.processValidationCheck input {
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  accent-color: #00b8b5 !important;
+  cursor: pointer !important;
+}
+
+.processValidationCheck.validated {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+}
+
+.processValidationCheck.saving {
+  opacity: 0.55 !important;
+  cursor: wait !important;
+}
+
+@media (max-width: 760px) {
+  .mobileProcessMatrixWrap .processAssetActions {
+    flex-direction: column !important;
+    gap: 3px !important;
+  }
+
+  .mobileProcessMatrixWrap .processValidationCheck {
+    gap: 3px !important;
+    font-size: 0.46rem !important;
+  }
+
+  .mobileProcessMatrixWrap .processValidationCheck input {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .mobileProcessMatrixWrap .processValidationCheck span {
+    display: none !important;
+  }
+}

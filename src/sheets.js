@@ -1,4 +1,4 @@
-
+﻿
 function getSheetIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return params.get("sheet") || params.get("sheetId") || "";
@@ -19,23 +19,23 @@ export function getActiveSpreadsheetId() {
 
 export const demoData = {
   project: {
-    client: "SIN CONEXIÓN - REVISAR GOOGLE SHEET",
-    companyClient: "SIN CONEXIÓN - REVISAR GOOGLE SHEET",
+    client: "SIN CONEXIÃ“N - REVISAR GOOGLE SHEET",
+    companyClient: "SIN CONEXIÃ“N - REVISAR GOOGLE SHEET",
     contactName: "",
     contactRole: "",
     welcomeMessage: "",
-    service: "Business Power™",
+    service: "Business Powerâ„¢",
     status: "Pendiente",
     progress: 0,
     nextStep: "Configurar Google Sheet",
     nextDate: "Sin fecha",
     linkMeet: "",
     responsibleClient: "Sin responsable",
-    generalManager: "Sin información",
+    generalManager: "Sin informaciÃ³n",
     logoGSE: "",
     logoClient: "",
     projectPhrase: "Ruta de avance del proyecto",
-    whatsappMessage: "Hola, equipo 👋 Ya actualizamos la Ruta de Avance Visible™.",
+    whatsappMessage: "Hola, equipo ðŸ‘‹ Ya actualizamos la Ruta de Avance Visibleâ„¢.",
     documentUploadLink: ""
   },
   milestones: [],
@@ -53,11 +53,11 @@ export const demoData = {
     {
       id: "1",
       title: "Carga de documentos iniciales",
-      description: "Para iniciar el diagnóstico, sube en la carpeta compartida toda la información documental disponible de la empresa.",
+      description: "Para iniciar el diagnÃ³stico, sube en la carpeta compartida toda la informaciÃ³n documental disponible de la empresa.",
       category: "Estructura",
       item: "Organigrama actual",
       detail: "Documento donde se visualice la estructura actual de la empresa.",
-      required: "Sí",
+      required: "SÃ­",
       responseClient: "",
       status: "Pendiente",
       observation: "",
@@ -66,11 +66,11 @@ export const demoData = {
     {
       id: "2",
       title: "Carga de documentos iniciales",
-      description: "Para iniciar el diagnóstico, sube en la carpeta compartida toda la información documental disponible de la empresa.",
+      description: "Para iniciar el diagnÃ³stico, sube en la carpeta compartida toda la informaciÃ³n documental disponible de la empresa.",
       category: "Talento Humano",
       item: "Listado de colaboradores",
-      detail: "Base actual de colaboradores con cargo, área, fecha de ingreso y sueldo si aplica.",
-      required: "Sí",
+      detail: "Base actual de colaboradores con cargo, Ã¡rea, fecha de ingreso y sueldo si aplica.",
+      required: "SÃ­",
       responseClient: "",
       status: "Pendiente",
       observation: "",
@@ -79,7 +79,7 @@ export const demoData = {
     {
       id: "3",
       title: "Carga de documentos iniciales",
-      description: "Para iniciar el diagnóstico, sube en la carpeta compartida toda la información documental disponible de la empresa.",
+      description: "Para iniciar el diagnÃ³stico, sube en la carpeta compartida toda la informaciÃ³n documental disponible de la empresa.",
       category: "Procesos",
       item: "Manuales o procedimientos actuales",
       detail: "Manuales, instructivos, flujos o documentos internos existentes.",
@@ -207,7 +207,7 @@ async function fetchCsvRows(sheetName, required = true) {
 
   if (text.trim().startsWith("<")) {
     if (!required) return [];
-    throw new Error(`La hoja ${sheetName} devolvió HTML, no CSV`);
+    throw new Error(`La hoja ${sheetName} devolviÃ³ HTML, no CSV`);
   }
 
   return parseCsvRows(text);
@@ -264,7 +264,7 @@ function projectFromRawRows(rows) {
     "responsable",
     "gerentegeneral",
     "dueno",
-    "dueño",
+    "dueÃ±o",
     "lidercliente",
     "logogse",
     "logocliente",
@@ -347,7 +347,7 @@ function projectFromRawRows(rows) {
     nextDate: map.fechaproximopaso || map.proximafecha || demoData.project.nextDate,
     linkMeet: map.linkmeet || map.meet || map.googlemeet || demoData.project.linkMeet,
     responsibleClient: map.responsablecliente || map.responsable || demoData.project.responsibleClient,
-    generalManager: map.gerentegeneral || map.dueno || map.dueño || map.lidercliente || demoData.project.generalManager,
+    generalManager: map.gerentegeneral || map.dueno || map.dueÃ±o || map.lidercliente || demoData.project.generalManager,
     logoGSE: map.logogse || demoData.project.logoGSE,
     logoClient: map.logocliente || demoData.project.logoClient,
     projectPhrase: map.fraseproyecto || demoData.project.projectPhrase,
@@ -359,17 +359,17 @@ function projectFromRawRows(rows) {
 function mapMilestones(rows) {
   return rows.map((row, index) => ({
     id: getRowValue(row, ["ID", "Id"]) || String(index + 1),
-    title: getRowValue(row, ["Hito", "Titulo", "Título", "Nombre"]),
+    title: getRowValue(row, ["Hito", "Titulo", "TÃ­tulo", "Nombre"]),
     system: getRowValue(row, ["Sistema"]),
     status: getRowValue(row, ["Estado"]),
     progress: parseNumber(getRowValue(row, ["% Avance", "Avance", "Progreso"])),
-    description: getRowValue(row, ["Descripcion", "Descripción", "Detalle"]),
-    includes: getRowValue(row, ["Qué incluye", "Que incluye", "QueIncluye", "Incluye", "Contenido", "Dentro", "Actividades"]),
-    includesGSE: getRowValue(row, ["QueIncluyeGSE", "Qué incluye GSE", "Que incluye GSE", "IncluyeGSE", "Incluye GSE"]),
-    includesClient: getRowValue(row, ["QueIncluyeCliente", "Qué incluye cliente", "Que incluye cliente", "IncluyeCliente", "Incluye Cliente"]),
+    description: getRowValue(row, ["Descripcion", "DescripciÃ³n", "Detalle"]),
+    includes: getRowValue(row, ["QuÃ© incluye", "Que incluye", "QueIncluye", "Incluye", "Contenido", "Dentro", "Actividades"]),
+    includesGSE: getRowValue(row, ["QueIncluyeGSE", "QuÃ© incluye GSE", "Que incluye GSE", "IncluyeGSE", "Incluye GSE"]),
+    includesClient: getRowValue(row, ["QueIncluyeCliente", "QuÃ© incluye cliente", "Que incluye cliente", "IncluyeCliente", "Incluye Cliente"]),
     link: getRowValue(row, ["Link", "URL", "Enlace", "LinkHito"]),
     imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
-    technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha Técnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha Técnica"]),
+    technicalSheet: getRowValue(row, ["Ficha", "FichaTecnica", "Ficha TÃ©cnica", "Ficha Tecnica", "FichaTecnicaProceso", "Ficha Proceso", "LinkFicha", "Link Ficha", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
     targetDate: getRowValue(row, ["FechaObjetivo", "Fecha Objetivo", "Fecha objetivo", "Fecha", "FechaMeta"]),
     open: getRowValue(row, ["Abierto", "Abierta", "EstadoDesbloqueo", "Desbloqueado", "Disponible"]),
   })).filter((x) => x.title);
@@ -378,31 +378,31 @@ function mapMilestones(rows) {
 function mapFindings(rows) {
   return rows.map((row, index) => {
     const processArea = getRowValue(row, [
-      "ProcesoAreaImpactada", "Proceso / Área Impactada", "Proceso / Area Impactada",
-      "ProcesoArea", "Proceso Area", "Área Impactada", "Area Impactada", "Proceso", "Proceso Impactado", "Proceso impactado", "Area 2"
+      "ProcesoAreaImpactada", "Proceso / Ãrea Impactada", "Proceso / Area Impactada",
+      "ProcesoArea", "Proceso Area", "Ãrea Impactada", "Area Impactada", "Proceso", "Proceso Impactado", "Proceso impactado", "Area 2"
     ]);
     const management = getRowValue(row, ["Gerencia", "GERENCIA", "Gerencia responsable", "Gerencia Responsable"]);
-    const areaDetail = getRowValue(row, ["Area", "Área", "AREA", "Área responsable", "Area responsable", "Area Responsable", "Área Responsable"]);
+    const areaDetail = getRowValue(row, ["Area", "Ãrea", "AREA", "Ãrea responsable", "Area responsable", "Area Responsable", "Ãrea Responsable"]);
     const finding = getRowValue(row, [
       "HallazgoIdentificado", "Hallazgo Identificado", "Hallazgo", "Hallazgo identificado"
     ]);
     const description = getRowValue(row, [
-      "DescripcionTecnica", "Descripción Técnica del Hallazgo", "Descripcion Tecnica del Hallazgo",
-      "Descripción Técnica", "Descripcion Tecnica", "Descripcion", "Descripción", "Detalle", "Explicacion", "Explicación"
+      "DescripcionTecnica", "DescripciÃ³n TÃ©cnica del Hallazgo", "Descripcion Tecnica del Hallazgo",
+      "DescripciÃ³n TÃ©cnica", "Descripcion Tecnica", "Descripcion", "DescripciÃ³n", "Detalle", "Explicacion", "ExplicaciÃ³n"
     ]);
     const recommendation = getRowValue(row, [
-      "RecomendacionTecnica", "Recomendación Técnica", "Recomendacion Tecnica",
-      "Solucion", "Solución", "Propuesta", "Accion", "Acción"
+      "RecomendacionTecnica", "RecomendaciÃ³n TÃ©cnica", "Recomendacion Tecnica",
+      "Solucion", "SoluciÃ³n", "Propuesta", "Accion", "AcciÃ³n"
     ]);
     const solutionType = getRowValue(row, [
-      "TipoSolucion", "Tipo de Solución", "Tipo de Solucion", "Tipo Solucion", "Sistema", "Sistema que lo resuelve"
+      "TipoSolucion", "Tipo de SoluciÃ³n", "Tipo de Solucion", "Tipo Solucion", "Sistema", "Sistema que lo resuelve"
     ]);
     const owner = getRowValue(row, [
       "ResponsableSugerido", "Responsable Sugerido", "Responsable", "Responsable sugerido", "Responsable Hallazgo", "ResponsableHallazgo"
     ]);
 
     return {
-      id: getRowValue(row, ["ID", "Id", "Codigo", "Código"]) || String(index + 1),
+      id: getRowValue(row, ["ID", "Id", "Codigo", "CÃ³digo"]) || String(index + 1),
       management,
       gerencia: management,
       processArea,
@@ -418,19 +418,19 @@ function mapFindings(rows) {
       owner,
       responsible: owner,
       status: getRowValue(row, ["Estado"]),
-      deliveryDate: getRowValue(row, ["Fechamax", "FechaMax", "Fecha max", "Fecha máxima", "Fecha maxima", "Fecha de entrega", "FechaEntrega", "Fecha Entrega"]),
+      deliveryDate: getRowValue(row, ["Fechamax", "FechaMax", "Fecha max", "Fecha mÃ¡xima", "Fecha maxima", "Fecha de entrega", "FechaEntrega", "Fecha Entrega"]),
       deliverableGSE: getRowValue(row, ["EntregableGSE", "Entregable GSE", "EntregablesGSE", "Entregables GSE", "GSE"]),
       deliverableClient: getRowValue(row, ["EntregableCliente", "Entregable Cliente", "EntregablesCliente", "Entregables Cliente", "Cliente"]),
       link: getRowValue(row, ["Link", "URL", "Enlace", "Documento", "Archivo", "Carpeta", "LinkHallazgo"]),
       imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
-      technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha Técnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha Técnica"]),
+      technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha TÃ©cnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
       impact: getRowValue(row, ["Impacto"]),
       image: getRowValue(row, ["Imagen", "ImagenPreview", "Imagen previa", "URLImagen"]),
     };
   }).filter((x) => {
-    // Mantener todas las filas no vacías que llegan desde Google Sheets.
-    // Antes se descartaban filas cuando el hallazgo no venía en una columna específica,
-    // lo que podía dejar visibles solo algunos registros aunque la hoja tuviera más.
+    // Mantener todas las filas no vacÃ­as que llegan desde Google Sheets.
+    // Antes se descartaban filas cuando el hallazgo no venÃ­a en una columna especÃ­fica,
+    // lo que podÃ­a dejar visibles solo algunos registros aunque la hoja tuviera mÃ¡s.
     return Object.entries(x).some(([key, value]) => key !== "id" && cleanText(value));
   });
 }
@@ -439,16 +439,16 @@ function mapPending(rows) {
   return rows.map((row) => ({
     request: getRowValue(row, ["Pendiente", "Solicitud"]),
     owner: getRowValue(row, ["Responsable", "Responsable cliente", "Responsable Cliente"]),
-    dueDate: getRowValue(row, ["Fecha límite", "Fecha limite", "Fecha", "FechaObjetivo", "Fecha Objetivo"]),
+    dueDate: getRowValue(row, ["Fecha lÃ­mite", "Fecha limite", "Fecha", "FechaObjetivo", "Fecha Objetivo"]),
     status: getRowValue(row, ["Estado"]),
-    blocks: getRowValue(row, ["Qué bloquea", "Que bloquea", "Bloquea", "Impacto"]),
-    description: getRowValue(row, ["Descripcion", "Descripción", "Detalle", "Explicacion", "Explicación"]),
+    blocks: getRowValue(row, ["QuÃ© bloquea", "Que bloquea", "Bloquea", "Impacto"]),
+    description: getRowValue(row, ["Descripcion", "DescripciÃ³n", "Detalle", "Explicacion", "ExplicaciÃ³n"]),
     link: getRowValue(row, ["LinkPendiente", "Link Pendiente", "Link", "URL", "Enlace", "LinkDocumento", "Link Documento", "Documento", "Archivo"]),
     imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
-    technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha Técnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha Técnica"]),
+    technicalSheet: getRowValue(row, ["Ficha", "FichaTecnica", "Ficha TÃ©cnica", "Ficha Tecnica", "FichaTecnicaProceso", "Ficha Proceso", "LinkFicha", "Link Ficha", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
     validationClient: getRowValue(row, [
-      "ValidacionDeCliente", "ValidaciónDeCliente", "Validacion De Cliente", "Validación De Cliente", "ValidacionCliente", "ValidaciónCliente", "Validacion Cliente", "Validación Cliente",
-      "Validado", "AprobacionCliente", "AprobaciónCliente", "Aprobacion Cliente", "Aprobación Cliente"
+      "ValidacionDeCliente", "ValidaciÃ³nDeCliente", "Validacion De Cliente", "ValidaciÃ³n De Cliente", "ValidacionCliente", "ValidaciÃ³nCliente", "Validacion Cliente", "ValidaciÃ³n Cliente",
+      "Validado", "AprobacionCliente", "AprobaciÃ³nCliente", "Aprobacion Cliente", "AprobaciÃ³n Cliente"
     ]),
   })).filter((x) => x.request);
 }
@@ -466,14 +466,14 @@ function mapDeliverables(rows) {
       "EnlaceEntregable", "Enlace Entregable", "Documento", "Archivo"
     ]),
     imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
-    technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha Técnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha Técnica"]),
-    observation: getRowValue(row, ["Observacion", "Observación", "Notas", "Comentario"]),
+    technicalSheet: getRowValue(row, ["Ficha", "FichaTecnica", "Ficha TÃ©cnica", "Ficha Tecnica", "FichaTecnicaProceso", "Ficha Proceso", "LinkFicha", "Link Ficha", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
+    observation: getRowValue(row, ["Observacion", "ObservaciÃ³n", "Notas", "Comentario"]),
   })).filter((x) => x.deliverable);
 }
 
 function mapUpdates(rows) {
   return rows.map((row) => ({
-    title: getRowValue(row, ["Título", "Titulo", "Title"]),
+    title: getRowValue(row, ["TÃ­tulo", "Titulo", "Title"]),
     text: getRowValue(row, ["Texto", "Mensaje", "Detalle"]),
     target: getRowValue(row, ["Destino", "Target", "Vista"]),
   })).filter((x) => x.title || x.text);
@@ -481,46 +481,46 @@ function mapUpdates(rows) {
 
 function mapMeetings(rows) {
   return rows.map((row, index) => ({
-    id: getRowValue(row, ["ID", "Id", "Codigo", "Código"]) || String(index + 1),
-    date: getRowValue(row, ["Fecha", "FechaReunion", "Fecha Reunión", "Fecha Reunion"]),
-    time: getRowValue(row, ["Hora", "HoraReunion", "Hora Reunión", "Hora Reunion"]),
-    title: getRowValue(row, ["Titulo", "Título", "Title", "Nombre", "Reunion", "Reunión"]),
+    id: getRowValue(row, ["ID", "Id", "Codigo", "CÃ³digo"]) || String(index + 1),
+    date: getRowValue(row, ["Fecha", "FechaReunion", "Fecha ReuniÃ³n", "Fecha Reunion"]),
+    time: getRowValue(row, ["Hora", "HoraReunion", "Hora ReuniÃ³n", "Hora Reunion"]),
+    title: getRowValue(row, ["Titulo", "TÃ­tulo", "Title", "Nombre", "Reunion", "ReuniÃ³n"]),
     status: getRowValue(row, ["Estado", "Status"]),
     link: getRowValue(row, ["Link", "LinkMeet", "Link Meet", "URL", "Enlace"]),
-    observation: getRowValue(row, ["Observacion", "Observación", "Notas", "Comentario"]),
+    observation: getRowValue(row, ["Observacion", "ObservaciÃ³n", "Notas", "Comentario"]),
   })).filter((x) => x.title || x.date || x.time || x.link);
 }
 
 function mapDocuments(rows) {
   return rows.map((row, index) => {
-    const title = getRowValue(row, ["Titulo", "Título", "Title", "NombreTitulo", "Nombre Título"]);
+    const title = getRowValue(row, ["Titulo", "TÃ­tulo", "Title", "NombreTitulo", "Nombre TÃ­tulo"]);
     const description = getRowValue(row, [
-      "Descripcion", "Descripción", "Description", "DescripcionGeneral", "Descripción General",
-      "Texto", "Intro", "Introduccion", "Introducción"
+      "Descripcion", "DescripciÃ³n", "Description", "DescripcionGeneral", "DescripciÃ³n General",
+      "Texto", "Intro", "Introduccion", "IntroducciÃ³n"
     ]);
-    const category = getRowValue(row, ["Categoria", "Categoría", "Category", "Tipo", "Grupo", "Area", "Área"]);
+    const category = getRowValue(row, ["Categoria", "CategorÃ­a", "Category", "Tipo", "Grupo", "Area", "Ãrea"]);
     const item = getRowValue(row, [
-      "Item", "Ítem", "Documento", "Documento solicitado", "Documento Solicitado",
+      "Item", "Ãtem", "Documento", "Documento solicitado", "Documento Solicitado",
       "Documento requerido", "Documento Requerido", "Checklist", "Nombre", "Requerimiento",
-      "Solicitud", "Archivo", "Información requerida", "Informacion requerida"
+      "Solicitud", "Archivo", "InformaciÃ³n requerida", "Informacion requerida"
     ]);
     const detail = getRowValue(row, [
-      "Detalle", "Detail", "DescripcionItem", "Descripción Item", "Descripcion del item", "Descripción del ítem",
-      "DescripcionDocumento", "Descripción Documento", "Descripcion documento", "Descripción documento",
-      "ParaQueSirve", "Para qué sirve", "Para que sirve", "Instruccion", "Instrucción"
+      "Detalle", "Detail", "DescripcionItem", "DescripciÃ³n Item", "Descripcion del item", "DescripciÃ³n del Ã­tem",
+      "DescripcionDocumento", "DescripciÃ³n Documento", "Descripcion documento", "DescripciÃ³n documento",
+      "ParaQueSirve", "Para quÃ© sirve", "Para que sirve", "Instruccion", "InstrucciÃ³n"
     ]);
 
     return {
-      id: getRowValue(row, ["ID", "Id", "N", "N°", "No"]) || String(index + 1),
+      id: getRowValue(row, ["ID", "Id", "N", "NÂ°", "No"]) || String(index + 1),
       title,
       description,
       category,
       item,
       detail,
       required: getRowValue(row, ["Obligatorio", "Required", "Requerido", "Es obligatorio"]),
-      responseClient: getRowValue(row, ["RespuestaCliente", "Respuesta Cliente", "Respuesta", "Tiene", "Disponibilidad", "SeleccionCliente", "Selección Cliente"]),
-      status: getRowValue(row, ["Estado", "Status", "Situacion", "Situación", "Disponible"]),
-      observation: getRowValue(row, ["Observacion", "Observación", "Notas", "Comentario", "Comentarios", "Observaciones"]),
+      responseClient: getRowValue(row, ["RespuestaCliente", "Respuesta Cliente", "Respuesta", "Tiene", "Disponibilidad", "SeleccionCliente", "SelecciÃ³n Cliente"]),
+      status: getRowValue(row, ["Estado", "Status", "Situacion", "SituaciÃ³n", "Disponible"]),
+      observation: getRowValue(row, ["Observacion", "ObservaciÃ³n", "Notas", "Comentario", "Comentarios", "Observaciones"]),
       responseDate: getRowValue(row, ["FechaRespuesta", "Fecha Respuesta", "Fecha", "FechaRegistro"]),
     };
   }).filter((x) => x.item || x.title || x.description || x.detail || x.category);
@@ -529,31 +529,35 @@ function mapDocuments(rows) {
 
 function mapProcessesAsIs(rows) {
   return rows.map((row, index) => ({
-    id: getRowValue(row, ["N°", "N", "No", "Numero", "Número", "ID", "Id"]) || String(index + 1),
+    id: getRowValue(row, ["NÂ°", "N", "No", "Numero", "NÃºmero", "ID", "Id"]) || String(index + 1),
     type: getRowValue(row, ["TipoProceso", "Tipo de Proceso", "Tipo Proceso", "Tipo de proceso", "Tipo"]),
-    macroCode: getRowValue(row, ["CodigoMacroproceso", "Código Macroproceso", "Cód. Macroproceso", "Cod Macroproceso", "Codigo Macroproceso"]),
+    macroCode: getRowValue(row, ["CodigoMacroproceso", "CÃ³digo Macroproceso", "CÃ³d. Macroproceso", "Cod Macroproceso", "Codigo Macroproceso"]),
     macroName: getRowValue(row, ["NombreMacroproceso", "Nombre del Macroproceso", "Nombre Macroproceso", "Macroproceso"]),
-    processCode: getRowValue(row, ["CodigoProceso", "Código Proceso", "Cód. Proceso", "Cod Proceso", "Codigo Proceso"]),
+    processCode: getRowValue(row, ["CodigoProceso", "CÃ³digo Proceso", "CÃ³d. Proceso", "Cod Proceso", "Codigo Proceso"]),
     processName: getRowValue(row, ["NombreProceso", "Nombre del Proceso", "Nombre Proceso", "Proceso"]),
-    description: getRowValue(row, ["DescripcionProceso", "Descripción del Proceso", "Descripcion del Proceso", "Descripción Proceso", "Descripcion Proceso", "Descripcion", "Descripción"]),
+    description: getRowValue(row, ["DescripcionProceso", "DescripciÃ³n del Proceso", "Descripcion del Proceso", "DescripciÃ³n Proceso", "Descripcion Proceso", "Descripcion", "DescripciÃ³n"]),
     link: getRowValue(row, ["Link", "link", "URL", "Url", "Enlace", "Imagen", "ImagenPreview", "Imagen Preview", "VistaPrevia", "Vista Previa", "LinkImagen", "Link Imagen"]),
     imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
-    technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha Técnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha Técnica"]),
+    technicalSheet: getRowValue(row, ["Ficha", "FichaTecnica", "Ficha TÃ©cnica", "Ficha Tecnica", "FichaTecnicaProceso", "Ficha Proceso", "LinkFicha", "Link Ficha", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
+    imageValidated: getRowValue(row, ["ImagenValidada", "Imagen Validada", "Imagen validada"]),
+    technicalSheetValidated: getRowValue(row, ["FichaValidada", "Ficha Validada", "Ficha validada"]),
   })).filter((x) => x.processName || x.processCode || x.macroName || x.description);
 }
 
 function mapProcessesToBe(rows) {
   return rows.map((row, index) => ({
-    id: getRowValue(row, ["N°", "N", "No", "Numero", "Número", "ID", "Id"]) || String(index + 1),
+    id: getRowValue(row, ["NÂ°", "N", "No", "Numero", "NÃºmero", "ID", "Id"]) || String(index + 1),
     type: getRowValue(row, ["TipoProceso", "Tipo de Proceso", "Tipo Proceso", "Tipo de proceso", "Tipo"]),
-    macroCode: getRowValue(row, ["CodigoMacroproceso", "Código Macroproceso", "Cód. Macroproceso", "Cod Macroproceso", "Codigo Macroproceso"]),
+    macroCode: getRowValue(row, ["CodigoMacroproceso", "CÃ³digo Macroproceso", "CÃ³d. Macroproceso", "Cod Macroproceso", "Codigo Macroproceso"]),
     macroName: getRowValue(row, ["NombreMacroproceso", "Nombre del Macroproceso", "Nombre Macroproceso", "Macroproceso"]),
-    processCode: getRowValue(row, ["CodigoProceso", "Código Proceso", "Cód. Proceso", "Cod Proceso", "Codigo Proceso"]),
+    processCode: getRowValue(row, ["CodigoProceso", "CÃ³digo Proceso", "CÃ³d. Proceso", "Cod Proceso", "Codigo Proceso"]),
     processName: getRowValue(row, ["NombreProceso", "Nombre del Proceso", "Nombre Proceso", "Proceso"]),
-    changes: getRowValue(row, ["CambiosObservaciones", "Cambios y Observaciones", "Cambios y observaciones", "Cambios Observaciones", "Cambios", "Observaciones", "Observacion", "Observación"]),
+    changes: getRowValue(row, ["CambiosObservaciones", "Cambios y Observaciones", "Cambios y observaciones", "Cambios Observaciones", "Cambios", "Observaciones", "Observacion", "ObservaciÃ³n"]),
     link: getRowValue(row, ["Link", "link", "URL", "Url", "Enlace", "Imagen", "ImagenPreview", "Imagen Preview", "VistaPrevia", "Vista Previa", "LinkImagen", "Link Imagen"]),
     imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
-    technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha Técnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha Técnica"]),
+    technicalSheet: getRowValue(row, ["Ficha", "FichaTecnica", "Ficha TÃ©cnica", "Ficha Tecnica", "FichaTecnicaProceso", "Ficha Proceso", "LinkFicha", "Link Ficha", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
+    imageValidated: getRowValue(row, ["ImagenValidada", "Imagen Validada", "Imagen validada"]),
+    technicalSheetValidated: getRowValue(row, ["FichaValidada", "Ficha Validada", "Ficha validada"]),
     status: getRowValue(row, ["Status", "Estado"]),
     consultant: getRowValue(row, ["Consultor"]),
     responsible: getRowValue(row, ["Responsable"]),
@@ -565,25 +569,25 @@ function mapEducation(rows) {
     system: getRowValue(row, ["Sistema"]),
     milestone: getRowValue(row, ["Hito"]),
     deliverable: getRowValue(row, ["Entregable"]),
-    whatIs: getRowValue(row, ["QueEs", "Qué es", "Que es"]),
-    purpose: getRowValue(row, ["ParaQueSirve", "Para qué sirve", "Para que sirve"]),
-    howToRead: getRowValue(row, ["ComoLeerlo", "Cómo leerlo", "Como leerlo"]),
+    whatIs: getRowValue(row, ["QueEs", "QuÃ© es", "Que es"]),
+    purpose: getRowValue(row, ["ParaQueSirve", "Para quÃ© sirve", "Para que sirve"]),
+    howToRead: getRowValue(row, ["ComoLeerlo", "CÃ³mo leerlo", "Como leerlo"]),
     imagePreview: getRowValue(row, ["ImagenPreview", "Imagen previa", "Imagen"]),
     link: getRowValue(row, ["LinkEntregable", "Link Entregable", "Link", "URL", "Enlace", "Documento", "Archivo"]),
     imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
-    technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha Técnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha Técnica"]),
+    technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha TÃ©cnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
     status: getRowValue(row, ["Estado"]),
   })).filter((x) => x.deliverable || x.whatIs || x.purpose);
 }
 
 function mapCOERows(rows) {
   return rows.map((row) => ({
-    code: getRowValue(row, ["CÓDIGO", "CODIGO", "Codigo", "Código", "CodigoProceso", "Código Proceso", "Code"]),
+    code: getRowValue(row, ["CÃ“DIGO", "CODIGO", "Codigo", "CÃ³digo", "CodigoProceso", "CÃ³digo Proceso", "Code"]),
     process: getRowValue(row, ["PROCESO", "Proceso", "NombreProceso", "Nombre del Proceso"]),
     processType: getRowValue(row, ["TIPO DE PROCESO", "Tipo de Proceso", "TipoProceso", "TIPO PROCESO", "Tipo", "Tipo Proceso"]),
     activity: getRowValue(row, ["ACTIVIDAD", "Actividad"]),
     participant: getRowValue(row, ["INTERVINIENTE", "Interviniente", "Responsable", "Rol"]),
-    observation: getRowValue(row, ["OBSERVACIÓN", "OBSERVACION", "Observación", "Observacion", "Notas", "Comentario"]),
+    observation: getRowValue(row, ["OBSERVACIÃ“N", "OBSERVACION", "ObservaciÃ³n", "Observacion", "Notas", "Comentario"]),
     time: getRowValue(row, ["TIEMPO (xmin)", "Tiempo (xmin)", "Tiempo", "TIEMPO", "TiempoXmin", "Tiempo xmin"]),
     cost: getRowValue(row, ["COSTO (xmin)", "Costo (xmin)", "Costo", "COSTO", "CostoXmin", "Costo xmin"]),
     frequency: getRowValue(row, ["FRECUENCIA", "Frecuencia"]),
@@ -594,7 +598,7 @@ function mapCOERows(rows) {
 
 export async function loadSheetData() {
   if (!getActiveSpreadsheetId()) {
-    throw new Error("Falta iniciar sesión o configurar VITE_SPREADSHEET_ID.");
+    throw new Error("Falta iniciar sesiÃ³n o configurar VITE_SPREADSHEET_ID.");
   }
 
   const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, documentRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows] = await Promise.all([
@@ -604,7 +608,7 @@ export async function loadSheetData() {
     fetchFirstAvailableSheet(["PendientesCliente", "Pendientes del cliente", "Pendientes Cliente", "Pendientes"]),
     fetchCsvSheet("Entregables"),
     fetchCsvSheet("Actualizaciones", false),
-    fetchFirstAvailableSheet(["Educacion", "Educación", "Lo que vas a recibir", "Educacion Cliente"]),
+    fetchFirstAvailableSheet(["Educacion", "EducaciÃ³n", "Lo que vas a recibir", "Educacion Cliente"]),
     fetchFirstAvailableSheet(["Reuniones", "ReunionesCliente", "Reuniones Cliente", "Agenda"]),
     fetchFirstAvailableSheet(["Documentos", "CargaDocumentos", "Carga de documentos", "Carga Documentos", "ChecklistDocumentos", "Checklist Documentos", "Checklist"]),
     fetchFirstAvailableSheet(["ProcesosASIS", "Procesos AS IS", "Procesos As Is", "Procesos AS-IS", "Procesos AS_IS", "ListaASIS", "Lista AS IS", "Lista AS-IS", "ASIS", "AS IS"]),
@@ -679,3 +683,5 @@ export async function loadSheetData() {
 // HALLAZGOS_V9_LECTURA_COMPLETA_TAGS_2_FILAS_FINAL
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
