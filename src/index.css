@@ -22538,26 +22538,27 @@ body {
 
   .mobileDocumentBadges {
     display: grid !important;
-    grid-template-columns: repeat(2, 74px) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     justify-content: center !important;
-    gap: 4px !important;
+    gap: 6px !important;
     margin-top: 4px !important;
+    width: 100% !important;
     max-width: 100% !important;
     overflow: hidden !important;
   }
 
   .mobileDocumentBadges .badge {
-    width: 74px !important;
+    width: 100% !important;
     min-width: 0 !important;
-    max-width: 74px !important;
+    max-width: none !important;
     min-height: 18px !important;
-    padding: 4px 3px !important;
+    padding: 4px 2px !important;
     border: 0 !important;
     border-radius: 999px !important;
     background: #c6ced1 !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
-    font-size: 0.4rem !important;
+    font-size: 0.38rem !important;
     line-height: 1 !important;
     font-weight: 500 !important;
     box-shadow: none !important;
@@ -22934,29 +22935,34 @@ body {
 
   .mobileEducationBadges {
     display: grid !important;
-    grid-template-columns: repeat(2, 62px) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     justify-content: center !important;
-    gap: 5px !important;
+    gap: 6px !important;
     margin-top: 4px !important;
+    width: 100% !important;
     overflow: hidden !important;
   }
 
   .mobileEducationBadges .badge {
-    width: 62px !important;
-    max-width: 62px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
     min-height: 18px !important;
-    padding: 4px 3px !important;
+    padding: 4px 2px !important;
     border: 0 !important;
     border-radius: 999px !important;
     background: #c6ced1 !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
-    font-size: 0.38rem !important;
+    font-size: 0.36rem !important;
     line-height: 1 !important;
     font-weight: 500 !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .mobileEducationBadges .badge.success {
