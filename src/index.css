@@ -21020,6 +21020,14 @@ body {
   display: none;
 }
 
+.mobileDeliverablesView {
+  display: none;
+}
+
+.mobileDocumentsView {
+  display: none;
+}
+
 @media (max-width: 760px) {
   .mobilePendingView {
     display: block !important;
@@ -21789,5 +21797,771 @@ body {
 
   .mobileProcessMatrixWrap::-webkit-scrollbar-track {
     background: #e8f4f3 !important;
+  }
+
+  .mobileDeliverablesView {
+    display: block !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding-bottom: 94px !important;
+    background: #eaf5f4 !important;
+    color: #001f2a !important;
+    overflow-x: hidden !important;
+  }
+
+  .mobileDeliverablesView + .deliverablesSection {
+    display: none !important;
+  }
+
+  .content.view-entregables > .mobileTabs {
+    display: none !important;
+  }
+
+  .content.view-entregables {
+    padding-top: 0 !important;
+  }
+
+  .mobileDeliverablesHero {
+    padding: 24px 20px 70px !important;
+    background: #00b8b5 !important;
+    text-align: center !important;
+    color: #ffffff !important;
+  }
+
+  .mobileDeliverablesHero h1 {
+    margin: 0 0 14px !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 1.55rem !important;
+    line-height: 1.05 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .mobileDeliverablesHero label {
+    width: min(184px, 74vw) !important;
+    height: 28px !important;
+    margin: 0 auto !important;
+    padding: 0 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
+  }
+
+  .mobileDeliverablesHero input {
+    width: 100% !important;
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    color: #ffffff !important;
+    font-size: 0.82rem !important;
+  }
+
+  .mobileDeliverablesHero input::placeholder {
+    color: rgba(255, 255, 255, 0.78) !important;
+  }
+
+  .mobileDeliverablesBody {
+    position: relative !important;
+    z-index: 2 !important;
+    margin-top: -46px !important;
+    padding: 12px 22px 36px !important;
+    background: #eaf5f4 !important;
+    border-radius: 10px 10px 0 0 !important;
+  }
+
+  .mobileDeliverablesBody::before {
+    content: "" !important;
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin: 0 0 16px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileDeliverablesStatusCards {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .mobileDeliverablesStatusCards article,
+  .mobileDeliverablesTotalCard,
+  .mobileDeliverableCard {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 18px rgba(16, 47, 55, 0.16) !important;
+  }
+
+  .mobileDeliverablesStatusCards article {
+    min-height: 72px !important;
+    padding: 10px 9px !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 8px !important;
+  }
+
+  .mobileDeliverablesStatusCards i {
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileDeliverablesStatusCards span {
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.58rem !important;
+    line-height: 1.1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDeliverablesStatusCards strong {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 0.74rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDeliverablesTotalCard {
+    min-height: 88px !important;
+    margin-bottom: 18px !important;
+    display: grid !important;
+    grid-template-columns: 64px minmax(0, 1fr) auto !important;
+    align-items: center !important;
+  }
+
+  .mobileDeliverablesTotalCard div {
+    width: 64px !important;
+    height: 88px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobileDeliverablesTotalCard span {
+    padding: 0 16px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 1rem !important;
+    line-height: 1.05 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDeliverablesTotalCard strong {
+    padding-right: 18px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 1.85rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDeliverablesFilters {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px 12px !important;
+    margin: 0 0 18px !important;
+  }
+
+  .mobileDeliverablesFilters .filter {
+    position: relative !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .mobileDeliverablesFilters .filter span {
+    display: block !important;
+    margin-bottom: 4px !important;
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.62rem !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+    text-transform: none !important;
+  }
+
+  .mobileDeliverablesFilters select {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 30px !important;
+    padding: 5px 30px 5px 10px !important;
+    border: 1px solid rgba(16, 47, 55, 0.18) !important;
+    border-radius: 0 !important;
+    background: rgba(255, 255, 255, 0.78) !important;
+    color: #001f2a !important;
+    font-size: 0.68rem !important;
+    text-align: center !important;
+    appearance: none !important;
+  }
+
+  .mobileDeliverablesFilters .filter::after {
+    content: "" !important;
+    position: absolute !important;
+    right: 11px !important;
+    bottom: 10px !important;
+    width: 10px !important;
+    height: 10px !important;
+    border-right: 2px solid #001f2a !important;
+    border-bottom: 2px solid #001f2a !important;
+    transform: rotate(45deg) !important;
+    pointer-events: none !important;
+  }
+
+  .mobileDeliverablesGrid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .mobileDeliverableCard {
+    min-height: 166px !important;
+    padding: 12px 12px 13px !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 8px !important;
+  }
+
+  .mobileDeliverableHead {
+    width: 100% !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+    text-align: left !important;
+    color: inherit !important;
+  }
+
+  .mobileDeliverableHead i {
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin-bottom: 8px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileDeliverableHead span {
+    display: block !important;
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.58rem !important;
+    font-weight: 500 !important;
+    line-height: 1.1 !important;
+  }
+
+  .mobileDeliverableHead small {
+    display: block !important;
+    margin-top: 2px !important;
+    color: #52686c !important;
+    -webkit-text-fill-color: #52686c !important;
+    font-size: 0.5rem !important;
+    line-height: 1.1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDeliverableHead svg {
+    color: #001f2a !important;
+    transition: transform 0.2s ease !important;
+  }
+
+  .mobileDeliverableHead svg.open {
+    transform: rotate(90deg) !important;
+  }
+
+  .mobileDeliverableCard h2 {
+    margin: 2px 0 4px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 0.64rem !important;
+    line-height: 1.18 !important;
+    font-weight: 500 !important;
+    letter-spacing: 0 !important;
+    text-align: center !important;
+  }
+
+  .mobileDeliverableCard .progressBar,
+  .mobileDeliverableCard .progress {
+    height: 8px !important;
+    margin: 2px 0 0 !important;
+    border-radius: 0 !important;
+    background: #e8f4f3 !important;
+  }
+
+  .mobileDeliverableCard .progressFill {
+    border-radius: 0 !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileDeliverableCard p {
+    margin: 0 !important;
+    color: #52686c !important;
+    -webkit-text-fill-color: #52686c !important;
+    font-size: 0.5rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDeliverableLink {
+    margin: 0 auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    color: #00a7a4 !important;
+    -webkit-text-fill-color: #00a7a4 !important;
+    font-size: 0.56rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+    text-decoration: none !important;
+  }
+
+  .mobileDeliverableCard .badge {
+    width: min(86px, 100%) !important;
+    min-height: 20px !important;
+    margin: 0 auto !important;
+    padding: 4px 8px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #c6ced1 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 0.52rem !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+  }
+
+  .mobileDeliverableCard .badge.success {
+    background: #00b8b5 !important;
+  }
+
+  .mobileDeliverableDetail {
+    padding-top: 8px !important;
+    border-top: 1px solid #e8f4f3 !important;
+  }
+
+  .mobileDeliverableDetail h3 {
+    margin: 0 0 5px !important;
+    color: #001f2a !important;
+    font-size: 0.62rem !important;
+    font-weight: 500 !important;
+  }
+
+  .mobileDeliverableDetail p {
+    color: #52686c !important;
+    font-size: 0.56rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .mobileDeliverablesLoadMore {
+    width: max-content !important;
+    margin: 16px auto 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    display: grid !important;
+    justify-items: center !important;
+    color: #00b8b5 !important;
+    -webkit-text-fill-color: #00b8b5 !important;
+    font-size: 0.8rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDocumentsView {
+    display: block !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding-bottom: 94px !important;
+    background: #eaf5f4 !important;
+    color: #001f2a !important;
+    overflow-x: hidden !important;
+  }
+
+  .mobileDocumentsView + .documentsPage {
+    display: none !important;
+  }
+
+  .content.view-documentos > .mobileTabs {
+    display: none !important;
+  }
+
+  .content.view-documentos {
+    padding-top: 0 !important;
+  }
+
+  .mobileDocumentsHero {
+    padding: 22px 22px 70px !important;
+    background: #00b8b5 !important;
+    text-align: center !important;
+    color: #ffffff !important;
+  }
+
+  .mobileDocumentsHero h1 {
+    max-width: 280px !important;
+    margin: 0 auto 10px !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 1.5rem !important;
+    line-height: 1.05 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .mobileDocumentsHero p {
+    max-width: 310px !important;
+    margin: 0 auto 14px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 0.56rem !important;
+    line-height: 1.22 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDocumentsHero label {
+    width: min(184px, 74vw) !important;
+    height: 28px !important;
+    margin: 0 auto !important;
+    padding: 0 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .mobileDocumentsHero label::before,
+  .mobileDocumentsHero label::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  .mobileDocumentsHero input {
+    width: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #ffffff !important;
+    font-size: 0.82rem !important;
+  }
+
+  .mobileDocumentsHero input::placeholder {
+    color: rgba(255, 255, 255, 0.78) !important;
+  }
+
+  .mobileDocumentsBody {
+    position: relative !important;
+    z-index: 2 !important;
+    margin-top: -46px !important;
+    padding: 12px 22px 36px !important;
+    background: #eaf5f4 !important;
+    border-radius: 10px 10px 0 0 !important;
+  }
+
+  .mobileDocumentsBody::before {
+    content: "" !important;
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin: 0 0 16px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileDocumentsMetrics {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .mobileDocumentsMetrics article,
+  .mobileDocumentsUpload,
+  .mobileDocumentCard {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 18px rgba(16, 47, 55, 0.16) !important;
+  }
+
+  .mobileDocumentsMetrics article {
+    min-height: 72px !important;
+    padding: 10px 9px !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 8px !important;
+  }
+
+  .mobileDocumentsMetrics i {
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileDocumentsMetrics span {
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.58rem !important;
+    line-height: 1.1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDocumentsMetrics strong {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 0.74rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDocumentsUpload {
+    min-height: 82px !important;
+    margin-bottom: 12px !important;
+    display: grid !important;
+    grid-template-columns: 64px minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    text-decoration: none !important;
+    border: 0 !important;
+    width: 100% !important;
+  }
+
+  .mobileDocumentsUpload div {
+    width: 64px !important;
+    height: 82px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobileDocumentsUpload span {
+    padding: 0 18px !important;
+    font-size: 1.08rem !important;
+    font-weight: 400 !important;
+    line-height: 1.1 !important;
+  }
+
+  .mobileDocumentsUpload > svg {
+    margin-right: 18px !important;
+  }
+
+  .mobileDocumentsInstructions {
+    margin: 0 0 16px !important;
+    padding: 0 8px !important;
+    text-align: center !important;
+    background: transparent !important;
+  }
+
+  .mobileDocumentsInstructions h2 {
+    margin: 0 0 10px !important;
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 1.02rem !important;
+    line-height: 1.1 !important;
+    font-weight: 400 !important;
+    text-align: left !important;
+  }
+
+  .mobileDocumentsInstructions p {
+    margin: 0 auto 9px !important;
+    max-width: 315px !important;
+    color: #52686c !important;
+    -webkit-text-fill-color: #52686c !important;
+    font-size: 0.58rem !important;
+    line-height: 1.22 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDocumentsInstructions strong {
+    color: #00b8b5 !important;
+    -webkit-text-fill-color: #00b8b5 !important;
+    font-weight: 700 !important;
+  }
+
+  .mobileDocumentsInstructions button,
+  .mobileDocumentsLoadMore {
+    width: max-content !important;
+    margin: 8px auto 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    display: grid !important;
+    justify-items: center !important;
+    color: #00b8b5 !important;
+    -webkit-text-fill-color: #00b8b5 !important;
+    font-size: 0.72rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDocumentsFilters {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin: 0 0 14px !important;
+  }
+
+  .mobileDocumentsFilters .filter {
+    position: relative !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .mobileDocumentsFilters .filter span {
+    display: block !important;
+    margin-bottom: 4px !important;
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.62rem !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+    text-transform: none !important;
+  }
+
+  .mobileDocumentsFilters select {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 30px !important;
+    padding: 5px 30px 5px 10px !important;
+    border: 1px solid rgba(16, 47, 55, 0.18) !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #001f2a !important;
+    font-size: 0.68rem !important;
+    text-align: center !important;
+    appearance: none !important;
+  }
+
+  .mobileDocumentsFilters .filter::after {
+    content: "" !important;
+    position: absolute !important;
+    right: 11px !important;
+    bottom: 10px !important;
+    width: 10px !important;
+    height: 10px !important;
+    border-right: 2px solid #001f2a !important;
+    border-bottom: 2px solid #001f2a !important;
+    transform: rotate(45deg) !important;
+    pointer-events: none !important;
+  }
+
+  .mobileDocumentsGrid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .mobileDocumentCard {
+    min-height: 190px !important;
+    padding: 12px 10px !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 7px !important;
+    text-align: center !important;
+  }
+
+  .mobileDocumentCard > i {
+    display: block !important;
+    width: 78% !important;
+    height: 4px !important;
+    margin: 0 auto 8px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileDocumentCard h2 {
+    margin: 0 !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 0.62rem !important;
+    line-height: 1.12 !important;
+    font-weight: 500 !important;
+  }
+
+  .mobileDocumentCard p {
+    margin: 0 !important;
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.5rem !important;
+    line-height: 1.08 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileDocumentCard label span {
+    display: block !important;
+    margin-bottom: 3px !important;
+    color: #52686c !important;
+    -webkit-text-fill-color: #52686c !important;
+    font-size: 0.48rem !important;
+    line-height: 1 !important;
+  }
+
+  .mobileDocumentCard select {
+    width: 92px !important;
+    min-height: 24px !important;
+    padding: 4px 8px !important;
+    border: 1px solid rgba(0, 184, 181, 0.24) !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #00a7a4 !important;
+    font-size: 0.5rem !important;
+    appearance: auto !important;
+    box-shadow: none !important;
+  }
+
+  .mobileDocumentBadges {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    margin-top: 4px !important;
+  }
+
+  .mobileDocumentBadges .badge {
+    min-height: 18px !important;
+    padding: 4px 5px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #c6ced1 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 0.46rem !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .mobileDocumentBadges .badge.success {
+    background: #00b8b5 !important;
+  }
+
+  .mobileDocumentsLoadMore {
+    margin-top: 16px !important;
+    font-size: 0.8rem !important;
   }
 }

@@ -3825,12 +3825,13 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
   );
 }
 
-function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliverable, compact = false, setView }) {
+function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliverable, compact = false, setView, previousView = "portal", pending = [] }) {
   const [systemFilter, setSystemFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [responsibleFilter, setResponsibleFilter] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [openDeliverable, setOpenDeliverable] = useState("");
+  const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
 
   const systems = [...new Set(deliverables.map((d) => d.system).filter(Boolean))];
   const statuses = [...new Set(deliverables.map((d) => d.status).filter(Boolean))];
@@ -3881,8 +3882,131 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
   });
 
   const items = compact ? filtered.slice(0, 6) : filtered;
+  const mobileItems = filtered.slice(0, mobileVisibleCount);
+  const deliverablesBackView = previousView === "procesos" ? "procesos" : "portal";
+  const activePending = pending.filter(isPendingActive).length;
+
+  useEffect(() => {
+    setMobileVisibleCount(6);
+  }, [searchTerm, systemFilter, responsibleFilter, statusFilter]);
 
   return (
+    <>
+    {!compact && (
+      <section className="mobileDeliverablesView">
+        <div className="mobileRouteTopbar">
+          <button type="button" onClick={() => setView?.(deliverablesBackView)}><ChevronLeft size={18} /> Atrás</button>
+          <button type="button" onClick={() => setView?.("documentos")}>Siguiente <ChevronRight size={18} /></button>
+        </div>
+
+        <header className="mobileDeliverablesHero">
+          <h1>Entregables GSE</h1>
+          <label>
+            <Search size={17} />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar"
+            />
+          </label>
+        </header>
+
+        <div className="mobileDeliverablesBody">
+          <div className="mobileDeliverablesStatusCards">
+            {[
+              { label: "Finalizado", value: summary.finalized },
+              { label: "Pendiente", value: summary.pending },
+              { label: "En desarrollo", value: summary.development },
+            ].map((item) => (
+              <article key={item.label}>
+                <i />
+                <span>{item.label}</span>
+                <strong><ChevronRight size={18} />{item.value}</strong>
+              </article>
+            ))}
+          </div>
+
+          <article className="mobileDeliverablesTotalCard">
+            <div><FileText size={32} /></div>
+            <span>Total de Entregables</span>
+            <strong><ChevronRight size={28} />{deliverables.length}</strong>
+          </article>
+
+          <div className="mobileDeliverablesFilters">
+            <FilterSelect label="Sistema" value={systemFilter} onChange={setSystemFilter} options={systems} />
+            <FilterSelect label="Hito" value={responsibleFilter} onChange={setResponsibleFilter} options={milestones} />
+            <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statuses} />
+          </div>
+
+          <div className="mobileDeliverablesGrid">
+            {mobileItems.map((item) => {
+              const link = safeUrl(item.link);
+              const deliverableKey = `${item.system}-${item.milestone}-${item.deliverable}`;
+              const isOpen = openDeliverable === deliverableKey;
+              return (
+                <article className={`mobileDeliverableCard ${isOpen ? "open" : ""}`} key={`mobile-${deliverableKey}`}>
+                  <button type="button" className="mobileDeliverableHead" onClick={() => setOpenDeliverable(isOpen ? "" : deliverableKey)}>
+                    <div>
+                      <i />
+                      <span>{item.system || "General"}</span>
+                      {item.milestone && <small>Hito: {item.milestone}</small>}
+                    </div>
+                    <ChevronRight className={isOpen ? "open" : ""} size={19} />
+                  </button>
+
+                  <h2>{item.deliverable || "Entregable sin nombre"}</h2>
+                  <ProgressBar value={item.progress} status={item.status} />
+                  <p>{item.progress || 0}% de avance</p>
+
+                  {link && (
+                    <a className="mobileDeliverableLink" href={link} target="_blank" rel="noreferrer">
+                      Ver entregable <ChevronRight size={13} />
+                    </a>
+                  )}
+
+                  <Badge status={item.status}>{item.status || "Pendiente"}</Badge>
+
+                  {isOpen && item.observation && (
+                    <div className="mobileDeliverableDetail">
+                      <h3>Descripción</h3>
+                      <p>{item.observation}</p>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+
+          {filtered.length > mobileVisibleCount && (
+            <button className="mobileDeliverablesLoadMore" type="button" onClick={() => setMobileVisibleCount((current) => current + 6)}>
+              Cargar más <ChevronDown size={34} />
+            </button>
+          )}
+
+          {!filtered.length && <div className="mobileRouteEmpty">No hay entregables con esos filtros.</div>}
+        </div>
+
+        <nav className="mobileBottomNav visible">
+          {[
+            { label: "Inicio", view: "portal", icon: BarChart3 },
+            { label: "Ruta", view: "ruta", icon: MapPin },
+            { label: "COE", view: "coe", icon: Brain },
+            { label: "Hallazgos", view: "hallazgos", icon: Search },
+            { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <button type="button" key={item.view} onClick={() => setView?.(item.view)}>
+                <Icon size={18} />
+                <span>{item.label}</span>
+                {item.view === "pendientes" && activePending > 0 && <i>{activePending}</i>}
+              </button>
+            );
+          })}
+        </nav>
+      </section>
+    )}
+
     <section className="card premiumSectionCard deliverablesSection">
       <div className="sectionHeader">
         <div>
@@ -4001,6 +4125,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
         <button className="plainAction" onClick={() => setView?.("entregables")}>Ver todos los entregables <ChevronRight size={16} /></button>
       )}
     </section>
+    </>
   );
 }
 
@@ -4276,7 +4401,7 @@ function Education({ education = [] }) {
 }
 
 
-function DocumentsUpload({ documents = [], project }) {
+function DocumentsUpload({ documents = [], project, setView, previousView = "portal", pending = [] }) {
   const uploadLink = safeUrl(project.documentUploadLink || project.linkCargaDocumentos || "");
   const webhookUrl = safeUrl(import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
@@ -4286,6 +4411,8 @@ function DocumentsUpload({ documents = [], project }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [requiredFilter, setRequiredFilter] = useState("Todos");
   const [documentStatusFilter, setDocumentStatusFilter] = useState("Todos");
+  const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
+  const [mobileInstructionsOpen, setMobileInstructionsOpen] = useState(false);
 
   const title = documents.find((item) => item.title)?.title || "Carga de documentos iniciales";
   const description = "Bienvenido al inicio formal de tu proyecto Business Power. Esta sección nos ayudará a conocer cómo opera actualmente tu empresa. Este es el primer paso para dejar atrás el caos operativo y empezar a trabajar con estructura, control y claridad.";
@@ -4383,6 +4510,13 @@ function DocumentsUpload({ documents = [], project }) {
 
   const yesHave = documents.filter((item) => getCurrentResponse(item) === "Sí tengo").length;
   const required = documents.filter((item) => getRequiredLabel(item) === "Obligatorio").length;
+  const mobileDocuments = filteredDocuments.slice(0, mobileVisibleCount);
+  const documentsBackView = previousView === "entregables" ? "entregables" : "portal";
+  const activePending = pending.filter(isPendingActive).length;
+
+  useEffect(() => {
+    setMobileVisibleCount(6);
+  }, [searchTerm, requiredFilter, documentStatusFilter]);
 
   const renderDocumentItem = (item, index) => {
     const key = getDocumentKey(item) || String(index);
@@ -4430,7 +4564,128 @@ function DocumentsUpload({ documents = [], project }) {
     );
   };
 
+  const renderMobileDocumentItem = (item, index) => {
+    const key = getDocumentKey(item) || String(index);
+    const currentResponse = getCurrentResponse(item);
+    const currentStatus = getCurrentStatus(item);
+
+    return (
+      <article className="mobileDocumentCard" key={`mobile-${item.category || "general"}-${key}-${index}`}>
+        <i />
+        <h2>{item.item || item.title || "Documento solicitado"}</h2>
+        {item.detail && <p>{item.detail}</p>}
+        <label>
+          <span>¿Tienes este documento?</span>
+          <select
+            value={currentResponse}
+            onChange={(event) => handleResponseChange(item, event.target.value)}
+            disabled={Boolean(saving[key])}
+          >
+            <option value="">Seleccionar</option>
+            <option value="Sí tengo">Sí tengo</option>
+            <option value="No tengo">No tengo</option>
+          </select>
+        </label>
+        <div className="mobileDocumentBadges">
+          <Badge status="Disponible">Obligatorio: {item.required || "No"}</Badge>
+          <Badge status={currentStatus}>{currentStatus}</Badge>
+        </div>
+      </article>
+    );
+  };
+
   return (
+    <>
+    <section className="mobileDocumentsView">
+      <div className="mobileRouteTopbar">
+        <button type="button" onClick={() => setView?.(documentsBackView)}><ChevronLeft size={18} /> Atrás</button>
+        <button type="button" onClick={() => setView?.("educacion")}>Siguiente <ChevronRight size={18} /></button>
+      </div>
+
+      <header className="mobileDocumentsHero">
+        <h1>{title}</h1>
+        <p>{description}</p>
+        <label>
+          <Search size={17} />
+          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar" />
+        </label>
+      </header>
+
+      <div className="mobileDocumentsBody">
+        <div className="mobileDocumentsMetrics">
+          <article><i /><span>Ítems cargados</span><strong><ChevronRight size={18} />{yesHave}/{documents.length}</strong></article>
+          <article><i /><span>Sí tiene</span><strong><ChevronRight size={18} />{yesHave}</strong></article>
+          <article><i /><span>Obligatorios</span><strong><ChevronRight size={18} />{required}</strong></article>
+        </div>
+
+        {uploadLink ? (
+          <a className="mobileDocumentsUpload" href={uploadLink} target="_blank" rel="noreferrer">
+            <div><UploadCloud size={34} /></div>
+            <span>Subir documentos</span>
+            <ChevronRight size={28} />
+          </a>
+        ) : (
+          <button className="mobileDocumentsUpload disabledButton" type="button">
+            <div><UploadCloud size={34} /></div>
+            <span>Enlace pendiente</span>
+            <ChevronRight size={28} />
+          </button>
+        )}
+
+        <section className={`mobileDocumentsInstructions ${mobileInstructionsOpen ? "open" : ""}`}>
+          <h2>Instrucciones:</h2>
+          <p>Carga la información disponible en el formato que tengas: Excel, PDF, Word, imágenes u otros. Para facilitar la revisión, nombra cada archivo con el mismo nombre del documento solicitado.</p>
+          <p>Selecciona <strong>“SÍ TENGO”</strong> cuando cuentes con el documento solicitado o cuando puedas representar la información de forma sencilla, aunque no exista en un formato formal.</p>
+          <p>Si no cuentas con algún documento formal, pero la información existe en la práctica, por favor represéntala de forma sencilla y súbela. Por ejemplo: si no tienes un organigrama diagramado, dibuja o estructura cómo está organizada actualmente la empresa para que podamos conocer su funcionamiento real.</p>
+          {mobileInstructionsOpen && (
+            <>
+              <p>Si no cuentas con algún documento o información, marca <strong>“NO TENGO”</strong>. Si está incompleta, desactualizada o en proceso, <strong>SÚBELA EN LA CARPETA CORRESPONDIENTE</strong> e indícalo en el nombre del archivo.</p>
+              <p>No necesitas tener todo completo al 100%. Cada documento nos ayuda a reducir tiempos de levantamiento y enfocar el diagnóstico en los puntos críticos de tu operación.</p>
+            </>
+          )}
+          <button type="button" onClick={() => setMobileInstructionsOpen((current) => !current)}>
+            {mobileInstructionsOpen ? "Ver menos" : "Seguir leyendo"} <ChevronDown size={28} />
+          </button>
+        </section>
+
+        <div className="mobileDocumentsFilters">
+          <FilterSelect label="Obligatorio" value={requiredFilter} onChange={setRequiredFilter} options={["Obligatorio", "Opcional"]} />
+          <FilterSelect label="Estado" value={documentStatusFilter} onChange={setDocumentStatusFilter} options={statusOptions} />
+        </div>
+
+        <div className="mobileDocumentsGrid">
+          {mobileDocuments.map((item, index) => renderMobileDocumentItem(item, index))}
+        </div>
+
+        {filteredDocuments.length > mobileVisibleCount && (
+          <button className="mobileDocumentsLoadMore" type="button" onClick={() => setMobileVisibleCount((current) => current + 6)}>
+            Cargar más <ChevronDown size={34} />
+          </button>
+        )}
+
+        {!filteredDocuments.length && <div className="mobileRouteEmpty">No hay documentos con esos filtros.</div>}
+      </div>
+
+      <nav className="mobileBottomNav visible">
+        {[
+          { label: "Inicio", view: "portal", icon: BarChart3 },
+          { label: "Ruta", view: "ruta", icon: MapPin },
+          { label: "COE", view: "coe", icon: Brain },
+          { label: "Hallazgos", view: "hallazgos", icon: Search },
+          { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <button type="button" key={item.view} onClick={() => setView?.(item.view)}>
+              <Icon size={18} />
+              <span>{item.label}</span>
+              {item.view === "pendientes" && activePending > 0 && <i>{activePending}</i>}
+            </button>
+          );
+        })}
+      </nav>
+    </section>
+
     <section className="documentsPage">
       <div className="documentsHero">
         <div className="documentsHeroContent">
@@ -4555,6 +4810,7 @@ function DocumentsUpload({ documents = [], project }) {
         )}
       </div>
     </section>
+    </>
   );
 }
 
@@ -5351,8 +5607,8 @@ function App() {
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "hallazgos" && <Findings findings={findings} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} />}
-          {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} />}
-          {view === "documentos" && <DocumentsUpload documents={documents} project={project} />}
+          {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} setView={navigate} previousView={previousView} pending={pending} />}
+          {view === "documentos" && <DocumentsUpload documents={documents} project={project} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "educacion" && <Education education={education} />}
         </div>
       </main>
