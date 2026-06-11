@@ -4194,12 +4194,13 @@ function UpdatesPanel({ project, updates, setView, pending = [] }) {
   );
 }
 
-function Education({ education = [] }) {
+function Education({ education = [], setView, previousView = "portal", pending = [] }) {
   const [systemFilter, setSystemFilter] = useState("Todos");
   const [milestoneFilter, setMilestoneFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [openEducationCard, setOpenEducationCard] = useState("");
+  const [mobileGroupLimits, setMobileGroupLimits] = useState({});
 
   const systemOrder = [
     "Sistema 1: Operación sin Caos",
@@ -4227,6 +4228,10 @@ function Education({ education = [] }) {
     return "Pendiente";
   };
   const statusCounts = ["Pendiente", "En desarrollo", "Terminado"].map((status) => ({
+    status,
+    count: education.filter((item) => getEducationStatusBucket(item.status) === status).length,
+  }));
+  const mobileStatusCounts = ["Terminado", "En desarrollo", "Pendiente"].map((status) => ({
     status,
     count: education.filter((item) => getEducationStatusBucket(item.status) === status).length,
   }));
@@ -4259,6 +4264,12 @@ function Education({ education = [] }) {
     }
     return acc;
   }, []);
+  const educationBackView = previousView === "documentos" ? "documentos" : "portal";
+  const activePending = pending.filter(isPendingActive).length;
+
+  useEffect(() => {
+    setMobileGroupLimits({});
+  }, [searchTerm, systemFilter, milestoneFilter, statusFilter]);
 
   const renderEducationCard = (item, index, prefix = "") => {
     const image = safeUrl(item.imagePreview);
@@ -4310,7 +4321,131 @@ function Education({ education = [] }) {
     );
   };
 
+  const renderMobileEducationCard = (item, index, prefix = "") => {
+    const image = safeUrl(item.imagePreview);
+    const cardKey = `mobile-${prefix}${item.deliverable}-${index}`;
+    const isOpen = openEducationCard === cardKey;
+
+    return (
+      <article className={`mobileEducationCard ${isOpen ? "open" : ""}`} key={cardKey}>
+        <i />
+        <button
+          className="mobileEducationCardToggle"
+          type="button"
+          onClick={() => setOpenEducationCard((current) => (current === cardKey ? "" : cardKey))}
+          aria-expanded={isOpen}
+        >
+          <ChevronRight size={18} />
+        </button>
+        <span>{item.system || "Entregable"}</span>
+        <h2>{item.deliverable || "Entregable"}</h2>
+        {image ? (
+          <img src={image} alt={item.deliverable || "Vista previa"} />
+        ) : (
+          <div className="mobileEducationImageFallback"><Monitor size={20} /></div>
+        )}
+        <div className="mobileEducationBadges">
+          {item.milestone && <Badge status="En validación">{item.milestone}</Badge>}
+          {item.status && <Badge status={getEducationStatusBucket(item.status) === "Terminado" ? "Finalizado" : item.status}>{item.status}</Badge>}
+        </div>
+        {isOpen && (
+          <div className="mobileEducationDetails">
+            {item.whatIs && <p><strong>¿Qué es?</strong>{item.whatIs}</p>}
+            {item.purpose && <p><strong>¿Para qué sirve?</strong>{item.purpose}</p>}
+            {item.howToRead && <p><strong>¿Cómo leerlo?</strong>{item.howToRead}</p>}
+          </div>
+        )}
+      </article>
+    );
+  };
+
   return (
+    <>
+    <section className="mobileEducationView">
+      <div className="mobileRouteTopbar">
+        <button type="button" onClick={() => setView?.(educationBackView)}><ChevronLeft size={18} /> Atrás</button>
+        <button type="button" onClick={() => setView?.("portal")}>Siguiente <ChevronRight size={18} /></button>
+      </div>
+
+      <header className="mobileEducationHero">
+        <h1>Lo que vas a recibir</h1>
+        <p>Aquí encontrarás una guía clara de los entregables que estamos construyendo, qué significa cada uno, para qué sirve y cómo debes leerlo.</p>
+        <p>La información está organizada por hitos para que puedas entender cómo cada entregable aporta al orden, control y sostenibilidad de tu empresa.</p>
+        <label>
+          <Search size={17} />
+          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar" />
+        </label>
+      </header>
+
+      <div className="mobileEducationBody">
+        <div className="mobileEducationMetrics">
+          {mobileStatusCounts.map((item) => (
+            <article key={item.status}><i /><span>{item.status}</span><strong><ChevronRight size={18} />{item.count}</strong></article>
+          ))}
+        </div>
+
+        <article className="mobileEducationTotal">
+          <div><ClipboardCheck size={34} /></div>
+          <span>Total de<br />Entregables</span>
+          <strong><ChevronRight size={28} />{education.length}</strong>
+        </article>
+
+        <div className="mobileEducationFilters">
+          <FilterSelect label="Sistema" value={systemFilter} onChange={setSystemFilter} options={orderedSystems} />
+          <FilterSelect label="Hito" value={milestoneFilter} onChange={setMilestoneFilter} options={milestones} />
+          <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={["Pendiente", "En desarrollo", "Terminado", ...statuses]} />
+        </div>
+
+        <div className="mobileEducationGroups">
+          {grouped.map((group, groupIndex) => {
+            const limit = mobileGroupLimits[group.key] || 4;
+            const visibleItems = group.items.slice(0, limit);
+            return (
+              <section className="mobileEducationGroup" key={`mobile-${group.key}`}>
+                <div className="mobileEducationGroupHeader">
+                  <span>Hito {groupIndex + 1}</span>
+                  <h2>{group.milestone}</h2>
+                </div>
+                <div className="mobileEducationGrid">
+                  {visibleItems.map((item, index) => renderMobileEducationCard(item, index, group.key))}
+                </div>
+                {group.items.length > limit && (
+                  <button
+                    className="mobileEducationLoadMore"
+                    type="button"
+                    onClick={() => setMobileGroupLimits((current) => ({ ...current, [group.key]: limit + 4 }))}
+                  >
+                    Cargar más <ChevronDown size={34} />
+                  </button>
+                )}
+              </section>
+            );
+          })}
+        </div>
+
+        {!filtered.length && <div className="mobileRouteEmpty">No hay entregables con esos filtros.</div>}
+      </div>
+
+      <nav className="mobileBottomNav visible">
+        {[
+          { label: "Inicio", view: "portal", icon: BarChart3 },
+          { label: "Ruta", view: "ruta", icon: MapPin },
+          { label: "COE", view: "coe", icon: Brain },
+          { label: "Hallazgos", view: "hallazgos", icon: Search },
+          { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <button type="button" key={item.view} onClick={() => setView?.(item.view)}>
+              <Icon size={18} />
+              <span>{item.label}</span>
+              {item.view === "pendientes" && activePending > 0 && <i>{activePending}</i>}
+            </button>
+          );
+        })}
+      </nav>
+    </section>
+
     <section className="card premiumSectionCard educationSection">
       <div className="sectionHeader">
         <div>
@@ -4397,6 +4532,7 @@ function Education({ education = [] }) {
         </div>
       )}
     </section>
+    </>
   );
 }
 
@@ -5609,7 +5745,7 @@ function App() {
           {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} />}
           {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "documentos" && <DocumentsUpload documents={documents} project={project} setView={navigate} previousView={previousView} pending={pending} />}
-          {view === "educacion" && <Education education={education} />}
+          {view === "educacion" && <Education education={education} setView={navigate} previousView={previousView} pending={pending} />}
         </div>
       </main>
     </div>

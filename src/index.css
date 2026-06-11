@@ -21028,6 +21028,10 @@ body {
   display: none;
 }
 
+.mobileEducationView {
+  display: none;
+}
+
 @media (max-width: 760px) {
   .mobilePendingView {
     display: block !important;
@@ -22534,26 +22538,35 @@ body {
 
   .mobileDocumentBadges {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 5px !important;
+    grid-template-columns: repeat(2, 74px) !important;
+    justify-content: center !important;
+    gap: 4px !important;
     margin-top: 4px !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
   }
 
   .mobileDocumentBadges .badge {
+    width: 74px !important;
+    min-width: 0 !important;
+    max-width: 74px !important;
     min-height: 18px !important;
-    padding: 4px 5px !important;
+    padding: 4px 3px !important;
     border: 0 !important;
     border-radius: 999px !important;
     background: #c6ced1 !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
-    font-size: 0.46rem !important;
+    font-size: 0.4rem !important;
     line-height: 1 !important;
     font-weight: 500 !important;
     box-shadow: none !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .mobileDocumentBadges .badge.success {
@@ -22563,5 +22576,428 @@ body {
   .mobileDocumentsLoadMore {
     margin-top: 16px !important;
     font-size: 0.8rem !important;
+  }
+
+  .mobileEducationView {
+    display: block !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding-bottom: 94px !important;
+    background: #eaf5f4 !important;
+    color: #001f2a !important;
+    overflow-x: hidden !important;
+  }
+
+  .mobileEducationView + .educationSection {
+    display: none !important;
+  }
+
+  .content.view-educacion > .mobileTabs {
+    display: none !important;
+  }
+
+  .content.view-educacion {
+    padding-top: 0 !important;
+  }
+
+  .mobileEducationHero {
+    padding: 34px 22px 74px !important;
+    background: #00b8b5 !important;
+    text-align: center !important;
+    color: #ffffff !important;
+  }
+
+  .mobileEducationHero h1 {
+    max-width: 300px !important;
+    margin: 0 auto 10px !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 1.55rem !important;
+    line-height: 1.06 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .mobileEducationHero p {
+    max-width: 310px !important;
+    margin: 0 auto 12px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 0.56rem !important;
+    line-height: 1.22 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileEducationHero label {
+    width: min(184px, 74vw) !important;
+    height: 28px !important;
+    margin: 6px auto 0 !important;
+    padding: 0 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .mobileEducationHero label::before,
+  .mobileEducationHero label::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  .mobileEducationHero input {
+    width: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #ffffff !important;
+    font-size: 0.82rem !important;
+  }
+
+  .mobileEducationHero input::placeholder {
+    color: rgba(255, 255, 255, 0.78) !important;
+  }
+
+  .mobileEducationBody {
+    position: relative !important;
+    z-index: 2 !important;
+    margin-top: -46px !important;
+    padding: 12px 22px 36px !important;
+    background: #eaf5f4 !important;
+    border-radius: 10px 10px 0 0 !important;
+  }
+
+  .mobileEducationBody::before {
+    content: "" !important;
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin: 0 0 16px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileEducationMetrics {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .mobileEducationMetrics article,
+  .mobileEducationTotal,
+  .mobileEducationCard {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 18px rgba(16, 47, 55, 0.16) !important;
+  }
+
+  .mobileEducationMetrics article {
+    min-height: 72px !important;
+    padding: 10px 9px !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 8px !important;
+  }
+
+  .mobileEducationMetrics i {
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileEducationMetrics span {
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.58rem !important;
+    line-height: 1.1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileEducationMetrics strong {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 0.74rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileEducationTotal {
+    min-height: 82px !important;
+    margin-bottom: 16px !important;
+    display: grid !important;
+    grid-template-columns: 64px minmax(0, 1fr) auto !important;
+    align-items: center !important;
+  }
+
+  .mobileEducationTotal div {
+    width: 64px !important;
+    height: 82px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobileEducationTotal span {
+    padding: 0 18px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 1.02rem !important;
+    line-height: 1.05 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileEducationTotal strong {
+    padding-right: 18px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 1.95rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileEducationFilters {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px 12px !important;
+    margin: 0 0 16px !important;
+  }
+
+  .mobileEducationFilters .filter {
+    position: relative !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .mobileEducationFilters .filter:nth-child(3) {
+    grid-column: 1 / 2 !important;
+  }
+
+  .mobileEducationFilters .filter span {
+    display: block !important;
+    margin-bottom: 4px !important;
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.62rem !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+    text-transform: none !important;
+  }
+
+  .mobileEducationFilters select {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 30px !important;
+    padding: 5px 30px 5px 10px !important;
+    border: 1px solid rgba(16, 47, 55, 0.18) !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #001f2a !important;
+    font-size: 0.68rem !important;
+    text-align: center !important;
+    appearance: none !important;
+  }
+
+  .mobileEducationFilters .filter::after {
+    content: "" !important;
+    position: absolute !important;
+    right: 11px !important;
+    bottom: 10px !important;
+    width: 10px !important;
+    height: 10px !important;
+    border-right: 2px solid #001f2a !important;
+    border-bottom: 2px solid #001f2a !important;
+    transform: rotate(45deg) !important;
+    pointer-events: none !important;
+  }
+
+  .mobileEducationGroups {
+    display: grid !important;
+    gap: 18px !important;
+  }
+
+  .mobileEducationGroupHeader {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 0 2px 10px !important;
+  }
+
+  .mobileEducationGroupHeader span {
+    min-width: 64px !important;
+    padding: 5px 9px !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 0.5rem !important;
+    line-height: 1 !important;
+    text-align: center !important;
+  }
+
+  .mobileEducationGroupHeader h2 {
+    margin: 0 !important;
+    color: #52686c !important;
+    -webkit-text-fill-color: #52686c !important;
+    font-size: 1.05rem !important;
+    line-height: 1.1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileEducationGrid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .mobileEducationCard {
+    position: relative !important;
+    min-height: 154px !important;
+    padding: 12px 9px 10px !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 5px !important;
+    text-align: center !important;
+    overflow: visible !important;
+  }
+
+  .mobileEducationCard > i {
+    display: block !important;
+    width: 78% !important;
+    height: 4px !important;
+    margin: 0 auto 5px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobileEducationCardToggle {
+    position: absolute !important;
+    top: 9px !important;
+    right: 8px !important;
+    width: 22px !important;
+    height: 22px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #001f2a !important;
+    box-shadow: none !important;
+  }
+
+  .mobileEducationCard.open .mobileEducationCardToggle svg {
+    transform: rotate(90deg) !important;
+  }
+
+  .mobileEducationCard > span {
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.48rem !important;
+    line-height: 1.1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileEducationCard h2 {
+    margin: 0 !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 0.55rem !important;
+    line-height: 1.1 !important;
+    font-weight: 500 !important;
+  }
+
+  .mobileEducationCard img,
+  .mobileEducationImageFallback {
+    width: calc(100% + 18px) !important;
+    height: 58px !important;
+    margin: 3px -9px 0 !important;
+    object-fit: cover !important;
+    background: #dceeee !important;
+    color: #52686c !important;
+  }
+
+  .mobileEducationImageFallback {
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  .mobileEducationBadges {
+    display: grid !important;
+    grid-template-columns: repeat(2, 62px) !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    margin-top: 4px !important;
+    overflow: hidden !important;
+  }
+
+  .mobileEducationBadges .badge {
+    width: 62px !important;
+    max-width: 62px !important;
+    min-height: 18px !important;
+    padding: 4px 3px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #c6ced1 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 0.38rem !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .mobileEducationBadges .badge.success {
+    background: #00b8b5 !important;
+  }
+
+  .mobileEducationDetails {
+    grid-column: 1 / -1 !important;
+    margin-top: 6px !important;
+    padding-top: 6px !important;
+    border-top: 1px solid rgba(0, 184, 181, 0.16) !important;
+    text-align: left !important;
+  }
+
+  .mobileEducationDetails p {
+    margin: 0 0 6px !important;
+    color: #405d62 !important;
+    -webkit-text-fill-color: #405d62 !important;
+    font-size: 0.5rem !important;
+    line-height: 1.2 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobileEducationDetails strong {
+    display: block !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-weight: 600 !important;
+  }
+
+  .mobileEducationLoadMore {
+    width: max-content !important;
+    margin: 12px auto 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    display: grid !important;
+    justify-items: center !important;
+    color: #00b8b5 !important;
+    -webkit-text-fill-color: #00b8b5 !important;
+    font-size: 0.72rem !important;
+    font-weight: 400 !important;
   }
 }
