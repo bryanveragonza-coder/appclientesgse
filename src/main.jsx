@@ -15,6 +15,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardCheck,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock3,
@@ -3238,7 +3239,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
   );
 }
 
-function PendingClient({ pending, compact = false, setView }) {
+function PendingClient({ pending, compact = false, setView, previousView = "portal" }) {
   const [openPending, setOpenPending] = useState("");
   const [pendingValidation, setPendingValidation] = useState({});
   const [savingValidation, setSavingValidation] = useState({});
@@ -3246,6 +3247,7 @@ function PendingClient({ pending, compact = false, setView }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [validationFilter, setValidationFilter] = useState("Todos");
+  const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
 
   const pendingWebhookUrl = safeUrl(import.meta.env.VITE_PENDING_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
@@ -3313,6 +3315,18 @@ function PendingClient({ pending, compact = false, setView }) {
   }, [pending, pendingValidation]);
 
   const items = compact ? pending.slice(0, 4) : filteredPending;
+  const mobileItems = filteredPending.slice(0, mobileVisibleCount);
+  const mobileBackView = previousView === "hallazgos" ? "hallazgos" : "portal";
+  const mobileStatusRows = [
+    { label: "Bloqueado", value: summary.blocked, className: "blocked" },
+    { label: "Pendiente", value: summary.pending, className: "" },
+    { label: "En revisión", value: summary.review, className: "review" },
+    { label: "Terminado", value: summary.finalized, className: "success" },
+  ];
+
+  useEffect(() => {
+    setMobileVisibleCount(6);
+  }, [searchTerm, statusFilter, validationFilter]);
 
   const handleValidatePending = async (item, value = "Validado") => {
     const key = item.request || item.id || "";
@@ -3377,6 +3391,141 @@ function PendingClient({ pending, compact = false, setView }) {
   };
 
   return (
+    <>
+    {!compact && (
+      <section className="mobilePendingView">
+        <div className="mobileRouteTopbar">
+          <button type="button" onClick={() => setView?.(mobileBackView)}><ChevronLeft size={18} /> Atrás</button>
+          <button type="button" onClick={() => setView?.("portal")}>Siguiente <ChevronRight size={18} /></button>
+        </div>
+
+        <header className="mobilePendingHero">
+          <h1>Pendientes clientes</h1>
+          <label>
+            <Search size={17} />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar"
+            />
+          </label>
+        </header>
+
+        <div className="mobilePendingBody">
+          <div className="mobilePendingValidationCards">
+            <article>
+              <i />
+              <span>Implementado</span>
+              <strong><ChevronRight size={18} />{summary.implemented}</strong>
+            </article>
+            <article>
+              <i />
+              <span>Pendiente</span>
+              <strong><ChevronRight size={18} />{summary.pendingImplementation}</strong>
+            </article>
+          </div>
+
+          <article className="mobilePendingTotalCard">
+            <div><AlertTriangle size={34} /></div>
+            <span>Total de Pendientes</span>
+            <strong><ChevronRight size={28} />{pending.length}</strong>
+          </article>
+
+          <article className="mobilePendingStatusCard">
+            <i className="mobilePendingAccent" />
+            <div className="mobilePendingStatusHead">
+              <span>Estado</span>
+              <b>{pending.length} pendientes</b>
+            </div>
+            <div className="mobilePendingStatusRows">
+              {mobileStatusRows.map((row) => (
+                <div key={row.label}>
+                  <span>{row.label}</span>
+                  <div><i className={row.className} style={{ width: `${pending.length ? (row.value / pending.length) * 100 : 0}%` }} /></div>
+                  <strong>{row.value}</strong>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <div className="mobilePendingFilters">
+            <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
+            <FilterSelect label="Implementó" value={validationFilter} onChange={setValidationFilter} options={validationOptions} />
+          </div>
+
+          <div className="mobilePendingGrid">
+            {mobileItems.map((item) => {
+              const key = item.request || item.id || `${item.owner}-${item.dueDate}`;
+              const isOpen = openPending === key;
+              const link = safeUrl(item.link);
+              const normalizedValidation = normalizeValidation(getValidationStatus(item));
+              const isValidated = normalizedValidation === "Implementado";
+
+              return (
+                <article className={`mobilePendingCard ${isOpen ? "open" : ""}`} key={`mobile-${key}`}>
+                  <button type="button" className="mobilePendingCardHead" onClick={() => setOpenPending(isOpen ? "" : key)}>
+                    <div>
+                      <i />
+                      <h2>{item.request || "Pendiente sin título"}</h2>
+                      {item.blocks && <p>{item.blocks}</p>}
+                      <span>Responsable: {item.owner || "Por definir"}</span>
+                      <span>Fecha: {item.dueDate || "Por definir"}</span>
+                    </div>
+                    <ChevronRight className={isOpen ? "open" : ""} size={20} />
+                  </button>
+
+                  {link && (
+                    <a className="mobilePendingLink" href={link} target="_blank" rel="noreferrer">
+                      Abrir documento relacionado <ChevronRight size={13} />
+                    </a>
+                  )}
+
+                  <div className="mobilePendingBadges">
+                    <Badge status={item.status}>{item.status || "Pendiente"}</Badge>
+                    <Badge status={isValidated ? "Finalizado" : "Pendiente"}>{isValidated ? "Implementado" : "En proceso"}</Badge>
+                  </div>
+
+                  {isOpen && (
+                    <div className="mobilePendingDetail">
+                      <h3>Descripción</h3>
+                      <p>{item.description || "Sin descripción registrada."}</p>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+
+          {filteredPending.length > mobileVisibleCount && (
+            <button className="mobilePendingLoadMore" type="button" onClick={() => setMobileVisibleCount((current) => current + 6)}>
+              Cargar más <ChevronDown size={34} />
+            </button>
+          )}
+
+          {!filteredPending.length && <div className="mobileRouteEmpty">No hay pendientes con esos filtros.</div>}
+        </div>
+
+        <nav className="mobileBottomNav visible">
+          {[
+            { label: "Inicio", view: "portal", icon: BarChart3 },
+            { label: "Ruta", view: "ruta", icon: MapPin },
+            { label: "COE", view: "coe", icon: Brain },
+            { label: "Hallazgos", view: "hallazgos", icon: Search },
+            { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <button type="button" key={item.view} onClick={() => setView?.(item.view)}>
+                <Icon size={18} />
+                <span>{item.label}</span>
+                {item.view === "pendientes" && pending.length > 0 && <i>{pending.length}</i>}
+              </button>
+            );
+          })}
+        </nav>
+      </section>
+    )}
+
     <section className="card premiumSectionCard pendingClientSection">
       <div className="sectionHeader">
         <div>
@@ -3554,6 +3703,7 @@ function PendingClient({ pending, compact = false, setView }) {
         </button>
       )}
     </section>
+    </>
   );
 }
 
@@ -5082,7 +5232,7 @@ function App() {
           {view === "procesos" && <ProcessesMasterList processesAsIs={processesAsIs} processesToBe={processesToBe} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "hallazgos" && <Findings findings={findings} pending={pending} setView={navigate} previousView={previousView} />}
-          {view === "pendientes" && <PendingClient pending={pending} />}
+          {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} />}
           {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} />}
           {view === "documentos" && <DocumentsUpload documents={documents} project={project} />}
           {view === "educacion" && <Education education={education} />}

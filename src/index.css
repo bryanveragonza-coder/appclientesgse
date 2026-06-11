@@ -21011,3 +21011,443 @@ body {
   box-shadow: none !important;
   border: 0 !important;
 }
+
+.mobilePendingView {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .mobilePendingView {
+    display: block !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding-bottom: 94px !important;
+    background: #eaf5f4 !important;
+    color: #001f2a !important;
+    overflow-x: hidden !important;
+  }
+
+  .mobilePendingView + .pendingClientSection {
+    display: none !important;
+  }
+
+  .mobilePendingHero {
+    padding: 26px 20px 74px !important;
+    background: #00b8b5 !important;
+    text-align: center !important;
+    color: #ffffff !important;
+  }
+
+  .mobilePendingHero h1 {
+    margin: 0 0 16px !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 1.6rem !important;
+    line-height: 1.1 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .mobilePendingHero label {
+    width: min(190px, 78vw) !important;
+    height: 28px !important;
+    margin: 0 auto !important;
+    padding: 0 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
+  }
+
+  .mobilePendingHero input {
+    width: 100% !important;
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    color: #ffffff !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+  }
+
+  .mobilePendingHero input::placeholder {
+    color: rgba(255, 255, 255, 0.78) !important;
+  }
+
+  .mobilePendingBody {
+    position: relative !important;
+    z-index: 2 !important;
+    margin-top: -48px !important;
+    padding: 12px 20px 28px !important;
+    background: #eaf5f4 !important;
+    border-radius: 10px 10px 0 0 !important;
+  }
+
+  .mobilePendingBody::before {
+    content: "" !important;
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin: 0 0 16px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobilePendingValidationCards {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .mobilePendingValidationCards article,
+  .mobilePendingTotalCard,
+  .mobilePendingStatusCard,
+  .mobilePendingCard {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 18px rgba(16, 47, 55, 0.16) !important;
+  }
+
+  .mobilePendingValidationCards article {
+    min-height: 74px !important;
+    padding: 12px 12px 10px !important;
+    display: grid !important;
+    align-content: start !important;
+    gap: 8px !important;
+  }
+
+  .mobilePendingValidationCards i,
+  .mobilePendingStatusCard > .mobilePendingAccent {
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobilePendingValidationCards span {
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.66rem !important;
+    line-height: 1.15 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobilePendingValidationCards strong {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 0.82rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobilePendingTotalCard {
+    min-height: 88px !important;
+    margin-bottom: 20px !important;
+    display: grid !important;
+    grid-template-columns: 64px minmax(0, 1fr) auto !important;
+    align-items: center !important;
+  }
+
+  .mobilePendingTotalCard div {
+    width: 64px !important;
+    height: 88px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+  }
+
+  .mobilePendingTotalCard span {
+    padding: 0 16px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 1rem !important;
+    line-height: 1.05 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobilePendingTotalCard strong {
+    padding-right: 18px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 1.85rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobilePendingStatusCard {
+    margin-bottom: 18px !important;
+    padding: 14px 28px 18px !important;
+  }
+
+  .mobilePendingStatusHead {
+    margin: 14px 0 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+
+  .mobilePendingStatusHead span {
+    color: #11181c !important;
+    -webkit-text-fill-color: #11181c !important;
+    font-size: 0.9rem !important;
+    font-weight: 400 !important;
+  }
+
+  .mobilePendingStatusHead b {
+    min-width: 118px !important;
+    padding: 7px 13px !important;
+    border-radius: 999px !important;
+    background: #00b8b5 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 0.66rem !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+  }
+
+  .mobilePendingStatusRows {
+    display: grid !important;
+    gap: 8px !important;
+  }
+
+  .mobilePendingStatusRows > div {
+    display: grid !important;
+    grid-template-columns: 84px minmax(0, 1fr) 24px !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .mobilePendingStatusRows span,
+  .mobilePendingStatusRows strong {
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.66rem !important;
+    line-height: 1.1 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobilePendingStatusRows div div {
+    height: 7px !important;
+    background: #e8f4f3 !important;
+    overflow: hidden !important;
+  }
+
+  .mobilePendingStatusRows div div i {
+    display: block !important;
+    height: 100% !important;
+    background: #c6ced1 !important;
+  }
+
+  .mobilePendingStatusRows div div i.blocked {
+    background: #11181c !important;
+  }
+
+  .mobilePendingStatusRows div div i.review {
+    background: #53676b !important;
+  }
+
+  .mobilePendingStatusRows div div i.success {
+    background: #00b8b5 !important;
+  }
+
+  .mobilePendingFilters {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+    margin: 0 0 20px !important;
+  }
+
+  .mobilePendingFilters .filter {
+    position: relative !important;
+    min-width: 0 !important;
+  }
+
+  .mobilePendingFilters .filter span {
+    display: block !important;
+    margin-bottom: 4px !important;
+    text-align: center !important;
+    color: #344d52 !important;
+    -webkit-text-fill-color: #344d52 !important;
+    font-size: 0.69rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+    text-transform: none !important;
+  }
+
+  .mobilePendingFilters select {
+    width: 100% !important;
+    min-height: 30px !important;
+    padding: 5px 28px 5px 10px !important;
+    border: 1px solid rgba(16, 47, 55, 0.18) !important;
+    border-radius: 0 !important;
+    background: rgba(255, 255, 255, 0.78) !important;
+    color: #001f2a !important;
+    font-size: 0.72rem !important;
+    text-align: center !important;
+    appearance: none !important;
+  }
+
+  .mobilePendingFilters .filter::after {
+    content: "" !important;
+    position: absolute !important;
+    right: 11px !important;
+    bottom: 10px !important;
+    width: 10px !important;
+    height: 10px !important;
+    border-right: 2px solid #001f2a !important;
+    border-bottom: 2px solid #001f2a !important;
+    transform: rotate(45deg) !important;
+    pointer-events: none !important;
+  }
+
+  .mobilePendingGrid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .mobilePendingCard {
+    padding: 12px 12px 13px !important;
+    min-height: 160px !important;
+  }
+
+  .mobilePendingCardHead {
+    width: 100% !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+    text-align: left !important;
+    color: inherit !important;
+    cursor: pointer !important;
+  }
+
+  .mobilePendingCardHead i {
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin-bottom: 10px !important;
+    background: #00b8b5 !important;
+  }
+
+  .mobilePendingCardHead h2 {
+    margin: 0 0 6px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 0.72rem !important;
+    line-height: 1.18 !important;
+    font-weight: 500 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .mobilePendingCardHead p,
+  .mobilePendingCardHead span {
+    display: block !important;
+    margin: 0 0 4px !important;
+    color: #52686c !important;
+    -webkit-text-fill-color: #52686c !important;
+    font-size: 0.58rem !important;
+    line-height: 1.18 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobilePendingCardHead svg {
+    margin-top: 2px !important;
+    color: #001f2a !important;
+    transition: transform 0.2s ease !important;
+  }
+
+  .mobilePendingCardHead svg.open {
+    transform: rotate(90deg) !important;
+  }
+
+  .mobilePendingLink {
+    margin: 8px 0 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    color: #00a7a4 !important;
+    -webkit-text-fill-color: #00a7a4 !important;
+    font-size: 0.58rem !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+    text-decoration: none !important;
+  }
+
+  .mobilePendingBadges {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    margin-top: 8px !important;
+  }
+
+  .mobilePendingBadges .badge {
+    min-height: 20px !important;
+    padding: 4px 7px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #c6ced1 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 0.56rem !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+  }
+
+  .mobilePendingBadges .badge.success {
+    background: #00b8b5 !important;
+  }
+
+  .mobilePendingDetail {
+    margin-top: 12px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid #e8f4f3 !important;
+    background: transparent !important;
+  }
+
+  .mobilePendingDetail h3 {
+    margin: 0 0 6px !important;
+    color: #001f2a !important;
+    -webkit-text-fill-color: #001f2a !important;
+    font-size: 0.68rem !important;
+    font-weight: 500 !important;
+  }
+
+  .mobilePendingDetail p {
+    margin: 0 !important;
+    color: #52686c !important;
+    -webkit-text-fill-color: #52686c !important;
+    font-size: 0.61rem !important;
+    line-height: 1.3 !important;
+    font-weight: 400 !important;
+  }
+
+  .mobilePendingLoadMore {
+    width: max-content !important;
+    margin: 16px auto 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    display: grid !important;
+    justify-items: center !important;
+    color: #00b8b5 !important;
+    -webkit-text-fill-color: #00b8b5 !important;
+    font-size: 0.8rem !important;
+    font-weight: 400 !important;
+  }
+}
