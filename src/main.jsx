@@ -4478,11 +4478,11 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
   ].filter((item) => item.title || item.detail).slice(0, 5);
   const pendingItems = pending.filter(isPendingActive).slice(0, 6);
   const quickItems = [
-    { label: "Resumen", view: "resumen", icon: BarChart3, short: "Inicio" },
     { label: "Ruta", view: "ruta", icon: MapPin, short: "Ruta" },
     { label: "COE", view: "coe", icon: Brain, short: "COE" },
     { label: "Hallazgos", view: "hallazgos", icon: Search, short: "Hallazgos" },
     { label: "Pendientes", view: "pendientes", icon: AlertTriangle, short: "Pendientes" },
+    { label: "Procesos", view: "procesos", icon: Layers3, short: "Procesos" },
     { label: "Entregables", view: "entregables", icon: ClipboardCheck, short: "Entregables" },
     { label: "Documentos", view: "documentos", icon: UploadCloud, short: "Documentos" },
     { label: "Recibir", view: "educacion", icon: BookOpen, short: "Recibir" },
