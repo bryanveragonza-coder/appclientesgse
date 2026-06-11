@@ -1949,7 +1949,7 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
   );
 }
 
-function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
+function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending = [], setView, previousView = "portal" }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("Todos");
   const [macroFilter, setMacroFilter] = useState("Todos");
@@ -1976,6 +1976,7 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
       item.changes,
       item.status,
       item.link,
+      item.technicalSheet,
     ].join(" "));
     return matchesType && matchesMacro && matchesStatus && (!query || searchable.includes(query));
   };
@@ -1989,6 +1990,8 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
     () => processesToBe.filter((item) => filterProcess(item, "TOBE")),
     [processesToBe, searchTerm, typeFilter, macroFilter, statusFilter]
   );
+  const processBackView = previousView === "pendientes" ? "pendientes" : "portal";
+  const activePending = pending.filter(isPendingActive).length;
 
   const ProcessTable = ({ title, subtitle, rows, variant }) => (
     <div className="processTableCard">
@@ -2012,8 +2015,8 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
               <th>Proceso</th>
               {variant === "asis" ? <th>Descripción</th> : <th>Cambios / Observaciones</th>}
               {variant === "tobe" && <th>Status</th>}
-              <th>Imagen Proceso</th>
-              <th>Ficha Técnica</th>
+              <th>Imagen</th>
+              <th>Ficha</th>
             </tr>
           </thead>
           <tbody>
@@ -2030,19 +2033,19 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
                 <td className="imageProcessCell">
                   {safeUrl(item.imageProcess || item.link) ? (
                     <a className="processPreviewLink" href={safeUrl(item.imageProcess || item.link)} target="_blank" rel="noreferrer">
-                      Ver imagen <ExternalLink size={14} />
+                      Ver
                     </a>
                   ) : (
-                    <span className="processNoPreview">Sin imagen</span>
+                    <span className="processNoPreview"></span>
                   )}
                 </td>
                 <td className="techSheetCell">
-                  {safeUrl(item.technicalSheet) ? (
-                    <a className="processPreviewLink" href={safeUrl(item.technicalSheet)} target="_blank" rel="noreferrer">
-                      Ver ficha <ExternalLink size={14} />
+                  {safeUrl(item.technicalSheet || item.ficha || item.fichaTecnica || item.linkFicha) ? (
+                    <a className="processPreviewLink" href={safeUrl(item.technicalSheet || item.ficha || item.fichaTecnica || item.linkFicha)} target="_blank" rel="noreferrer">
+                      Ver
                     </a>
                   ) : (
-                    <span className="processNoPreview">Sin ficha</span>
+                    <span className="processNoPreview"></span>
                   )}
                 </td>
               </tr>
@@ -2055,7 +2058,121 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
     </div>
   );
 
+  const MobileProcessTable = ({ title, subtitle, rows, variant }) => (
+    <article className="mobileProcessMatrixCard">
+      <div className="mobileProcessMatrixHead">
+        <div>
+          <h2>{title}</h2>
+          <p>{subtitle}</p>
+        </div>
+        <b>{rows.length} visibles</b>
+      </div>
+
+      <div className="mobileProcessMatrixWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>CÓDIGO</th>
+              <th>Proceso</th>
+              <th>{variant === "asis" ? "Descripción" : "Cambios"}</th>
+              <th>Imagen</th>
+              <th>Ficha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.slice(0, 50).map((item, index) => {
+              const imageUrl = safeUrl(item.imageProcess || item.link);
+              const sheetUrl = safeUrl(item.technicalSheet || item.ficha || item.fichaTecnica || item.linkFicha);
+              return (
+                <tr key={`mobile-${variant}-${item.id}-${item.processCode}-${index}`}>
+                  <td>{item.processCode || item.id}</td>
+                  <td>{item.processName || "Por definir"}</td>
+                  <td>{variant === "asis" ? item.description : item.changes}</td>
+                  <td>{imageUrl ? <a href={imageUrl} target="_blank" rel="noreferrer">Ver</a> : ""}</td>
+                  <td>{sheetUrl ? <a href={sheetUrl} target="_blank" rel="noreferrer">Ver</a> : ""}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  );
+
   return (
+    <>
+    <section className="mobileProcessMasterView">
+      <div className="mobileRouteTopbar">
+        <button type="button" onClick={() => setView?.(processBackView)}><ChevronLeft size={18} /> Atrás</button>
+        <button type="button" onClick={() => setView?.("entregables")}>Siguiente <ChevronRight size={18} /></button>
+      </div>
+
+      <header className="mobileProcessHero">
+        <h1>Lista Maestra de Procesos</h1>
+        <label>
+          <Search size={17} />
+          <input
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Buscar"
+          />
+        </label>
+      </header>
+
+      <div className="mobileProcessBody">
+        <div className="mobileProcessSummaryCards">
+          <article>
+            <i />
+            <span>Total procesos AS IS</span>
+            <strong><ChevronRight size={18} />{processesAsIs.length}</strong>
+          </article>
+          <article>
+            <i />
+            <span>Total procesos TO BE</span>
+            <strong><ChevronRight size={18} />{processesToBe.length}</strong>
+          </article>
+        </div>
+
+        <div className="mobileProcessFilters">
+          <FilterSelect label="Tipo de proceso" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
+          <FilterSelect label="Macroproceso" value={macroFilter} onChange={setMacroFilter} options={macroOptions} />
+        </div>
+
+        <MobileProcessTable
+          title="Procesos AS IS"
+          subtitle="Actividades propuestas para la operación objetivo"
+          rows={filteredAsIs}
+          variant="asis"
+        />
+
+        <MobileProcessTable
+          title="Procesos TO BE"
+          subtitle="Actividades levantadas en la situación actual."
+          rows={filteredToBe}
+          variant="tobe"
+        />
+      </div>
+
+      <nav className="mobileBottomNav visible">
+        {[
+          { label: "Inicio", view: "portal", icon: BarChart3 },
+          { label: "Ruta", view: "ruta", icon: MapPin },
+          { label: "COE", view: "coe", icon: Brain },
+          { label: "Hallazgos", view: "hallazgos", icon: Search },
+          { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <button type="button" key={item.view} onClick={() => setView?.(item.view)}>
+              <Icon size={18} />
+              <span>{item.label}</span>
+              {item.view === "pendientes" && activePending > 0 && <i>{activePending}</i>}
+            </button>
+          );
+        })}
+      </nav>
+    </section>
+
     <section className="card premiumSectionCard processMasterSection">
       <div className="sectionHeader">
         <div>
@@ -2109,6 +2226,7 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [] }) {
         />
       </div>
     </section>
+    </>
   );
 }
 
@@ -5229,7 +5347,7 @@ function App() {
               </div>
             </>
           )}
-          {view === "procesos" && <ProcessesMasterList processesAsIs={processesAsIs} processesToBe={processesToBe} />}
+          {view === "procesos" && <ProcessesMasterList processesAsIs={processesAsIs} processesToBe={processesToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "hallazgos" && <Findings findings={findings} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} />}
