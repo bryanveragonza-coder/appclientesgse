@@ -768,7 +768,12 @@ function AppTopbar({ project, pending = [], meetings = [], updates = [], milesto
   const [searchTerm, setSearchTerm] = useState("");
   const meetUrl = safeUrl(project?.linkMeet);
   const activePending = pending.filter(isPendingActive).length;
-
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);
   const meetingItems = [
     ...meetings.map((item) => ({
       title: item.title || "Reunion",
@@ -956,7 +961,12 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
   const disorder = Math.max(0, 100 - projectProgress);
   const completedMilestones = milestones.filter((item) => isCompletedStatus(item.status)).length;
   const activePending = pending.filter(isPendingActive).length;
-  const meetUrl = safeUrl(project?.linkMeet);
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);  const meetUrl = safeUrl(project?.linkMeet);
 
   const meetingItems = [
     ...meetings.map((item) => ({
@@ -1335,7 +1345,12 @@ function CanvaTrendSvg({ labels = [], asIsValues = [], toBeValues = [] }) {
 
 function KpiCards({ project, milestones, pending, setView }) {
   const activePending = pending.filter(isPendingActive).length;
-  const completedPending = pending.filter(isPendingCompleted).length;
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);  const completedPending = pending.filter(isPendingCompleted).length;
   const blocked = pending.filter(isPendingBlocked).length;
   const disorder = Math.max(0, 100 - (Number(project.progress) || 0));
 
@@ -2009,7 +2024,12 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
   );
   const processBackView = previousView === "pendientes" ? "pendientes" : "portal";
   const activePending = pending.filter(isPendingActive).length;
-  const validationWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);  const validationWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
   const [processValidation, setProcessValidation] = useState({});
   const [savingProcessValidation, setSavingProcessValidation] = useState({});
@@ -2292,16 +2312,50 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
         </div>
       </div>
 
-      <div className="processSummaryGrid">
-        <article className="processSummaryCard">
-          <span>Total procesos AS IS</span>
-          <strong>{processesAsIs.length}</strong>
-          <p>Procesos levantados en situación actual.</p>
+      <div className="processSummaryGrid processDashboardSummaryGrid">
+        <article className="processSummaryCard processDashboardTotalCard">
+          <div>
+            <span>Total procesos AS IS</span>
+            <strong>{processesAsIs.length}</strong>
+          </div>
+          <i aria-hidden="true"><ClipboardCheck size={58} strokeWidth={1.5} /></i>
         </article>
-        <article className="processSummaryCard">
-          <span>Total procesos TO BE</span>
-          <strong>{processesToBe.length}</strong>
-          <p>Procesos propuestos o ajustados.</p>
+        <article className="processSummaryCard processDashboardStatusCard">
+          <span>Validado AS IS</span>
+          <div className="processDashboardBarRows">
+            <div>
+              <em>Sí</em>
+              <span><i style={{ width: `${asIsValidationStats.total ? (asIsValidationStats.yes / asIsValidationStats.total) * 100 : 0}%` }} /></span>
+              <b>{asIsValidationStats.yes}</b>
+            </div>
+            <div>
+              <em>No</em>
+              <span><i style={{ width: `${asIsValidationStats.total ? (asIsValidationStats.no / asIsValidationStats.total) * 100 : 0}%` }} /></span>
+              <b>{asIsValidationStats.no}</b>
+            </div>
+          </div>
+        </article>
+        <article className="processSummaryCard processDashboardTotalCard">
+          <div>
+            <span>Total procesos TO BE</span>
+            <strong>{processesToBe.length}</strong>
+          </div>
+          <i aria-hidden="true"><ClipboardCheck size={58} strokeWidth={1.5} /></i>
+        </article>
+        <article className="processSummaryCard processDashboardStatusCard">
+          <span>Validado TO BE</span>
+          <div className="processDashboardBarRows">
+            <div>
+              <em>Sí</em>
+              <span><i style={{ width: `${toBeValidationStats.total ? (toBeValidationStats.yes / toBeValidationStats.total) * 100 : 0}%` }} /></span>
+              <b>{toBeValidationStats.yes}</b>
+            </div>
+            <div>
+              <em>No</em>
+              <span><i style={{ width: `${toBeValidationStats.total ? (toBeValidationStats.no / toBeValidationStats.total) * 100 : 0}%` }} /></span>
+              <b>{toBeValidationStats.no}</b>
+            </div>
+          </div>
         </article>
       </div>
 
@@ -2605,7 +2659,12 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
 
   const toggleSide = (current, setter) => setter(current === "asis" ? "tobe" : "asis");
   const activePending = pending.filter(isPendingActive).length;
-  const coeBackView = previousView === "ruta" ? "ruta" : "portal";
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);  const coeBackView = previousView === "ruta" ? "ruta" : "portal";
   const finishCoeSwipe = (touch, onPrev, onNext) => {
     if (mobileCoeTouchStart === null) return;
     const diffX = mobileCoeTouchStart.x - touch.clientX;
@@ -3087,7 +3146,12 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
   }, [searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
 
   const activePending = pending.filter(isPendingActive).length;
-  const findingsBackView = previousView === "coe" ? "coe" : "portal";
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);  const findingsBackView = previousView === "coe" ? "coe" : "portal";
   const maxDeliverableCount = Math.max(
     1,
     ...Object.values(visibleDeliverableSummary).map((item) => Math.max(item.gse, item.client))
@@ -3996,7 +4060,12 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
   const mobileItems = filtered.slice(0, mobileVisibleCount);
   const deliverablesBackView = previousView === "procesos" ? "procesos" : "portal";
   const activePending = pending.filter(isPendingActive).length;
-
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);
   useEffect(() => {
     setMobileVisibleCount(6);
   }, [searchTerm, systemFilter, responsibleFilter, statusFilter]);
@@ -4377,7 +4446,12 @@ function Education({ education = [], setView, previousView = "portal", pending =
   }, []);
   const educationBackView = previousView === "documentos" ? "documentos" : "portal";
   const activePending = pending.filter(isPendingActive).length;
-
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);
   useEffect(() => {
     setMobileGroupLimits({});
   }, [searchTerm, systemFilter, milestoneFilter, statusFilter]);
@@ -4760,7 +4834,12 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
   const mobileDocuments = filteredDocuments.slice(0, mobileVisibleCount);
   const documentsBackView = previousView === "entregables" ? "entregables" : "portal";
   const activePending = pending.filter(isPendingActive).length;
-
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);
   useEffect(() => {
     setMobileVisibleCount(6);
   }, [searchTerm, requiredFilter, documentStatusFilter]);
@@ -5072,7 +5151,12 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
   const disorder = Math.max(0, 100 - progress);
   const completedMilestones = milestones.filter((item) => isCompletedStatus(item.status)).length;
   const activePending = pending.filter(isPendingActive).length;
-  const costFor = (item = {}) => {
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);  const costFor = (item = {}) => {
     const cost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"] ?? 0);
     const frequency = parseNumericValue(item.frequency ?? item.frecuencia ?? item.FRECUENCIA ?? 1) || 1;
     return cost * frequency;
@@ -5413,7 +5497,12 @@ function MobileRouteView({ milestones = [], deliverables = [], pending = [], set
   );
   const progress = Number(activeMilestone.progress) || (isCompletedStatus(activeMilestone.status) ? 100 : 0);
   const activePending = pending.filter(isPendingActive).length;
-  const total = Math.max(filteredMilestones.length, 1);
+  const getProcessValidationStats = (rows = []) => {
+    const yes = rows.filter((item) => isCheckedSheetValue(item.imageValidated) || isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated)).length;
+    return { yes, no: Math.max(0, rows.length - yes), total: rows.length };
+  };
+  const asIsValidationStats = getProcessValidationStats(processesAsIs);
+  const toBeValidationStats = getProcessValidationStats(processesToBe);  const total = Math.max(filteredMilestones.length, 1);
   const code = String(activeMilestone.id || activeIndex).replace(/^E/i, "");
   const date = activeMilestone.targetDate || activeMilestone.date || "Por definir";
   const statRows = [
@@ -6033,6 +6122,8 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
 
 
 

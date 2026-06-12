@@ -23071,3 +23071,160 @@ body {
     display: none !important;
   }
 }
+
+.processMasterSection .processValidationSummaryCard {
+  gap: 18px !important;
+}
+
+.processMasterSection .processValidationSummaryRows {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.processMasterSection .processValidationSummaryRows div {
+  display: grid !important;
+  grid-template-columns: 48px 1fr 48px !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.processMasterSection .processValidationSummaryRows div::before {
+  content: "";
+  grid-column: 2;
+  height: 8px;
+  background: #d9eeee;
+}
+
+.processMasterSection .processValidationSummaryRows div:first-child::before {
+  background: #00b8b5;
+}
+
+.processMasterSection .processValidationSummaryRows em {
+  grid-column: 1;
+  grid-row: 1;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.92rem !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+}
+
+.processMasterSection .processValidationSummaryRows b {
+  grid-column: 3;
+  grid-row: 1;
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: 1.15rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  text-align: right !important;
+}
+
+/* Tarjetas dashboard para Lista Maestra de Procesos */
+.processMasterSection .processDashboardSummaryGrid {
+  grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1fr) !important;
+  gap: 20px !important;
+}
+
+.processMasterSection .processDashboardTotalCard,
+.processMasterSection .processDashboardStatusCard {
+  min-height: 180px !important;
+  padding: 28px 30px !important;
+  align-content: stretch !important;
+  gap: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.processMasterSection .processDashboardTotalCard::before,
+.processMasterSection .processDashboardStatusCard::before {
+  display: none !important;
+}
+
+.processMasterSection .processDashboardTotalCard {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 128px !important;
+  align-items: center !important;
+  padding-right: 0 !important;
+}
+
+.processMasterSection .processDashboardTotalCard > div {
+  display: grid !important;
+  align-content: center !important;
+  gap: 30px !important;
+  min-width: 0 !important;
+}
+
+.processMasterSection .processDashboardTotalCard > i {
+  align-self: stretch !important;
+  display: grid !important;
+  place-items: center !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.processMasterSection .processDashboardTotalCard > i svg {
+  width: 68px !important;
+  height: 68px !important;
+}
+
+.processMasterSection .processDashboardTotalCard strong {
+  font-size: clamp(3rem, 4vw, 4.8rem) !important;
+}
+
+.processMasterSection .processDashboardStatusCard {
+  display: grid !important;
+  align-content: center !important;
+  gap: 28px !important;
+}
+
+.processMasterSection .processDashboardBarRows {
+  display: grid !important;
+  gap: 16px !important;
+}
+
+.processMasterSection .processDashboardBarRows div {
+  display: grid !important;
+  grid-template-columns: 92px minmax(120px, 1fr) 48px !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+.processMasterSection .processDashboardBarRows em {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.92rem !important;
+  line-height: 1.1 !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+}
+
+.processMasterSection .processDashboardBarRows span {
+  display: block !important;
+  height: 9px !important;
+  background: #d9eeee !important;
+  overflow: hidden !important;
+}
+
+.processMasterSection .processDashboardBarRows i {
+  display: block !important;
+  height: 100% !important;
+  min-width: 3px !important;
+  background: #00b8b5 !important;
+}
+
+.processMasterSection .processDashboardBarRows b {
+  color: #00a7a4 !important;
+  -webkit-text-fill-color: #00a7a4 !important;
+  font-size: 1rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  text-align: right !important;
+}
+
+@media (max-width: 980px) {
+  .processMasterSection .processDashboardSummaryGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
