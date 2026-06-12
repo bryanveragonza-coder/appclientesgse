@@ -347,7 +347,7 @@ function projectFromRawRows(rows) {
     nextDate: map.fechaproximopaso || map.proximafecha || demoData.project.nextDate,
     linkMeet: map.linkmeet || map.meet || map.googlemeet || demoData.project.linkMeet,
     responsibleClient: map.responsablecliente || map.responsable || demoData.project.responsibleClient,
-    generalManager: map.gerentegeneral || map.dueno || map.dueÃ±o || map.lidercliente || demoData.project.generalManager,
+    generalManager: map.gerentegeneral || map.dueno || map["dueño"] || map.lidercliente || demoData.project.generalManager,
     logoGSE: map.logogse || demoData.project.logoGSE,
     logoClient: map.logocliente || demoData.project.logoClient,
     projectPhrase: map.fraseproyecto || demoData.project.projectPhrase,
@@ -683,5 +683,6 @@ export async function loadSheetData() {
 // HALLAZGOS_V9_LECTURA_COMPLETA_TAGS_2_FILAS_FINAL
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
 
 
