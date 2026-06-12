@@ -23228,3 +23228,21 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+
+.findingsPremiumSection .findingsDeliverableEmpty {
+  margin: 0 !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.82rem !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+}
+
+.mobileFindingsEmptyText {
+  margin: 0 !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.58rem !important;
+  line-height: 1.25 !important;
+  text-align: center !important;
+}

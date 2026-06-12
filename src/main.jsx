@@ -2947,37 +2947,32 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     return "Pendiente";
   };
 
-  const categories = [
-    { key: "politica", label: "Política", words: ["politica", "politicas", "política", "políticas"] },
-    { key: "procedimiento", label: "Procedimiento", words: ["procedimiento", "procedimientos", "manual", "manuales", "instructivo", "instructivos"] },
-    { key: "indicador", label: "Indicador", words: ["indicador", "indicadores", "kpi", "kpís", "kpis"] },
-    { key: "perfiles", label: "Perfiles", words: ["perfil", "perfiles", "cargo", "cargos"] },
-    { key: "rediseno", label: "Rediseño de procesos", words: ["rediseno", "rediseño", "redisenio", "rediseñar", "redisenar", "rediseño de procesos"] },
-    { key: "dimensionamiento", label: "Dimensionamiento", words: ["dimensionamiento", "dimensionar", "dimension"] },
-  ];
-
   const cleanOptionValue = (value = "") => {
     const text = String(value || "").trim();
-    if (!text || text === "-" || text === "—" || text.toLowerCase() === "n/a") return "";
+    const normalized = normalizeSystemName(text);
+    if (!text || text === "-" || text === "—") return "";
+    if (["n/a", "na", "no aplica", "no disponible", "ninguno", "sin entregable", "0"].includes(normalized)) return "";
     return text;
   };
 
-  const getCategoryKeys = (value = "") => {
-    const text = normalizeSystemName(value);
+  const splitDeliverableTypes = (value = "") => {
+    const text = cleanOptionValue(value);
     if (!text) return [];
-    return categories
-      .filter((category) => category.words.some((word) => text.includes(normalizeSystemName(word))))
-      .map((category) => category.key);
+    return text
+      .split(/[,;|\n\r]+/)
+      .map(cleanOptionValue)
+      .filter(Boolean);
   };
 
-  const getCategoryLabels = (item) => {
-    const keys = [
-      ...getCategoryKeys(item.deliverableGSE || ""),
-      ...getCategoryKeys(item.deliverableClient || ""),
-    ];
-    return [...new Set(keys)]
-      .map((key) => categories.find((category) => category.key === key)?.label)
-      .filter(Boolean);
+  const uniqueDeliverableLabels = (labels = []) => {
+    const map = new Map();
+    labels.forEach((label) => {
+      const clean = cleanOptionValue(label);
+      if (!clean) return;
+      const key = normalizeSystemName(clean);
+      if (!map.has(key)) map.set(key, clean);
+    });
+    return [...map.values()];
   };
 
   const getFindingField = (item, field) => {
@@ -2989,13 +2984,10 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     return "";
   };
 
-  const getDeliverableTypeMatches = (item) => {
-    const labels = getCategoryLabels(item);
-    const exactValues = [item.deliverableGSE, item.deliverableClient]
-      .map(cleanOptionValue)
-      .filter(Boolean);
-    return [...new Set([...labels, ...exactValues])];
-  };
+  const getDeliverableTypeMatches = (item) => uniqueDeliverableLabels([
+    ...splitDeliverableTypes(item.deliverableGSE || ""),
+    ...splitDeliverableTypes(item.deliverableClient || ""),
+  ]);
 
   const matchesCurrentFilters = (item, excludeField = "") => {
     const deliveryDate = getFindingField(item, "date");
@@ -3088,32 +3080,22 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
   }, [filteredFindings]);
 
   const visibleDeliverableSummary = useMemo(() => {
-    const initial = categories.reduce((acc, category) => {
-      acc[category.key] = { label: category.label, gse: 0, client: 0 };
+    const addLabels = (acc, labels, side) => {
+      uniqueDeliverableLabels(labels).forEach((label) => {
+        const key = normalizeSystemName(label);
+        if (!acc[key]) acc[key] = { label, gse: 0, client: 0 };
+        acc[key][side] += 1;
+      });
+    };
+
+    return filteredFindings.reduce((acc, item) => {
+      addLabels(acc, splitDeliverableTypes(item.deliverableGSE || ""), "gse");
+      addLabels(acc, splitDeliverableTypes(item.deliverableClient || ""), "client");
       return acc;
     }, {});
-
-    filteredFindings.forEach((item) => {
-      getCategoryKeys(item.deliverableGSE || "").forEach((key) => {
-        if (initial[key]) initial[key].gse += 1;
-      });
-      getCategoryKeys(item.deliverableClient || "").forEach((key) => {
-        if (initial[key]) initial[key].client += 1;
-      });
-    });
-
-    return initial;
   }, [filteredFindings]);
 
   const visibleDeliverableTotals = useMemo(() => {
-    return filteredFindings.reduce((acc, item) => {
-      if (cleanOptionValue(item.deliverableGSE || "")) acc.gse += 1;
-      if (cleanOptionValue(item.deliverableClient || "")) acc.client += 1;
-      return acc;
-    }, { gse: 0, client: 0 });
-  }, [filteredFindings]);
-
-  const visibleDeliverableCategoryTotals = useMemo(() => {
     return Object.values(visibleDeliverableSummary).reduce((acc, item) => {
       acc.gse += item.gse;
       acc.client += item.client;
@@ -3121,12 +3103,14 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     }, { gse: 0, client: 0 });
   }, [visibleDeliverableSummary]);
 
+  const visibleDeliverableCategoryTotals = visibleDeliverableTotals;
+
   useEffect(() => {
     setMobileFindingsVisible(6);
   }, [searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
 
   const activePending = pending.filter(isPendingActive).length;
-const findingsBackView = previousView === "coe" ? "coe" : "portal";
+  const findingsBackView = previousView === "coe" ? "coe" : "portal";
   const maxDeliverableCount = Math.max(
     1,
     ...Object.values(visibleDeliverableSummary).map((item) => Math.max(item.gse, item.client))
@@ -3148,22 +3132,12 @@ const findingsBackView = previousView === "coe" ? "coe" : "portal";
     { label: "En desarrollo", value: statusSummary.inProcess },
   ];
 
-  const mobileGseDeliverableKeys = ["indicador", "perfiles", "rediseno", "dimensionamiento"];
-  const mobileClientDeliverableKeys = ["politica", "procedimiento"];
-  const mobileDeliverableLabels = {
-    politica: "Políticas",
-    procedimiento: "Procedimientos",
-  };
-  const mobileDeliverableRows = (mobileDeliverableSide === "gse" ? mobileGseDeliverableKeys : mobileClientDeliverableKeys)
-    .map((key) => {
-      const item = visibleDeliverableSummary[key];
-      return item ? { ...item, label: mobileDeliverableLabels[key] || item.label } : null;
-    })
-    .filter(Boolean)
+  const mobileDeliverableRows = Object.values(visibleDeliverableSummary)
     .map((item) => ({
       label: item.label,
       value: mobileDeliverableSide === "gse" ? item.gse : item.client,
-    }));
+    }))
+    .filter((item) => item.value > 0);
 
   const MobileFindingCard = ({ item }) => {
     const process = item.processArea || item.process || item.area || "Proceso no definido";
@@ -3281,6 +3255,7 @@ const findingsBackView = previousView === "coe" ? "coe" : "portal";
                 <strong>{item.value}</strong>
               </div>
             ))}
+            {!mobileDeliverableRows.length && <p className="mobileFindingsEmptyText">Sin entregables para los filtros activos.</p>}
           </div>
           <button className="mobileFindingsDeliverableArrow right" type="button" onClick={() => setMobileDeliverableSide(mobileDeliverableSide === "gse" ? "client" : "gse")}><ChevronRight size={26} /></button>
           <button className="mobileFindingsNextDeliverable" type="button" onClick={() => setMobileDeliverableSide(mobileDeliverableSide === "gse" ? "client" : "gse")}>
@@ -3383,13 +3358,14 @@ const findingsBackView = previousView === "coe" ? "coe" : "portal";
             <strong>{visibleDeliverableTotals.gse}</strong>
           </div>
           <div className="findingsDeliverableBreakdownRows">
-            {Object.values(visibleDeliverableSummary).map((item) => (
+            {Object.values(visibleDeliverableSummary).filter((item) => item.gse > 0).map((item) => (
               <div key={`gse-${item.label}`}>
                 <span>{item.label}</span>
                 <div><i style={{ width: `${visibleDeliverableCategoryTotals.gse ? (item.gse / visibleDeliverableCategoryTotals.gse) * 100 : 0}%` }} /></div>
                 <strong>{item.gse}</strong>
               </div>
             ))}
+            {!visibleDeliverableTotals.gse && <p className="findingsDeliverableEmpty">Sin entregables GSE para los filtros activos.</p>}
           </div>
         </article>
 
@@ -3399,13 +3375,14 @@ const findingsBackView = previousView === "coe" ? "coe" : "portal";
             <strong>{visibleDeliverableTotals.client}</strong>
           </div>
           <div className="findingsDeliverableBreakdownRows">
-            {Object.values(visibleDeliverableSummary).map((item) => (
+            {Object.values(visibleDeliverableSummary).filter((item) => item.client > 0).map((item) => (
               <div key={`client-${item.label}`}>
                 <span>{item.label}</span>
                 <div><i style={{ width: `${visibleDeliverableCategoryTotals.client ? (item.client / visibleDeliverableCategoryTotals.client) * 100 : 0}%` }} /></div>
                 <strong>{item.client}</strong>
               </div>
             ))}
+            {!visibleDeliverableTotals.client && <p className="findingsDeliverableEmpty">Sin entregables cliente para los filtros activos.</p>}
           </div>
         </article>
       </div>
@@ -6069,6 +6046,9 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
+
 
 
 
