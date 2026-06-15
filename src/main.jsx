@@ -2081,7 +2081,7 @@ function StructureView({ project = {}, architectureRoles = [] }) {
   };
 
   return (
-    <section className="card premiumSectionCard structureSection">
+    <section className="processMasterSection structureSection">
       <div className="sectionHeader">
         <div>
           <h2>Estructura</h2>
@@ -2140,7 +2140,7 @@ function StructureView({ project = {}, architectureRoles = [] }) {
         </article>
       </div>
 
-      <div className="premiumFilters structureFilters">
+      <div className="premiumFilters processFilters structureFilters">
         <label className="searchFilter processSearchFilter">
           <span>Buscar</span>
           <div className="searchInputWrap">

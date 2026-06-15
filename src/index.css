@@ -23341,3 +23341,47 @@ body {
     display: none !important;
   }
 }
+
+
+/* Estructura: ajuste al sistema visual de escritorio */
+.processMasterSection.structureSection {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.processMasterSection.structureSection::before,
+.processMasterSection.structureSection::after {
+  display: none !important;
+}
+
+.processMasterSection .structureDashboardGrid {
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1fr) minmax(320px, 1fr) !important;
+  gap: 20px !important;
+}
+
+.processMasterSection .structureHeroImageCard {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+}
+
+.processMasterSection .structureTableCard {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+}
+
+.processMasterSection .structureFilters {
+  grid-template-columns: minmax(280px, 1.4fr) repeat(3, minmax(180px, 0.7fr)) !important;
+}
+
+@media (max-width: 1180px) {
+  .processMasterSection .structureDashboardGrid,
+  .processMasterSection .structureFilters {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
