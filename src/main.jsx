@@ -2089,17 +2089,6 @@ function StructureView({ project = {}, architectureRoles = [] }) {
         </div>
       </div>
 
-      <div className="structureHeroImageCard">
-        {structureImage ? (
-          <img src={structureImage} alt="Estructura organizacional" />
-        ) : (
-          <div className="structureEmptyImage">
-            <Building2 size={42} />
-            <span>Agrega ImagenEstructura en la pestaña Proyecto para mostrar la estructura.</span>
-          </div>
-        )}
-      </div>
-
       <div className="processSummaryGrid processDashboardSummaryGrid structureDashboardGrid">
         <article className="processSummaryCard processDashboardTotalCard">
           <div>
@@ -2138,6 +2127,17 @@ function StructureView({ project = {}, architectureRoles = [] }) {
             </div>
           </div>
         </article>
+      </div>
+
+      <div className="structureHeroImageCard">
+        {structureImage ? (
+          <img src={structureImage} alt="Estructura organizacional" />
+        ) : (
+          <div className="structureEmptyImage">
+            <Building2 size={42} />
+            <span>Agrega ImagenEstructura en la pestaña Proyecto para mostrar la estructura.</span>
+          </div>
+        )}
       </div>
 
       <div className="premiumFilters processFilters structureFilters">
