@@ -75,6 +75,13 @@ function safeUrl(url = "") {
   return "";
 }
 
+function getDrivePreviewUrl(url = "") {
+  const clean = safeUrl(url);
+  if (!clean) return "";
+  const directMatch = clean.match(/\/d\/([^/]+)/) || clean.match(/[?&]id=([^&]+)/);
+  return directMatch?.[1] ? `https://drive.google.com/uc?export=view&id=${directMatch[1]}` : clean;
+}
+
 function isCheckedSheetValue(value = "") {
   const normalized = String(value || "")
     .trim()
@@ -152,7 +159,7 @@ function Sidebar({ view, setView, project }) {
         [AlertTriangle, "Pendientes cliente", "pendientes"],
       ],
     },
-    { title: "Procesos", items: [[ClipboardCheck, "Lista Maestra de Procesos", "procesos"]] },
+    { title: "Procesos", items: [[ClipboardCheck, "Lista Maestra de Procesos", "procesos"], [Building2, "Estructura", "estructura"]] },
     {
       title: "Documentacion",
       items: [
@@ -1961,6 +1968,243 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
       {detailed && filteredMilestones.length === 0 && (
         <div className="emptyState">No hay hitos que coincidan con los filtros seleccionados.</div>
       )}
+    </section>
+  );
+}
+
+function StructureView({ project = {}, architectureRoles = [] }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [gerenciaFilter, setGerenciaFilter] = useState("Todos");
+  const [areaFilter, setAreaFilter] = useState("Todos");
+  const [statusFilter, setStatusFilter] = useState("Todos");
+  const [localValidation, setLocalValidation] = useState({});
+  const [savingValidation, setSavingValidation] = useState({});
+
+  const validationWebhookUrl = safeUrl(import.meta.env.VITE_STRUCTURE_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_ARCHITECTURE_VALIDATION_WEBHOOK_URL || "");
+  const spreadsheetId = getActiveSpreadsheetId();
+  const structureImage = getDrivePreviewUrl(project.structureImage || project.imagenEstructura || "");
+
+  const getValidationKey = (item) => [item.id || "sin-id", item.gerencia || "sin-gerencia", item.area || "sin-area", item.cargo || "sin-cargo"].join("|");
+  const getValidated = (item) => {
+    const key = getValidationKey(item);
+    if (Object.prototype.hasOwnProperty.call(localValidation, key)) return localValidation[key];
+    return isCheckedSheetValue(item.validated);
+  };
+
+  const gerenciaOptions = useMemo(() => architectureRoles.map((item) => item.gerencia).filter(Boolean), [architectureRoles]);
+  const areaOptions = useMemo(() => architectureRoles.map((item) => item.area).filter(Boolean), [architectureRoles]);
+  const statusOptions = useMemo(() => architectureRoles.map((item) => item.status).filter(Boolean), [architectureRoles]);
+
+  const filteredRows = useMemo(() => {
+    const query = normalizeSystemName(searchTerm);
+    return architectureRoles.filter((item) => {
+      const matchesGerencia = gerenciaFilter === "Todos" || item.gerencia === gerenciaFilter;
+      const matchesArea = areaFilter === "Todos" || item.area === areaFilter;
+      const matchesStatus = statusFilter === "Todos" || item.status === statusFilter;
+      const searchable = normalizeSystemName([
+        item.id,
+        item.gerencia,
+        item.area,
+        item.cargo,
+        item.occupationalGroup,
+        item.abbreviation,
+        item.status,
+      ].join(" "));
+      return matchesGerencia && matchesArea && matchesStatus && (!query || searchable.includes(query));
+    });
+  }, [architectureRoles, searchTerm, gerenciaFilter, areaFilter, statusFilter]);
+
+  const validationStats = useMemo(() => {
+    const yes = architectureRoles.filter(getValidated).length;
+    return { yes, no: Math.max(0, architectureRoles.length - yes), total: architectureRoles.length };
+  }, [architectureRoles, localValidation]);
+
+  const distinctGerencias = useMemo(() => new Set(architectureRoles.map((item) => String(item.gerencia || "").trim()).filter(Boolean)).size, [architectureRoles]);
+  const distinctAreas = useMemo(() => new Set(architectureRoles.map((item) => String(item.area || "").trim()).filter(Boolean)).size, [architectureRoles]);
+
+  const handleValidate = async (item, nextChecked) => {
+    if (!nextChecked) return;
+    const label = item.cargo || item.area || item.gerencia || "este cargo";
+    if (!window.confirm(`¿Confirmas que validas ${label}?`)) return;
+
+    const key = getValidationKey(item);
+    const previous = getValidated(item);
+    setLocalValidation((current) => ({ ...current, [key]: true }));
+    setSavingValidation((current) => ({ ...current, [key]: true }));
+
+    if (!validationWebhookUrl) {
+      setLocalValidation((current) => ({ ...current, [key]: previous }));
+      setSavingValidation((current) => ({ ...current, [key]: false }));
+      window.alert("Falta configurar VITE_STRUCTURE_VALIDATION_WEBHOOK_URL para guardar esta validación.");
+      return;
+    }
+
+    try {
+      const session = getClientSession();
+      const response = await fetch(validationWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "updateArchitectureValidation",
+          spreadsheetId,
+          sheetName: "ArquitecturaCargos",
+          field: "Validado",
+          value: "SI",
+          id: item.id,
+          gerencia: item.gerencia,
+          area: item.area,
+          cargo: item.cargo,
+          validatedAt: new Date().toISOString(),
+          validatedBy: session.nombre || session.usuario || session.cliente || "Cliente",
+          user: session.usuario || "",
+        }),
+      });
+
+      const text = await response.text();
+      let result = {};
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = { ok: response.ok, message: text };
+      }
+
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.message || "No se pudo guardar la validación.");
+      }
+    } catch (error) {
+      console.error(error);
+      setLocalValidation((current) => ({ ...current, [key]: previous }));
+      window.alert(error.message || "No se pudo guardar la validación.");
+    } finally {
+      setSavingValidation((current) => ({ ...current, [key]: false }));
+    }
+  };
+
+  return (
+    <section className="card premiumSectionCard structureSection">
+      <div className="sectionHeader">
+        <div>
+          <h2>Estructura</h2>
+          <p>Arquitectura de cargos, grupos ocupacionales sugeridos y validación del cliente.</p>
+        </div>
+      </div>
+
+      <div className="structureHeroImageCard">
+        {structureImage ? (
+          <img src={structureImage} alt="Estructura organizacional" />
+        ) : (
+          <div className="structureEmptyImage">
+            <Building2 size={42} />
+            <span>Agrega ImagenEstructura en la pestaña Proyecto para mostrar la estructura.</span>
+          </div>
+        )}
+      </div>
+
+      <div className="processSummaryGrid processDashboardSummaryGrid structureDashboardGrid">
+        <article className="processSummaryCard processDashboardTotalCard">
+          <div>
+            <span>Total cargos</span>
+            <strong>{architectureRoles.length}</strong>
+          </div>
+          <i aria-hidden="true"><Users size={58} strokeWidth={1.5} /></i>
+        </article>
+        <article className="processSummaryCard processDashboardStatusCard">
+          <span>Validación</span>
+          <div className="processDashboardBarRows">
+            <div>
+              <em>Sí</em>
+              <span><i style={{ width: `${validationStats.total ? (validationStats.yes / validationStats.total) * 100 : 0}%` }} /></span>
+              <b>{validationStats.yes}</b>
+            </div>
+            <div>
+              <em>No</em>
+              <span><i style={{ width: `${validationStats.total ? (validationStats.no / validationStats.total) * 100 : 0}%` }} /></span>
+              <b>{validationStats.no}</b>
+            </div>
+          </div>
+        </article>
+        <article className="structureMiniMetricCard">
+          <span>Gerencias</span>
+          <strong>{distinctGerencias}</strong>
+        </article>
+        <article className="structureMiniMetricCard">
+          <span>Áreas</span>
+          <strong>{distinctAreas}</strong>
+        </article>
+      </div>
+
+      <div className="premiumFilters structureFilters">
+        <label className="searchFilter processSearchFilter">
+          <span>Buscar</span>
+          <div className="searchInputWrap">
+            <Search size={18} />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar por gerencia, área, cargo o grupo"
+            />
+          </div>
+        </label>
+        <FilterSelect label="Gerencia" value={gerenciaFilter} onChange={setGerenciaFilter} options={gerenciaOptions} />
+        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
+        <FilterSelect label="Status" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
+      </div>
+
+      <div className="processTableCard structureTableCard">
+        <div className="processTableHeader">
+          <div>
+            <h3>Arquitectura de cargos</h3>
+            <p>Matriz cargada desde la pestaña ArquitecturaCargos.</p>
+          </div>
+          <Badge status="En validación">{filteredRows.length} visibles</Badge>
+        </div>
+        <div className="processTableWrap structureTableWrap">
+          <table className="processTable fixedMatrixTable structureTable">
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Gerencia</th>
+                <th>Área</th>
+                <th>Cargo</th>
+                <th>Grupo ocupacional sugerido</th>
+                <th>Abreviación</th>
+                <th>Status</th>
+                <th>Validado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRows.map((item, index) => {
+                const key = getValidationKey(item);
+                const checked = getValidated(item);
+                const saving = Boolean(savingValidation[key]);
+                return (
+                  <tr key={`${item.id}-${item.cargo}-${index}`}>
+                    <td>{item.id}</td>
+                    <td>{item.gerencia}</td>
+                    <td>{item.area}</td>
+                    <td><strong>{item.cargo}</strong></td>
+                    <td>{item.occupationalGroup}</td>
+                    <td>{item.abbreviation}</td>
+                    <td><Badge status={item.status}>{item.status || "Sin status"}</Badge></td>
+                    <td>
+                      <label className={`processValidationCheck ${checked ? "validated" : ""} ${saving ? "saving" : ""}`} title="Validar cargo">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={saving}
+                          onChange={(event) => handleValidate(item, event.target.checked)}
+                        />
+                        <span>{checked ? "Validado" : "Validar"}</span>
+                      </label>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {filteredRows.length === 0 && <div className="emptyState">No hay cargos que coincidan con los filtros seleccionados.</div>}
+      </div>
     </section>
   );
 }
@@ -5749,7 +5993,7 @@ function App() {
       });
   }, [session?.sheetId]);
 
-  const { project, milestones, findings, pending, deliverables, updates, education, meetings = [], documents = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
+  const { project, milestones, findings, pending, deliverables, updates, education, meetings = [], documents = [], architectureRoles = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
   const completedText = useMemo(() => {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
@@ -5864,6 +6108,7 @@ function App() {
             </>
           )}
           {view === "procesos" && <ProcessesMasterList processesAsIs={processesAsIs} processesToBe={processesToBe} pending={pending} setView={navigate} previousView={previousView} />}
+          {view === "estructura" && <StructureView project={project} architectureRoles={architectureRoles} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "hallazgos" && <Findings findings={findings} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} />}

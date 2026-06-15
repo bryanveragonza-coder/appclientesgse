@@ -36,7 +36,8 @@ export const demoData = {
     logoClient: "",
     projectPhrase: "Ruta de avance del proyecto",
     whatsappMessage: "Hola, equipo ðŸ‘‹ Ya actualizamos la Ruta de Avance Visibleâ„¢.",
-    documentUploadLink: ""
+    documentUploadLink: "",
+    structureImage: ""
   },
   milestones: [],
   findings: [],
@@ -49,6 +50,7 @@ export const demoData = {
   processesToBe: [],
   coeAsIs: [],
   coeToBe: [],
+  architectureRoles: [],
   documents: [
     {
       id: "1",
@@ -277,7 +279,11 @@ function projectFromRawRows(rows) {
     "linkdocumentos",
     "enlacedocumentos",
     "linkonedrive",
-    "onedrive"
+    "onedrive",
+    "imagenestructura",
+    "estructuraimagen",
+    "linkestructura",
+    "enlaceestructura"
   ];
 
   const cleanRows = rows
@@ -353,6 +359,7 @@ function projectFromRawRows(rows) {
     projectPhrase: map.fraseproyecto || demoData.project.projectPhrase,
     whatsappMessage: map.mensajewhatsapp || map.whatsapp || demoData.project.whatsappMessage,
     documentUploadLink: map.linkcargadocumentos || map.enlacecargadocumentos || map.linkdocumentos || map.enlacedocumentos || map.linkonedrive || map.onedrive || demoData.project.documentUploadLink,
+    structureImage: map.imagenestructura || map.estructuraimagen || map.linkestructura || map.enlaceestructura || demoData.project.structureImage,
   };
 }
 
@@ -527,6 +534,19 @@ function mapDocuments(rows) {
 }
 
 
+function mapArchitectureRoles(rows) {
+  return rows.map((row, index) => ({
+    id: getRowValue(row, ["N°", "NÂ°", "N", "No", "Numero", "Número", "ID", "Id"]) || String(index + 1),
+    gerencia: getRowValue(row, ["GERENCIA", "Gerencia"]),
+    area: getRowValue(row, ["ÁREA", "AREA", "Área", "Area"]),
+    cargo: getRowValue(row, ["CARGO", "Cargo"]),
+    occupationalGroup: getRowValue(row, ["GRUPO OCUPACIONAL sugerido", "GRUPO OCUPACIONAL", "Grupo Ocupacional sugerido", "Grupo Ocupacional", "Grupo"]),
+    abbreviation: getRowValue(row, ["ABREVIACIÓN", "ABREVIACION", "Abreviación", "Abreviacion"]),
+    status: getRowValue(row, ["STATUS", "Status", "Estado"]),
+    validated: getRowValue(row, ["Validado", "VALIDADO", "Validada"]),
+  })).filter((x) => x.gerencia || x.area || x.cargo || x.occupationalGroup || x.abbreviation || x.status);
+}
+
 function mapProcessesAsIs(rows) {
   return rows.map((row, index) => ({
     id: getRowValue(row, ["NÂ°", "N", "No", "Numero", "NÃºmero", "ID", "Id"]) || String(index + 1),
@@ -601,7 +621,7 @@ export async function loadSheetData() {
     throw new Error("Falta iniciar sesiÃ³n o configurar VITE_SPREADSHEET_ID.");
   }
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, documentRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows] = await Promise.all([
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, documentRows, architectureRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows] = await Promise.all([
     fetchCsvRows("Proyecto"),
     fetchCsvSheet("Hitos"),
     fetchCsvSheet("Hallazgos"),
@@ -611,6 +631,7 @@ export async function loadSheetData() {
     fetchFirstAvailableSheet(["Educacion", "EducaciÃ³n", "Lo que vas a recibir", "Educacion Cliente"]),
     fetchFirstAvailableSheet(["Reuniones", "ReunionesCliente", "Reuniones Cliente", "Agenda"]),
     fetchFirstAvailableSheet(["Documentos", "CargaDocumentos", "Carga de documentos", "Carga Documentos", "ChecklistDocumentos", "Checklist Documentos", "Checklist"]),
+    fetchFirstAvailableSheet(["ArquitecturaCargos", "Arquitectura Cargos", "Estructura", "EstructuraCargos", "Arquitectura"]),
     fetchFirstAvailableSheet(["ProcesosASIS", "Procesos AS IS", "Procesos As Is", "Procesos AS-IS", "Procesos AS_IS", "ListaASIS", "Lista AS IS", "Lista AS-IS", "ASIS", "AS IS"]),
     fetchFirstAvailableSheet(["ProcesosTOBE", "Procesos TO BE", "Procesos To Be", "Procesos TO-BE", "Procesos TO_BE", "ListaTOBE", "Lista TO BE", "Lista TO-BE", "TOBE", "TO BE"]),
     fetchFirstAvailableSheet(["COEASIS", "COE AS IS", "COE As Is", "COE AS-IS", "COE AS_IS", "COE Actual", "COEActual"]),
@@ -627,6 +648,7 @@ export async function loadSheetData() {
     education: mapEducation(educationRows),
     meetings: mapMeetings(meetingRows),
     documents: mapDocuments(documentRows),
+    architectureRoles: mapArchitectureRoles(architectureRows),
     processesAsIs: mapProcessesAsIs(processesAsIsRows),
     processesToBe: mapProcessesToBe(processesToBeRows),
     coeAsIs: mapCOERows(coeAsIsRows),

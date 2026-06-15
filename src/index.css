@@ -23246,3 +23246,94 @@ body {
   line-height: 1.25 !important;
   text-align: center !important;
 }
+
+
+/* Estructura organizacional */
+.structureSection {
+  display: grid !important;
+  gap: 28px !important;
+}
+
+.structureHeroImageCard {
+  background: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(4, 31, 36, 0.08) !important;
+  padding: 26px !important;
+  overflow: hidden !important;
+}
+
+.structureHeroImageCard img {
+  display: block !important;
+  width: 100% !important;
+  max-height: 520px !important;
+  object-fit: contain !important;
+  background: #ffffff !important;
+}
+
+.structureEmptyImage {
+  min-height: 240px !important;
+  display: grid !important;
+  place-items: center !important;
+  gap: 12px !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  text-align: center !important;
+}
+
+.structureDashboardGrid {
+  grid-template-columns: minmax(260px, 0.95fr) minmax(320px, 1.1fr) minmax(160px, 0.45fr) minmax(160px, 0.45fr) !important;
+}
+
+.structureMiniMetricCard {
+  min-height: 180px !important;
+  background: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(4, 31, 36, 0.08) !important;
+  padding: 28px 30px !important;
+  display: grid !important;
+  align-content: center !important;
+  gap: 30px !important;
+}
+
+.structureMiniMetricCard span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+}
+
+.structureMiniMetricCard strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+  font-size: clamp(2.8rem, 3.6vw, 4.3rem) !important;
+  line-height: 0.9 !important;
+  font-weight: 500 !important;
+}
+
+.structureFilters {
+  grid-template-columns: minmax(280px, 1.4fr) repeat(3, minmax(180px, 0.7fr)) !important;
+}
+
+.structureTableWrap {
+  max-height: 560px !important;
+}
+
+.structureTable th:nth-child(1), .structureTable td:nth-child(1) { width: 70px !important; min-width: 70px !important; }
+.structureTable th:nth-child(2), .structureTable td:nth-child(2) { width: 190px !important; min-width: 190px !important; }
+.structureTable th:nth-child(3), .structureTable td:nth-child(3) { width: 190px !important; min-width: 190px !important; }
+.structureTable th:nth-child(4), .structureTable td:nth-child(4) { width: 260px !important; min-width: 260px !important; }
+.structureTable th:nth-child(5), .structureTable td:nth-child(5) { width: 260px !important; min-width: 260px !important; }
+.structureTable th:nth-child(6), .structureTable td:nth-child(6) { width: 150px !important; min-width: 150px !important; }
+.structureTable th:nth-child(7), .structureTable td:nth-child(7) { width: 150px !important; min-width: 150px !important; }
+.structureTable th:nth-child(8), .structureTable td:nth-child(8) { width: 150px !important; min-width: 150px !important; text-align: center !important; }
+
+@media (max-width: 1180px) {
+  .structureDashboardGrid,
+  .structureFilters {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .content.view-estructura .structureSection {
+    display: none !important;
+  }
+}
