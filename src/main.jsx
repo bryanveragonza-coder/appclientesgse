@@ -79,7 +79,7 @@ function getDrivePreviewUrl(url = "") {
   const clean = safeUrl(url);
   if (!clean) return "";
   const directMatch = clean.match(/\/d\/([^/]+)/) || clean.match(/[?&]id=([^&]+)/);
-  return directMatch?.[1] ? `https://drive.google.com/uc?export=view&id=${directMatch[1]}` : clean;
+  return directMatch?.[1] ? `https://drive.google.com/thumbnail?id=${directMatch[1]}&sz=w2000` : clean;
 }
 
 function isCheckedSheetValue(value = "") {
@@ -2123,13 +2123,20 @@ function StructureView({ project = {}, architectureRoles = [] }) {
             </div>
           </div>
         </article>
-        <article className="structureMiniMetricCard">
-          <span>Gerencias</span>
-          <strong>{distinctGerencias}</strong>
-        </article>
-        <article className="structureMiniMetricCard">
-          <span>Áreas</span>
-          <strong>{distinctAreas}</strong>
+        <article className="processSummaryCard processDashboardStatusCard structureOrgStatusCard">
+          <span>Estructura</span>
+          <div className="processDashboardBarRows">
+            <div>
+              <em>Gerencias</em>
+              <span><i style={{ width: `${Math.max(distinctGerencias, distinctAreas) ? (distinctGerencias / Math.max(distinctGerencias, distinctAreas)) * 100 : 0}%` }} /></span>
+              <b>{distinctGerencias}</b>
+            </div>
+            <div>
+              <em>Áreas</em>
+              <span><i style={{ width: `${Math.max(distinctGerencias, distinctAreas) ? (distinctAreas / Math.max(distinctGerencias, distinctAreas)) * 100 : 0}%` }} /></span>
+              <b>{distinctAreas}</b>
+            </div>
+          </div>
         </article>
       </div>
 

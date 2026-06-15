@@ -23280,7 +23280,7 @@ body {
 }
 
 .structureDashboardGrid {
-  grid-template-columns: minmax(260px, 0.95fr) minmax(320px, 1.1fr) minmax(160px, 0.45fr) minmax(160px, 0.45fr) !important;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1fr) minmax(320px, 1fr) !important;
 }
 
 .structureMiniMetricCard {
@@ -23306,6 +23306,10 @@ body {
   font-size: clamp(2.8rem, 3.6vw, 4.3rem) !important;
   line-height: 0.9 !important;
   font-weight: 500 !important;
+}
+
+.structureOrgStatusCard .processDashboardBarRows div {
+  grid-template-columns: 110px minmax(120px, 1fr) 48px !important;
 }
 
 .structureFilters {
