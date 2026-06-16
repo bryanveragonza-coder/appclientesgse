@@ -171,7 +171,7 @@ function Sidebar({ view, setView, project }) {
   ];
 
   const company = project.companyClient || project.client;
-  const sidebarLogoHorizontal = getDrivePreviewUrl(project.logoGSEhorizontal || project.logoGSE || "");
+  const sidebarLogoHorizontal = getDrivePreviewUrl(project.logoGSEhorizontal || "");
   const contact = project.contactName || project.generalManager || project.responsibleClient;
   const role = project.contactRole || "cargo de empresa";
 

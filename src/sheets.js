@@ -359,7 +359,7 @@ function projectFromRawRows(rows) {
     responsibleClient: map.responsablecliente || map.responsable || demoData.project.responsibleClient,
     generalManager: map.gerentegeneral || map.dueno || map["dueño"] || map.lidercliente || demoData.project.generalManager,
     logoGSE: map.logogse || demoData.project.logoGSE,
-    logoGSEhorizontal: map.logogsehorizontal || map.logogsehor || map.logohorizontalgse || map.logogse || demoData.project.logoGSEhorizontal,
+    logoGSEhorizontal: map.logogsehorizontal || map.logogsehor || map.logohorizontalgse || demoData.project.logoGSEhorizontal,
     logoClient: map.logocliente || demoData.project.logoClient,
     projectPhrase: map.fraseproyecto || demoData.project.projectPhrase,
     whatsappMessage: map.mensajewhatsapp || map.whatsapp || demoData.project.whatsappMessage,
