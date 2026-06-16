@@ -23685,71 +23685,92 @@ body {
   box-shadow: none !important;
 }
 
-
 /* DESKTOP_COMPACT_TOPBAR_V1 */
 @media (min-width: 761px) {
   .canvaTopbar.appGlobalTopbar,
   .appGlobalTopbar {
-    min-height: 46px !important;
-    margin: 0 0 14px !important;
-    padding: 7px 0 6px !important;
-    gap: 18px !important;
+    min-height: 37px !important;
+    height: 39px !important;
+    margin: 0 0 8px !important;
+    padding: 2px 0 1px !important;
+    gap: 14px !important;
+  }
+
+  .globalSearchWrap {
+    width: min(100%, 860px) !important;
   }
 
   .appGlobalTopbar .canvaSearch,
   .canvaSearch {
-    min-height: 38px !important;
-    padding: 0 18px !important;
-    box-shadow: 0 10px 22px rgba(16, 47, 55, 0.045) !important;
+    min-height: 30px !important;
+    height: 30px !important;
+    padding: 0 15px !important;
+    gap: 8px !important;
+    box-shadow: 0 6px 16px rgba(16, 47, 55, 0.035) !important;
+  }
+
+  .appGlobalTopbar .canvaSearch svg,
+  .canvaSearch svg {
+    width: 15px !important;
+    height: 15px !important;
   }
 
   .appGlobalTopbar .canvaSearch input,
   .canvaSearch input {
-    font-size: 0.88rem !important;
+    font-size: 0.82rem !important;
     font-weight: 650 !important;
   }
 
   .canvaTopActions {
-    gap: 10px !important;
+    gap: 8px !important;
   }
 
   .canvaIconAction {
-    min-height: 32px !important;
-    gap: 5px !important;
-    font-size: 0.7rem !important;
+    min-height: 28px !important;
+    height: 28px !important;
+    gap: 4px !important;
+    font-size: 0.68rem !important;
   }
 
   .canvaIconAction svg {
-    width: 16px !important;
-    height: 16px !important;
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  .canvaIconAction i {
+    min-width: 15px !important;
+    height: 15px !important;
+    font-size: 0.58rem !important;
+    line-height: 15px !important;
   }
 
   .canvaTopLogo {
-    width: 34px !important;
-    height: 34px !important;
-    box-shadow: 0 8px 18px rgba(16, 47, 55, 0.1) !important;
+    width: 28px !important;
+    height: 28px !important;
+    box-shadow: 0 6px 14px rgba(16, 47, 55, 0.09) !important;
   }
 
   .canvaUserBlock {
-    min-width: 118px !important;
-    max-width: 185px !important;
+    min-width: 108px !important;
+    max-width: 172px !important;
     gap: 0 !important;
   }
 
   .canvaUserCompany,
   .canvaUserRole {
-    font-size: 0.62rem !important;
-    line-height: 1.05 !important;
+    font-size: 0.58rem !important;
+    line-height: 1 !important;
   }
 
   .canvaUserName {
-    font-size: 0.78rem !important;
-    line-height: 1.05 !important;
+    font-size: 0.72rem !important;
+    line-height: 1.02 !important;
   }
 
   .topbarLogoutButton {
-    min-height: 32px !important;
-    padding: 0 12px !important;
-    font-size: 0.72rem !important;
+    min-height: 28px !important;
+    height: 28px !important;
+    padding: 0 10px !important;
+    font-size: 0.68rem !important;
   }
 }
