@@ -23774,3 +23774,19 @@ body {
     font-size: 0.68rem !important;
   }
 }
+
+
+/* DESKTOP_WHITE_APP_BACKGROUND_V1 */
+@media (min-width: 761px) {
+  body,
+  .app,
+  .main,
+  .content {
+    background: #ffffff !important;
+  }
+
+  .appGlobalTopbar,
+  .canvaTopbar.appGlobalTopbar {
+    background: rgba(255, 255, 255, 0.96) !important;
+  }
+}
