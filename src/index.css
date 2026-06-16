@@ -23476,3 +23476,107 @@ body {
 .processMasterSection table.structureTable.processTable:not(.coeTable) td:nth-child(7) { width: 130px !important; min-width: 130px !important; max-width: 130px !important; text-align: center !important; }
 .processMasterSection table.structureTable.processTable:not(.coeTable) th:nth-child(8),
 .processMasterSection table.structureTable.processTable:not(.coeTable) td:nth-child(8) { width: 138px !important; min-width: 138px !important; max-width: 138px !important; text-align: center !important; }
+
+
+/* DESKTOP_SPLIT_SCROLL_LAYOUT_V1 */
+@media (min-width: 761px) {
+  html,
+  body,
+  #root {
+    height: 100% !important;
+  }
+
+  body {
+    overflow: hidden !important;
+  }
+
+  .app {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    overflow: hidden !important;
+  }
+
+  .premiumSidebar,
+  .sidebar {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    flex: 0 0 255px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .sidebarHorizontalBrand,
+  .premiumBrand.sidebarHorizontalBrand,
+  .clientProfile,
+  .sidebarVersion {
+    flex: 0 0 auto !important;
+  }
+
+  .premiumNav,
+  .sidebar .nav {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 8px !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(255, 255, 255, 0.72) rgba(255, 255, 255, 0.14) !important;
+  }
+
+  .premiumNav::-webkit-scrollbar,
+  .sidebar .nav::-webkit-scrollbar {
+    width: 6px !important;
+  }
+
+  .premiumNav::-webkit-scrollbar-track,
+  .sidebar .nav::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.14) !important;
+  }
+
+  .premiumNav::-webkit-scrollbar-thumb,
+  .sidebar .nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.72) !important;
+  }
+
+  .main {
+    height: 100vh !important;
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .appGlobalTopbar,
+  .canvaTopbar.appGlobalTopbar {
+    flex: 0 0 auto !important;
+    position: relative !important;
+    z-index: 80 !important;
+    background: rgba(242, 249, 248, 0.96) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+
+  .content {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-gutter: stable !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(0, 184, 181, 0.72) rgba(0, 184, 181, 0.12) !important;
+  }
+
+  .content::-webkit-scrollbar {
+    width: 9px !important;
+  }
+
+  .content::-webkit-scrollbar-track {
+    background: rgba(0, 184, 181, 0.12) !important;
+  }
+
+  .content::-webkit-scrollbar-thumb {
+    background: rgba(0, 184, 181, 0.72) !important;
+  }
+}
