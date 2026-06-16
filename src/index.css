@@ -23691,8 +23691,8 @@ body {
   .appGlobalTopbar {
     min-height: 37px !important;
     height: 39px !important;
-    margin: 0 0 8px !important;
-    padding: 2px 0 1px !important;
+    margin: 0 0 12px !important;
+    padding: 0 0 4px !important;
     gap: 14px !important;
   }
 
