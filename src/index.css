@@ -23403,21 +23403,21 @@ body {
 .sidebarHorizontalBrand,
 .premiumBrand.sidebarHorizontalBrand {
   display: flex !important;
-  justify-content: flex-start !important;
+  justify-content: center !important;
   align-items: center !important;
-  margin: 26px 0 22px 30px !important;
+  margin: 24px 0 22px !important;
   min-height: 78px !important;
-  overflow: visible !important;
+  overflow: hidden !important;
 }
 
 .sidebarHorizontalLogo {
   display: block !important;
-  width: 220px !important;
+  width: 205px !important;
   height: 74px !important;
   max-height: 74px !important;
   object-fit: contain !important;
-  transform: scale(1.38) !important;
-  transform-origin: left center !important;
+  transform: scale(1) !important;
+  transform-origin: center center !important;
 }
 
 .premiumBrand.sidebarHorizontalBrand .brandTitle {
