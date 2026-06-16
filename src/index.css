@@ -23684,3 +23684,72 @@ body {
   outline: none !important;
   box-shadow: none !important;
 }
+
+
+/* DESKTOP_COMPACT_TOPBAR_V1 */
+@media (min-width: 761px) {
+  .canvaTopbar.appGlobalTopbar,
+  .appGlobalTopbar {
+    min-height: 46px !important;
+    margin: 0 0 14px !important;
+    padding: 7px 0 6px !important;
+    gap: 18px !important;
+  }
+
+  .appGlobalTopbar .canvaSearch,
+  .canvaSearch {
+    min-height: 38px !important;
+    padding: 0 18px !important;
+    box-shadow: 0 10px 22px rgba(16, 47, 55, 0.045) !important;
+  }
+
+  .appGlobalTopbar .canvaSearch input,
+  .canvaSearch input {
+    font-size: 0.88rem !important;
+    font-weight: 650 !important;
+  }
+
+  .canvaTopActions {
+    gap: 10px !important;
+  }
+
+  .canvaIconAction {
+    min-height: 32px !important;
+    gap: 5px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .canvaIconAction svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .canvaTopLogo {
+    width: 34px !important;
+    height: 34px !important;
+    box-shadow: 0 8px 18px rgba(16, 47, 55, 0.1) !important;
+  }
+
+  .canvaUserBlock {
+    min-width: 118px !important;
+    max-width: 185px !important;
+    gap: 0 !important;
+  }
+
+  .canvaUserCompany,
+  .canvaUserRole {
+    font-size: 0.62rem !important;
+    line-height: 1.05 !important;
+  }
+
+  .canvaUserName {
+    font-size: 0.78rem !important;
+    line-height: 1.05 !important;
+  }
+
+  .topbarLogoutButton {
+    min-height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 0.72rem !important;
+  }
+}
