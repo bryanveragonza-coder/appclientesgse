@@ -72,7 +72,8 @@ function safeUrl(url = "") {
   const clean = String(url || "").trim();
   if (!clean) return "";
   if (clean.startsWith("http://") || clean.startsWith("https://")) return clean;
-  return "";
+  const embeddedUrl = clean.match(/https?:\/\/[^\s"'<>)]*/i)?.[0] || "";
+  return embeddedUrl.replace(/[),.;]+$/, "");
 }
 
 function getDrivePreviewUrl(url = "") {

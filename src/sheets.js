@@ -325,7 +325,7 @@ function projectFromRawRows(rows) {
   // Cliente | Servicio | EstadoGeneral | AvanceGeneral | ...
   const headerKeys = cleanRows[0].map(normalizeKey);
   const valueRow = cleanRows[1] || [];
-  const looksHorizontal = headerKeys.includes("cliente") && headerKeys.includes("servicio");
+  const looksHorizontal = headerKeys.some((key) => validKeys.includes(key));
 
   if (looksHorizontal && valueRow.length) {
     headerKeys.forEach((key, index) => {
