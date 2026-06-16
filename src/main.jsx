@@ -171,17 +171,18 @@ function Sidebar({ view, setView, project }) {
   ];
 
   const company = project.companyClient || project.client;
+  const sidebarLogoHorizontal = getDrivePreviewUrl(project.logoGSEhorizontal || project.logoGSE || "");
   const contact = project.contactName || project.generalManager || project.responsibleClient;
   const role = project.contactRole || "cargo de empresa";
 
   return (
     <aside className="sidebar premiumSidebar">
-      <div className="brand premiumBrand">
-        <Logo src={project.logoGSE} fallback="GSE" />
-        <div>
+      <div className="brand premiumBrand sidebarHorizontalBrand">
+        {sidebarLogoHorizontal ? (
+          <img src={sidebarLogoHorizontal} alt="GSE&CO" className="sidebarHorizontalLogo" />
+        ) : (
           <div className="brandTitle">GSE&CO - Ruta de Implementación Visible</div>
-          <div className="brandSub"></div>
-        </div>
+        )}
       </div>
 
       <div className="clientProfile">
@@ -217,9 +218,7 @@ function Sidebar({ view, setView, project }) {
         ))}
       </nav>
 
-      <div className="sidebarCard premiumSidebarCard">
-        <Logo src={project.logoGSE} fallback="GSE" />
-      </div>
+      <div className="sidebarVersion">V 0.1</div>
     </aside>
   );
 }
