@@ -180,9 +180,7 @@ function Sidebar({ view, setView, project }) {
       <div className="brand premiumBrand sidebarHorizontalBrand">
         {sidebarLogoHorizontal ? (
           <img src={sidebarLogoHorizontal} alt="GSE&CO" className="sidebarHorizontalLogo" />
-        ) : (
-          <div className="brandTitle">GSE&CO - Ruta de Implementación Visible</div>
-        )}
+        ) : null}
       </div>
 
       <div className="clientProfile">

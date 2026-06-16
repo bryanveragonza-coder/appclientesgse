@@ -244,6 +244,29 @@ function getRowValue(row, possibleKeys) {
   return "";
 }
 
+function findProjectFieldValue(cleanRows, possibleKeys = []) {
+  const normalizedKeys = possibleKeys.map(normalizeKey);
+
+  for (let rowIndex = 0; rowIndex < cleanRows.length; rowIndex++) {
+    const row = cleanRows[rowIndex] || [];
+    const normalizedRow = row.map(normalizeKey);
+
+    for (let columnIndex = 0; columnIndex < normalizedRow.length; columnIndex++) {
+      if (!normalizedKeys.includes(normalizedRow[columnIndex])) continue;
+
+      const sameRowValue = cleanText(row[columnIndex + 1]);
+      if (sameRowValue) return sameRowValue;
+
+      for (let nextRowIndex = rowIndex + 1; nextRowIndex < cleanRows.length; nextRowIndex++) {
+        const belowValue = cleanText(cleanRows[nextRowIndex]?.[columnIndex]);
+        if (belowValue) return belowValue;
+      }
+    }
+  }
+
+  return "";
+}
+
 function projectFromRawRows(rows) {
   const map = {};
   const validKeys = [
@@ -359,7 +382,7 @@ function projectFromRawRows(rows) {
     responsibleClient: map.responsablecliente || map.responsable || demoData.project.responsibleClient,
     generalManager: map.gerentegeneral || map.dueno || map["dueño"] || map.lidercliente || demoData.project.generalManager,
     logoGSE: map.logogse || demoData.project.logoGSE,
-    logoGSEhorizontal: map.logogsehorizontal || map.logogsehor || map.logohorizontalgse || demoData.project.logoGSEhorizontal,
+    logoGSEhorizontal: map.logogsehorizontal || map.logogsehor || map.logohorizontalgse || findProjectFieldValue(cleanRows, ["LogoGSEhorizontal", "Logo GSE horizontal", "Logo horizontal GSE", "LogoGSECompleto", "Logo GSE completo"]) || demoData.project.logoGSEhorizontal,
     logoClient: map.logocliente || demoData.project.logoClient,
     projectPhrase: map.fraseproyecto || demoData.project.projectPhrase,
     whatsappMessage: map.mensajewhatsapp || map.whatsapp || demoData.project.whatsappMessage,
