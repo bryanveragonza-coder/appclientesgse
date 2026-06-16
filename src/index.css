@@ -23580,3 +23580,39 @@ body {
     background: rgba(0, 184, 181, 0.72) !important;
   }
 }
+
+
+/* DESKTOP_OUTER_SCROLLBARS_V1 */
+@media (min-width: 761px) {
+  .premiumNav,
+  .sidebar .nav {
+    margin-right: -14px !important;
+    padding-right: 22px !important;
+  }
+
+  .content {
+    margin-right: -12px !important;
+    padding-right: 44px !important;
+  }
+
+  .premiumNav::-webkit-scrollbar,
+  .sidebar .nav::-webkit-scrollbar,
+  .content::-webkit-scrollbar {
+    width: 7px !important;
+    height: 7px !important;
+  }
+
+  .premiumNav::-webkit-scrollbar-button,
+  .sidebar .nav::-webkit-scrollbar-button,
+  .content::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .premiumNav::-webkit-scrollbar-corner,
+  .sidebar .nav::-webkit-scrollbar-corner,
+  .content::-webkit-scrollbar-corner {
+    background: transparent !important;
+  }
+}
