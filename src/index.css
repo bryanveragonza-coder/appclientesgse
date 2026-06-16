@@ -10540,7 +10540,7 @@ div:has(> table.coeTable)::-webkit-scrollbar-track {
 .coeFiltersOneLine .searchInputWrap,
 .coeFiltersOneLine .searchInputWrap.compact,
 .coeFiltersOneLine .filter select {
-  min-height: 44px !important;
+  min-height: 72px !important;
   height: 44px !important;
   border-radius: 15px !important;
 }
@@ -23411,8 +23411,8 @@ body {
 
 .sidebarHorizontalLogo {
   display: block !important;
-  width: min(168px, 92%) !important;
-  max-height: 48px !important;
+  width: min(214px, 96%) !important;
+  max-height: 72px !important;
   object-fit: contain !important;
 }
 
