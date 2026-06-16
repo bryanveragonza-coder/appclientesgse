@@ -23403,16 +23403,17 @@ body {
 .sidebarHorizontalBrand,
 .premiumBrand.sidebarHorizontalBrand {
   display: flex !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   align-items: center !important;
-  margin: 0 0 22px !important;
-  min-height: 44px !important;
+  margin: 28px 0 24px 27px !important;
+  min-height: 52px !important;
 }
 
 .sidebarHorizontalLogo {
   display: block !important;
-  width: min(214px, 96%) !important;
-  max-height: 72px !important;
+  width: 155px !important;
+  height: 52px !important;
+  max-height: 52px !important;
   object-fit: contain !important;
 }
 
