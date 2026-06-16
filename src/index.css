@@ -23671,3 +23671,16 @@ body {
     flex: 0 0 auto !important;
   }
 }
+
+
+/* SIDEBAR_ACTIVE_NO_BORDER_V1 */
+.premiumNav .navItem.active,
+.sidebar .navItem.active,
+.premiumNav .navItem:focus,
+.sidebar .navItem:focus,
+.premiumNav .navItem:focus-visible,
+.sidebar .navItem:focus-visible {
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
