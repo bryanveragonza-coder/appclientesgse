@@ -23616,3 +23616,58 @@ body {
     background: transparent !important;
   }
 }
+
+
+/* TOPBAR_CLIENT_IDENTITY_V1 */
+@media (min-width: 761px) {
+  .premiumSidebar .clientProfile,
+  .sidebar .clientProfile {
+    display: none !important;
+  }
+
+  .canvaTopActions {
+    align-items: center !important;
+  }
+
+  .canvaUserBlock {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    gap: 1px !important;
+    min-width: 132px !important;
+    max-width: 210px !important;
+    line-height: 1.1 !important;
+  }
+
+  .canvaUserCompany,
+  .canvaUserRole {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    color: #587174 !important;
+    -webkit-text-fill-color: #587174 !important;
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  .canvaUserName {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    color: #09252d !important;
+    -webkit-text-fill-color: #09252d !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    line-height: 1.12 !important;
+  }
+
+  .canvaTopLogo {
+    flex: 0 0 auto !important;
+  }
+}

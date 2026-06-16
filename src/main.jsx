@@ -863,6 +863,10 @@ const meetingItems = [
     setOpenPanel("");
   };
 
+  const topbarCompany = project?.companyClient || project?.client || "";
+  const topbarName = project?.contactName || project?.responsibleClient || "Cliente";
+  const topbarRole = project?.contactRole || project?.role || "";
+
   return (
     <div className="canvaTopbar appGlobalTopbar">
       <div className="canvaActionWrap globalSearchWrap">
@@ -943,7 +947,11 @@ const meetingItems = [
         </div>
 
         <Logo src={project?.logoClient} fallback={(project?.companyClient || project?.client || "CL").slice(0, 2)} className="canvaTopLogo" />
-        <span className="canvaUserName">{project?.contactName || project?.responsibleClient || "Cliente"}</span>
+        <div className="canvaUserBlock">
+          {topbarCompany && <span className="canvaUserCompany">{topbarCompany}</span>}
+          <strong className="canvaUserName">{topbarName}</strong>
+          {topbarRole && <small className="canvaUserRole">{topbarRole}</small>}
+        </div>
         <button className="topbarLogoutButton" type="button" onClick={onLogout}>
           Salir
         </button>
