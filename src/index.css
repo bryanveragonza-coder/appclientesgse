@@ -23791,12 +23791,11 @@ body {
   }
 }
 
-
 /* DESKTOP_TOPBAR_SUBTLE_SHADOW_V1 */
 @media (min-width: 761px) {
   .appGlobalTopbar,
   .canvaTopbar.appGlobalTopbar {
-    box-shadow: 0 8px 18px rgba(16, 47, 55, 0.055) !important;
-    border-bottom: 1px solid rgba(16, 47, 55, 0.045) !important;
+    box-shadow: 0 2px 5px rgba(16, 47, 55, 0.035) !important;
+    border-bottom: 1px solid rgba(16, 47, 55, 0.035) !important;
   }
 }
