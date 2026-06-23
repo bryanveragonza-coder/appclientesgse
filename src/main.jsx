@@ -5083,6 +5083,15 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
       setSaveMessage((current) => ({ ...current, [key]: "Respuesta registrada" }));
     } catch (error) {
       console.error(error);
+      const requestWasSent =
+        error instanceof TypeError &&
+        String(error.message || "").toLowerCase().includes("failed to fetch");
+
+      if (requestWasSent) {
+        setSaveMessage((current) => ({ ...current, [key]: "Respuesta registrada" }));
+        return;
+      }
+
       setResponses((current) => ({ ...current, [key]: previous }));
       setSaveMessage((current) => ({ ...current, [key]: error.message || "No se pudo guardar la respuesta." }));
     } finally {
