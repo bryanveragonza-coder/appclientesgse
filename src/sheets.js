@@ -135,10 +135,10 @@ function csvUrl(sheetName) {
   const encodedSheet = encodeURIComponent(sheetName);
 
   if (type === "published") {
-    return `https://docs.google.com/spreadsheets/d/e/${id}/gviz/tq?tqx=out:csv&sheet=${encodedSheet}`;
+    return `https://docs.google.com/spreadsheets/d/e/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodedSheet}`;
   }
 
-  return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodedSheet}`;
+  return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodedSheet}`;
 }
 
 function parseCsvRows(csvText) {
