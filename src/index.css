@@ -23799,3 +23799,143 @@ body {
     border-bottom: 1px solid rgba(16, 47, 55, 0.035) !important;
   }
 }
+
+/* Hallazgos: check de politica/procedimiento cargados */
+.findingUploadChecks {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-top: 18px !important;
+}
+
+.findingUploadCheck {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  min-height: 28px !important;
+  padding: 6px 10px !important;
+  border: 1px solid rgba(0, 184, 181, 0.22) !important;
+  background: #eef9f8 !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.78rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+}
+
+.findingUploadCheck input {
+  width: 15px !important;
+  height: 15px !important;
+  margin: 0 !important;
+  accent-color: #00b8b5 !important;
+  cursor: pointer !important;
+}
+
+.findingUploadCheck.validated {
+  border-color: rgba(0, 184, 181, 0.4) !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.findingUploadCheck.saving {
+  opacity: 0.55 !important;
+  cursor: wait !important;
+}
+
+@media (max-width: 760px) {
+  .mobileFindingCard .findingUploadChecks {
+    gap: 5px !important;
+    margin-top: 9px !important;
+  }
+
+  .mobileFindingCard .findingUploadCheck {
+    flex: 1 1 100% !important;
+    min-height: 20px !important;
+    padding: 4px 5px !important;
+    gap: 4px !important;
+    font-size: 0.48rem !important;
+  }
+
+  .mobileFindingCard .findingUploadCheck input {
+    width: 11px !important;
+    height: 11px !important;
+  }
+}
+
+/* Ajuste fino Hallazgos: checks cargado limpios */
+.findingUploadChecks {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 22px !important;
+  margin-top: 18px !important;
+}
+
+.findingUploadCheck {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 7px !important;
+  min-height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 10.88px !important;
+  line-height: 1.15 !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+}
+
+.findingUploadCheck input {
+  width: 15px !important;
+  height: 15px !important;
+  margin: 0 !important;
+  accent-color: #00b8b5 !important;
+  cursor: pointer !important;
+  flex: 0 0 auto !important;
+}
+
+.findingUploadCheck.validated {
+  border: 0 !important;
+  background: transparent !important;
+  color: #00a7a4 !important;
+  -webkit-text-fill-color: #00a7a4 !important;
+}
+
+@media (max-width: 760px) {
+  .mobileFindingCard .findingUploadChecks {
+    flex-wrap: nowrap !important;
+    gap: 7px !important;
+    margin-top: 9px !important;
+  }
+
+  .mobileFindingCard .findingUploadCheck {
+    flex: 0 1 auto !important;
+    min-height: auto !important;
+    padding: 0 !important;
+    font-size: 7px !important;
+  }
+}
+
+/* Ruta desktop: tarjeta Total de Hitos limpia */
+.routeProjectSection .routeSummaryCard:first-child {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  background: #ffffff !important;
+}
+
+.routeProjectSection .routeSummaryCard:first-child > div:first-child {
+  width: 100% !important;
+  max-width: none !important;
+}

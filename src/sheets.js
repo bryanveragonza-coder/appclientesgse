@@ -459,6 +459,8 @@ function mapFindings(rows) {
       link: getRowValue(row, ["Link", "URL", "Enlace", "Documento", "Archivo", "Carpeta", "LinkHallazgo"]),
       imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
       technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha TÃ©cnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
+      policyLoaded: getRowValue(row, ["PoliticaCargada", "PolíticaCargada", "Politica Cargada", "Política Cargada", "Politica", "Política"]),
+      procedureLoaded: getRowValue(row, ["ProcedimientoCargado", "Procedimiento Cargado", "Procedimiento"]),
       impact: getRowValue(row, ["Impacto"]),
       image: getRowValue(row, ["Imagen", "ImagenPreview", "Imagen previa", "URLImagen"]),
     };
@@ -733,6 +735,7 @@ export async function loadSheetData() {
 // HALLAZGOS_V9_LECTURA_COMPLETA_TAGS_2_FILAS_FINAL
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
 
 
 

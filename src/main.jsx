@@ -1761,13 +1761,6 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
                 <span>Total de Hitos</span>
                 <strong>{milestones.length}</strong>
               </div>
-              <div className="routeSummaryIcon" aria-hidden="true">
-                <MapPin size={18} />
-                <MapPin size={18} />
-                <MapPin size={18} />
-                <Flag size={28} />
-              </div>
-              <p>Hitos cargados en la ruta de avance.</p>
             </article>
 
             <article className="routeSummaryCard routeStatusSummaryCard">
@@ -3196,6 +3189,101 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
   const [mobileDeliverableSide, setMobileDeliverableSide] = useState("gse");
   const [mobileFindingsVisible, setMobileFindingsVisible] = useState(6);
   const [mobileFindingsTouchStart, setMobileFindingsTouchStart] = useState(null);
+  const [findingUploadStatus, setFindingUploadStatus] = useState({});
+  const [savingFindingUpload, setSavingFindingUpload] = useState({});
+  const findingUploadWebhookUrl = safeUrl(import.meta.env.VITE_FINDING_UPLOAD_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
+  const spreadsheetId = getActiveSpreadsheetId();
+
+  const getFindingUploadKey = (item, field) => [field, item.id || "sin-id", item.finding || item.description || "sin-hallazgo"].join("|");
+
+  const getFindingUploadValue = (item, field) => {
+    const key = getFindingUploadKey(item, field);
+    if (Object.prototype.hasOwnProperty.call(findingUploadStatus, key)) return findingUploadStatus[key];
+    return field === "policy" ? isCheckedSheetValue(item.policyLoaded) : isCheckedSheetValue(item.procedureLoaded);
+  };
+
+  const handleFindingUploadChange = async (item, field, nextChecked) => {
+    if (!nextChecked) return;
+    const label = field === "policy" ? "política" : "procedimiento";
+    const title = item.finding || item.id || "este hallazgo";
+    if (!window.confirm(`¿Confirmas que ya fue cargada la ${label} para ${title}?`)) return;
+
+    const key = getFindingUploadKey(item, field);
+    const previous = getFindingUploadValue(item, field);
+    setFindingUploadStatus((current) => ({ ...current, [key]: true }));
+    setSavingFindingUpload((current) => ({ ...current, [key]: true }));
+
+    if (!findingUploadWebhookUrl) {
+      setFindingUploadStatus((current) => ({ ...current, [key]: previous }));
+      setSavingFindingUpload((current) => ({ ...current, [key]: false }));
+      window.alert("Falta configurar VITE_DOCUMENTS_WEBHOOK_URL para guardar este cargado.");
+      return;
+    }
+
+    try {
+      const session = getClientSession();
+      const response = await fetch(findingUploadWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "updateFindingUploadStatus",
+          spreadsheetId,
+          sheetName: "Hallazgos",
+          field: field === "policy" ? "PoliticaCargada" : "ProcedimientoCargado",
+          value: "SI",
+          id: item.id,
+          hallazgo: item.finding,
+          descripcion: item.description,
+          updatedAt: new Date().toISOString(),
+          updatedBy: session.nombre || session.usuario || session.cliente || "Cliente",
+          user: session.usuario || "",
+        }),
+      });
+      const text = await response.text();
+      let result = {};
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = { ok: response.ok, message: text };
+      }
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.message || "No se pudo guardar el cargado.");
+      }
+    } catch (error) {
+      console.error(error);
+      setFindingUploadStatus((current) => ({ ...current, [key]: previous }));
+      window.alert(error.message || "No se pudo guardar el cargado.");
+    } finally {
+      setSavingFindingUpload((current) => ({ ...current, [key]: false }));
+    }
+  };
+
+  const FindingUploadChecks = ({ item }) => {
+    const controls = [
+      { field: "policy", label: "Política cargada" },
+      { field: "procedure", label: "Procedimiento cargado" },
+    ];
+    return (
+      <div className="findingUploadChecks" onClick={(event) => event.stopPropagation()}>
+        {controls.map((control) => {
+          const key = getFindingUploadKey(item, control.field);
+          const checked = getFindingUploadValue(item, control.field);
+          const saving = Boolean(savingFindingUpload[key]);
+          return (
+            <label key={control.field} className={`findingUploadCheck ${checked ? "validated" : ""} ${saving ? "saving" : ""}`}>
+              <input
+                type="checkbox"
+                checked={checked}
+                disabled={saving}
+                onChange={(event) => handleFindingUploadChange(item, control.field, event.target.checked)}
+              />
+              <span>{control.label}</span>
+            </label>
+          );
+        })}
+      </div>
+    );
+  };
 
   const getFindingStatusGroup = (status = "") => {
     const value = normalizeSystemName(status);
@@ -3428,6 +3516,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
           {item.priority && <b className="priority">{item.priority}</b>}
           <b className={getFindingStatusGroup(status) === "Completado" ? "done" : ""}>{status}</b>
         </div>
+        <FindingUploadChecks item={item} />
         {isOpen && (
           <div className="mobileFindingDetail">
             {item.description && (
@@ -3698,6 +3787,8 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
                   Abrir evidencia o carpeta <ExternalLink size={15} />
                 </a>
               )}
+
+              <FindingUploadChecks item={item} />
 
               {isOpen && (
                 <div className="findingFixedExpanded">
@@ -5860,6 +5951,10 @@ function getStoredClientSession() {
 
 function ClientLogin({ onLogin }) {
   const loginUrl = import.meta.env.VITE_LOGIN_WEBHOOK_URL || "";
+  const localLoginEnabled = import.meta.env.DEV && String(import.meta.env.VITE_LOCAL_LOGIN_ENABLED || "").toLowerCase() === "true";
+  const localLoginUser = import.meta.env.VITE_LOCAL_LOGIN_USER || "local";
+  const localLoginPassword = import.meta.env.VITE_LOCAL_LOGIN_PASSWORD || "rivlocal2026";
+  const localLoginSheetId = import.meta.env.VITE_LOCAL_LOGIN_SHEET_ID || "";
   const supportWhatsappUrl = safeUrl(import.meta.env.VITE_SUPPORT_WHATSAPP_URL || "");
   const [usuario, setUsuario] = useState(() => window.localStorage.getItem("gseRememberedUser") || "");
   const [password, setPassword] = useState("");
@@ -5872,13 +5967,42 @@ function ClientLogin({ onLogin }) {
     event.preventDefault();
     setMessage("");
 
-    if (!loginUrl) {
-      setMessage("Falta configurar VITE_LOGIN_WEBHOOK_URL en Vercel.");
+    const cleanUsuario = usuario.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanUsuario || !cleanPassword) {
+      setMessage("Ingresa usuario y contraseña.");
       return;
     }
 
-    if (!usuario.trim() || !password.trim()) {
-      setMessage("Ingresa usuario y contraseña.");
+    if (localLoginEnabled && cleanUsuario.toLowerCase() === localLoginUser.toLowerCase() && cleanPassword === localLoginPassword) {
+      if (!localLoginSheetId) {
+        setMessage("Falta configurar VITE_LOCAL_LOGIN_SHEET_ID en .env.local.");
+        return;
+      }
+      const session = {
+        cliente: import.meta.env.VITE_LOCAL_LOGIN_CLIENTE || "Cliente local",
+        usuario: cleanUsuario,
+        sheetId: localLoginSheetId,
+        nombre: import.meta.env.VITE_LOCAL_LOGIN_NOMBRE || "Usuario local",
+        rol: import.meta.env.VITE_LOCAL_LOGIN_ROL || "Cliente",
+        logoGSE: import.meta.env.VITE_LOCAL_LOGIN_LOGO || "",
+        logoGSEhorizontal: import.meta.env.VITE_LOCAL_LOGIN_LOGO_HORIZONTAL || "",
+        localDev: true,
+        loggedAt: new Date().toISOString(),
+      };
+      if (rememberMe) {
+        window.localStorage.setItem("gseRememberedUser", cleanUsuario);
+      } else {
+        window.localStorage.removeItem("gseRememberedUser");
+      }
+      window.localStorage.setItem("gseClientSession", JSON.stringify(session));
+      onLogin(session);
+      return;
+    }
+
+    if (!loginUrl) {
+      setMessage("Falta configurar VITE_LOGIN_WEBHOOK_URL en Vercel.");
       return;
     }
 
@@ -5887,7 +6011,7 @@ function ClientLogin({ onLogin }) {
       const response = await fetch(loginUrl, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ usuario, password }),
+        body: JSON.stringify({ usuario: cleanUsuario, password: cleanPassword }),
       });
       const result = await response.json();
 
@@ -6304,6 +6428,9 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
+
 
 
 
