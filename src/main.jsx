@@ -4318,33 +4318,63 @@ function ClientDeliverables({ findings = [], project = {} }) {
   const [areaFilter, setAreaFilter] = useState("Todos");
   const [uploadStatus, setUploadStatus] = useState({});
   const [saving, setSaving] = useState({});
+  const [remoteResources, setRemoteResources] = useState({});
 
   const session = getClientSession();
   const webhookUrl = safeUrl(import.meta.env.VITE_FINDING_UPLOAD_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
+  const resourcesWebhookUrl = safeUrl(import.meta.env.VITE_KZEN_RESOURCES_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
 
   const resourceUrls = {
     policiesAI: safeUrl(
+      remoteResources.ia_politicas ||
       session?.recursosKzen?.ia_politicas ||
       session?.iaKzenPoliciesUrl ||
-      project.iaKzenPoliciesUrl
+      project.iaKzenPoliciesUrl ||
+      import.meta.env.VITE_KZEN_POLICIES_URL
     ),
     policiesTemplate: safeUrl(
+      remoteResources.formato_politicas ||
       session?.recursosKzen?.formato_politicas ||
       session?.policyTemplateUrl ||
-      project.policyTemplateUrl
+      project.policyTemplateUrl ||
+      import.meta.env.VITE_KZEN_POLICIES_TEMPLATE_URL
     ),
     proceduresAI: safeUrl(
+      remoteResources.ia_procedimientos ||
       session?.recursosKzen?.ia_procedimientos ||
       session?.iaKzenProceduresUrl ||
-      project.iaKzenProceduresUrl
+      project.iaKzenProceduresUrl ||
+      import.meta.env.VITE_KZEN_PROCEDURES_URL
     ),
     proceduresTemplate: safeUrl(
+      remoteResources.formato_procedimientos ||
       session?.recursosKzen?.formato_procedimientos ||
       session?.procedureTemplateUrl ||
-      project.procedureTemplateUrl
+      project.procedureTemplateUrl ||
+      import.meta.env.VITE_KZEN_PROCEDURES_TEMPLATE_URL
     ),
   };
+
+  useEffect(() => {
+    if (!resourcesWebhookUrl) return;
+
+    let active = true;
+
+    fetch(resourcesWebhookUrl, { cache: "no-store" })
+      .then((response) => response.json())
+      .then((result) => {
+        if (!active || result?.ok === false) return;
+        setRemoteResources(result?.recursos || result?.resources || {});
+      })
+      .catch((error) => {
+        console.error("No se pudieron cargar los recursos K&ZEN.", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [resourcesWebhookUrl]);
 
   const splitTypes = (value = "") => String(value || "")
     .split(/[,;|\n\r]+/)
