@@ -580,6 +580,7 @@ function mapArchitectureRoles(rows) {
 function mapProcessesAsIs(rows) {
   return rows.map((row, index) => ({
     id: getRowValue(row, ["NÂ°", "N", "No", "Numero", "NÃºmero", "ID", "Id"]) || String(index + 1),
+    processId: getRowValue(row, ["IDProceso", "ID Proceso", "IdProceso", "Id Proceso"]),
     type: getRowValue(row, ["TipoProceso", "Tipo de Proceso", "Tipo Proceso", "Tipo de proceso", "Tipo"]),
     macroCode: getRowValue(row, ["CodigoMacroproceso", "CÃ³digo Macroproceso", "CÃ³d. Macroproceso", "Cod Macroproceso", "Codigo Macroproceso"]),
     macroName: getRowValue(row, ["NombreMacroproceso", "Nombre del Macroproceso", "Nombre Macroproceso", "Macroproceso"]),
@@ -597,6 +598,7 @@ function mapProcessesAsIs(rows) {
 function mapProcessesToBe(rows) {
   return rows.map((row, index) => ({
     id: getRowValue(row, ["NÂ°", "N", "No", "Numero", "NÃºmero", "ID", "Id"]) || String(index + 1),
+    processId: getRowValue(row, ["IDProceso", "ID Proceso", "IdProceso", "Id Proceso"]),
     type: getRowValue(row, ["TipoProceso", "Tipo de Proceso", "Tipo Proceso", "Tipo de proceso", "Tipo"]),
     macroCode: getRowValue(row, ["CodigoMacroproceso", "CÃ³digo Macroproceso", "CÃ³d. Macroproceso", "Cod Macroproceso", "Codigo Macroproceso"]),
     macroName: getRowValue(row, ["NombreMacroproceso", "Nombre del Macroproceso", "Nombre Macroproceso", "Macroproceso"]),

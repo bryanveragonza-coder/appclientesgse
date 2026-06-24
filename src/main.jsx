@@ -2264,7 +2264,8 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
   };
   const asIsValidationStats = getProcessValidationStats(processesAsIs);
   const toBeValidationStats = getProcessValidationStats(processesToBe);
-  const validationWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
+  const validationAsIsWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_ASIS_WEBHOOK_URL || "");
+  const validationToBeWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_TOBE_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
   const [processValidation, setProcessValidation] = useState({});
   const [savingProcessValidation, setSavingProcessValidation] = useState({});
@@ -2272,7 +2273,7 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
   const getProcessValidationKey = (item, variant, field) => [
     variant,
     field,
-    item.processCode || item.id || "sin-codigo",
+    item.processId || item.processCode || item.id || "sin-identificador",
     item.processName || "sin-proceso",
   ].join("|");
 
@@ -2287,6 +2288,8 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
   const handleValidateProcessAsset = async (item, variant, field, nextChecked) => {
     if (!nextChecked) return;
 
+    const validationWebhookUrl =
+      variant === "asis" ? validationAsIsWebhookUrl : validationToBeWebhookUrl;
     const fieldName = field === "image" ? "imagen" : "ficha";
     const confirmMessage = `¿Confirmas que validas esta ${fieldName} del proceso ${item.processName || item.processCode || "seleccionado"}?`;
     if (!window.confirm(confirmMessage)) return;
@@ -2299,7 +2302,11 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
     if (!validationWebhookUrl) {
       setProcessValidation((current) => ({ ...current, [key]: previous }));
       setSavingProcessValidation((current) => ({ ...current, [key]: false }));
-      window.alert("Falta configurar VITE_DOCUMENTS_WEBHOOK_URL para guardar esta validación.");
+      window.alert(
+        variant === "asis"
+          ? "Falta configurar VITE_PROCESS_ASIS_WEBHOOK_URL."
+          : "Falta configurar VITE_PROCESS_TOBE_WEBHOOK_URL."
+      );
       return;
     }
 
@@ -2309,13 +2316,16 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
-          action: "updateProcessValidation",
+          action: variant === "asis"
+            ? "updateProcessValidationASIS"
+            : "updateProcessValidationTOBE",
           spreadsheetId,
           variant,
           sheetName: variant === "asis" ? "ProcesosASIS" : "ProcesosTOBE",
           field: field === "image" ? "ImagenValidada" : "FichaValidada",
           value: "SI",
           id: item.id,
+          idProceso: item.processId,
           codigoProceso: item.processCode,
           proceso: item.processName,
           descripcion: variant === "asis" ? item.description : item.changes,
