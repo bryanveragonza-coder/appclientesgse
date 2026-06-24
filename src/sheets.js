@@ -38,7 +38,11 @@ export const demoData = {
     projectPhrase: "Ruta de avance del proyecto",
     whatsappMessage: "Hola, equipo ðŸ‘‹ Ya actualizamos la Ruta de Avance Visibleâ„¢.",
     documentUploadLink: "",
-    structureImage: ""
+    structureImage: "",
+    iaKzenPoliciesUrl: "",
+    policyTemplateUrl: "",
+    iaKzenProceduresUrl: "",
+    procedureTemplateUrl: ""
   },
   milestones: [],
   findings: [],
@@ -310,7 +314,11 @@ function projectFromRawRows(rows) {
     "imagenestructura",
     "estructuraimagen",
     "linkestructura",
-    "enlaceestructura"
+    "enlaceestructura",
+    "iakzenpoliticas",
+    "formatopoliticas",
+    "iakzenprocedimientos",
+    "formatoprocedimientos"
   ];
 
   const cleanRows = rows
@@ -388,6 +396,10 @@ function projectFromRawRows(rows) {
     whatsappMessage: map.mensajewhatsapp || map.whatsapp || demoData.project.whatsappMessage,
     documentUploadLink: map.linkcargadocumentos || map.enlacecargadocumentos || map.linkdocumentos || map.enlacedocumentos || map.linkonedrive || map.onedrive || demoData.project.documentUploadLink,
     structureImage: map.imagenestructura || map.estructuraimagen || map.linkestructura || map.enlaceestructura || demoData.project.structureImage,
+    iaKzenPoliciesUrl: map.iakzenpoliticas || findProjectFieldValue(cleanRows, ["IAKZENPoliticas", "IA K&ZEN Politicas", "IA K&ZEN Políticas", "Link IA Políticas"]) || "",
+    policyTemplateUrl: map.formatopoliticas || findProjectFieldValue(cleanRows, ["FormatoPoliticas", "Formato Políticas", "Formato Politicas", "Link Formato Políticas"]) || "",
+    iaKzenProceduresUrl: map.iakzenprocedimientos || findProjectFieldValue(cleanRows, ["IAKZENProcedimientos", "IA K&ZEN Procedimientos", "Link IA Procedimientos"]) || "",
+    procedureTemplateUrl: map.formatoprocedimientos || findProjectFieldValue(cleanRows, ["FormatoProcedimientos", "Formato Procedimientos", "Link Formato Procedimientos"]) || "",
   };
 }
 

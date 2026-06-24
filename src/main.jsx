@@ -165,6 +165,7 @@ function Sidebar({ view, setView, project }) {
       title: "Documentacion",
       items: [
         [FileText, "Entregables GSE", "entregables"],
+        [ClipboardCheck, "Entregables clientes", "entregables-clientes"],
         [UploadCloud, "Carga de documentos", "documentos"],
       ],
     },
@@ -4310,6 +4311,297 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
   );
 }
 
+function ClientDeliverables({ findings = [], project = {} }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("Todos");
+  const [statusFilter, setStatusFilter] = useState("Todos");
+  const [areaFilter, setAreaFilter] = useState("Todos");
+  const [uploadStatus, setUploadStatus] = useState({});
+  const [saving, setSaving] = useState({});
+
+  const session = getClientSession();
+  const webhookUrl = safeUrl(import.meta.env.VITE_FINDING_UPLOAD_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
+  const spreadsheetId = getActiveSpreadsheetId();
+
+  const resourceUrls = {
+    policiesAI: safeUrl(
+      session?.recursosKzen?.ia_politicas ||
+      session?.iaKzenPoliciesUrl ||
+      project.iaKzenPoliciesUrl
+    ),
+    policiesTemplate: safeUrl(
+      session?.recursosKzen?.formato_politicas ||
+      session?.policyTemplateUrl ||
+      project.policyTemplateUrl
+    ),
+    proceduresAI: safeUrl(
+      session?.recursosKzen?.ia_procedimientos ||
+      session?.iaKzenProceduresUrl ||
+      project.iaKzenProceduresUrl
+    ),
+    proceduresTemplate: safeUrl(
+      session?.recursosKzen?.formato_procedimientos ||
+      session?.procedureTemplateUrl ||
+      project.procedureTemplateUrl
+    ),
+  };
+
+  const splitTypes = (value = "") => String(value || "")
+    .split(/[,;|\n\r]+/)
+    .map((item) => item.trim())
+    .filter((item) => item && !["-", "n/a", "no aplica", "ninguno", "0"].includes(normalizeSystemName(item)));
+
+  const rows = useMemo(() => findings.flatMap((item, findingIndex) => {
+    const types = splitTypes(item.deliverableClient);
+    return types.map((type, typeIndex) => ({
+      ...item,
+      rowKey: `${item.id || findingIndex}-${normalizeSystemName(type)}-${typeIndex}`,
+      deliverableType: type,
+    }));
+  }), [findings]);
+
+  const getUploadKey = (item, field) => [field, item.id || item.rowKey, item.finding || item.description].join("|");
+  const getUploadValue = (item, field) => {
+    const key = getUploadKey(item, field);
+    if (Object.prototype.hasOwnProperty.call(uploadStatus, key)) return uploadStatus[key];
+    return field === "policy" ? isCheckedSheetValue(item.policyLoaded) : isCheckedSheetValue(item.procedureLoaded);
+  };
+
+  const getRowLoaded = (item) => {
+    const type = normalizeSystemName(item.deliverableType);
+    if (type.includes("politica")) return getUploadValue(item, "policy");
+    if (type.includes("procedimiento")) return getUploadValue(item, "procedure");
+    return getUploadValue(item, "policy") || getUploadValue(item, "procedure");
+  };
+
+  const handleUploadChange = async (item, field, nextChecked) => {
+    if (!nextChecked) return;
+    const label = field === "policy" ? "política" : "procedimiento";
+    if (!window.confirm(`¿Confirmas que ya fue cargado el entregable de ${label}?`)) return;
+
+    const key = getUploadKey(item, field);
+    const previous = getUploadValue(item, field);
+    setUploadStatus((current) => ({ ...current, [key]: true }));
+    setSaving((current) => ({ ...current, [key]: true }));
+
+    if (!webhookUrl) {
+      setUploadStatus((current) => ({ ...current, [key]: previous }));
+      setSaving((current) => ({ ...current, [key]: false }));
+      window.alert("Falta configurar el webhook para guardar el cargado.");
+      return;
+    }
+
+    try {
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "updateFindingUploadStatus",
+          spreadsheetId,
+          sheetName: "Hallazgos",
+          field: field === "policy" ? "PoliticaCargada" : "ProcedimientoCargado",
+          value: "SI",
+          id: item.id,
+          hallazgo: item.finding,
+          descripcion: item.description,
+          updatedAt: new Date().toISOString(),
+          updatedBy: session.nombre || session.usuario || session.cliente || "Cliente",
+          user: session.usuario || "",
+        }),
+      });
+      const text = await response.text();
+      let result = {};
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = { ok: response.ok, message: text };
+      }
+      if (!response.ok || result.ok === false) throw new Error(result.message || "No se pudo guardar el cargado.");
+    } catch (error) {
+      console.error(error);
+      setUploadStatus((current) => ({ ...current, [key]: previous }));
+      window.alert(error.message || "No se pudo guardar el cargado.");
+    } finally {
+      setSaving((current) => ({ ...current, [key]: false }));
+    }
+  };
+
+  const typeOptions = useMemo(() => [...new Set(rows.map((item) => item.deliverableType).filter(Boolean))], [rows]);
+  const areaOptions = useMemo(() => [...new Set(rows.map((item) => item.areaDetail || item.area).filter(Boolean))], [rows]);
+  const filteredRows = useMemo(() => {
+    const query = normalizeSystemName(searchTerm);
+    return rows.filter((item) => {
+      const loaded = getRowLoaded(item);
+      const status = loaded ? "Cargado" : "Pendiente";
+      const area = item.areaDetail || item.area || "";
+      const searchable = normalizeSystemName([
+        item.deliverableType,
+        item.description,
+        item.recommendation,
+        item.management,
+        area,
+        item.finding,
+      ].join(" "));
+      return (
+        (typeFilter === "Todos" || item.deliverableType === typeFilter) &&
+        (statusFilter === "Todos" || status === statusFilter) &&
+        (areaFilter === "Todos" || area === areaFilter) &&
+        (!query || searchable.includes(query))
+      );
+    });
+  }, [rows, searchTerm, typeFilter, statusFilter, areaFilter, uploadStatus]);
+
+  const typeSummary = useMemo(() => rows.reduce((acc, item) => {
+    const key = item.deliverableType;
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {}), [rows]);
+  const loadedTotal = rows.filter(getRowLoaded).length;
+  const maxTypeCount = Math.max(1, ...Object.values(typeSummary));
+
+  const resources = [
+    { label: "IA K&ZEN Políticas", detail: "Crear con asistencia guiada", url: resourceUrls.policiesAI, icon: Sparkles },
+    { label: "Formato de políticas", detail: "Ver y copiar formato", url: resourceUrls.policiesTemplate, icon: FileText },
+    { label: "IA K&ZEN Procedimientos", detail: "Crear con asistencia guiada", url: resourceUrls.proceduresAI, icon: Sparkles },
+    { label: "Formato de procedimientos", detail: "Ver y copiar formato", url: resourceUrls.proceduresTemplate, icon: FileText },
+  ];
+
+  return (
+    <section className="clientDeliverablesView">
+      <div className="sectionHeader clientDeliverablesHeader">
+        <div>
+          <h2>Entregables clientes</h2>
+          <p>Consulta qué debes construir, revisa la recomendación técnica y accede a las herramientas para desarrollar cada entregable.</p>
+        </div>
+        <Badge status="En validación">{filteredRows.length} visibles</Badge>
+      </div>
+
+      <div className="clientDeliverablesSummary">
+        <article className="clientDeliverableSummaryCard">
+          <h3>Entregables solicitados</h3>
+          <strong>{rows.length}</strong>
+          <div className="clientDeliverableBars">
+            {Object.entries(typeSummary).map(([label, value]) => (
+              <div key={label}>
+                <span>{label}</span>
+                <i><b style={{ width: `${(value / maxTypeCount) * 100}%` }} /></i>
+                <em>{value}</em>
+              </div>
+            ))}
+          </div>
+        </article>
+        <article className="clientDeliverableSummaryCard">
+          <h3>Estado de cargado</h3>
+          <strong>{loadedTotal}/{rows.length}</strong>
+          <div className="clientDeliverableBars">
+            <div>
+              <span>Cargado</span>
+              <i><b style={{ width: `${rows.length ? (loadedTotal / rows.length) * 100 : 0}%` }} /></i>
+              <em>{loadedTotal}</em>
+            </div>
+            <div>
+              <span>Pendiente</span>
+              <i><b className="pending" style={{ width: `${rows.length ? ((rows.length - loadedTotal) / rows.length) * 100 : 0}%` }} /></i>
+              <em>{Math.max(0, rows.length - loadedTotal)}</em>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div className="clientDeliverableResources">
+        {resources.map(({ label, detail, url, icon: Icon }) => (
+          <a
+            key={label}
+            className={`clientDeliverableResource ${url ? "" : "disabled"}`}
+            href={url || undefined}
+            target={url ? "_blank" : undefined}
+            rel={url ? "noreferrer" : undefined}
+            aria-disabled={!url}
+            onClick={(event) => !url && event.preventDefault()}
+          >
+            <Icon size={24} />
+            <strong>{label}</strong>
+            <span>{url ? detail : "Enlace pendiente de configurar"}</span>
+            {url && <ExternalLink size={15} />}
+          </a>
+        ))}
+      </div>
+
+      <div className="clientDeliverableFilters">
+        <label className="searchField clientDeliverableSearch">
+          <Search size={18} />
+          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar entregable, recomendación, gerencia o área" />
+        </label>
+        <FilterSelect label="Tipo de entregable" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
+        <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={["Cargado", "Pendiente"]} />
+        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
+      </div>
+
+      <article className="clientDeliverableMatrixCard">
+        <div className="processTableHeader">
+          <div>
+            <h3>Matriz de entregables clientes</h3>
+            <p>Información tomada directamente de la pestaña Hallazgos.</p>
+          </div>
+          <Badge status="Disponible">{Math.min(filteredRows.length, 20)} de {filteredRows.length}</Badge>
+        </div>
+        <div className="clientDeliverableMatrixWrap">
+          <table className="clientDeliverableMatrix">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Descripción técnica</th>
+                <th>Recomendación</th>
+                <th>Gerencia</th>
+                <th>Área</th>
+                <th>Política cargada</th>
+                <th>Procedimiento cargado</th>
+                <th>Archivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRows.slice(0, 20).map((item) => (
+                <tr key={item.rowKey}>
+                  <td><strong>{item.deliverableType}</strong></td>
+                  <td>{item.description || "Sin descripción técnica"}</td>
+                  <td>{item.recommendation || item.solution || "Sin recomendación registrada"}</td>
+                  <td>{item.management || item.gerencia || "Por definir"}</td>
+                  <td>{item.areaDetail || item.area || "Por definir"}</td>
+                  {["policy", "procedure"].map((field) => {
+                    const key = getUploadKey(item, field);
+                    const checked = getUploadValue(item, field);
+                    return (
+                      <td key={field}>
+                        <label className={`clientDeliverableCheck ${checked ? "checked" : ""}`}>
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={Boolean(saving[key])}
+                            onChange={(event) => handleUploadChange(item, field, event.target.checked)}
+                          />
+                          <span>{checked ? "Cargado" : "Marcar"}</span>
+                        </label>
+                      </td>
+                    );
+                  })}
+                  <td>
+                    {safeUrl(item.link) ? (
+                      <a className="clientDeliverableUploadLink" href={safeUrl(item.link)} target="_blank" rel="noreferrer">
+                        Subir <ExternalLink size={14} />
+                      </a>
+                    ) : <span className="clientDeliverableNoLink">Sin enlace</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {!filteredRows.length && <div className="emptyState">No hay entregables cliente que coincidan con los filtros.</div>}
+      </article>
+    </section>
+  );
+}
+
 function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliverable, compact = false, setView, previousView = "portal", pending = [] }) {
   const [systemFilter, setSystemFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
@@ -6207,6 +6499,7 @@ function App() {
               ["hallazgos", "Hallazgos"],
               ["pendientes", "Pendientes"],
               ["entregables", "Entregables"],
+              ["entregables-clientes", "Entregables clientes"],
               ["documentos", "Documentos"],
               ["educacion", "Lo que vas a recibir"],
             ].map(([value, label]) => (
@@ -6269,6 +6562,7 @@ function App() {
           {view === "hallazgos" && <Findings findings={findings} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} />}
           {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} setView={navigate} previousView={previousView} pending={pending} />}
+          {view === "entregables-clientes" && <ClientDeliverables findings={findings} project={project} />}
           {view === "documentos" && <DocumentsUpload documents={documents} project={project} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "educacion" && <Education education={education} setView={navigate} previousView={previousView} pending={pending} />}
         </div>
