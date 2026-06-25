@@ -4466,8 +4466,10 @@ function ClientDeliverables({ findings = [], project = {} }) {
       const area = item.areaDetail || item.area || "";
       const searchable = normalizeSystemName([
         item.deliverableType,
+        item.deliveryDate,
         item.description,
         item.recommendation,
+        item.processArea,
         item.management,
         area,
         item.finding,
@@ -4580,8 +4582,10 @@ function ClientDeliverables({ findings = [], project = {} }) {
             <thead>
               <tr>
                 <th>Tipo</th>
+                <th>Fecha</th>
                 <th>Descripción técnica</th>
                 <th>Recomendación</th>
+                <th>Proceso</th>
                 <th>Gerencia</th>
                 <th>Área</th>
                 <th>Política cargada</th>
@@ -4593,8 +4597,10 @@ function ClientDeliverables({ findings = [], project = {} }) {
               {filteredRows.slice(0, 20).map((item) => (
                 <tr key={item.rowKey}>
                   <td><strong>{item.deliverableType}</strong></td>
+                  <td>{item.deliveryDate || "Por definir"}</td>
                   <td>{item.description || "Sin descripción técnica"}</td>
                   <td>{item.recommendation || item.solution || "Sin recomendación registrada"}</td>
+                  <td>{item.processArea || "Por definir"}</td>
                   <td>{item.management || item.gerencia || "Por definir"}</td>
                   <td>{item.areaDetail || item.area || "Por definir"}</td>
                   {["policy", "procedure"].map((field) => {
