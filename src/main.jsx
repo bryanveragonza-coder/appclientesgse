@@ -961,7 +961,7 @@ const meetingItems = [
   );
 }
 
-function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], deliverables = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], updates = [], meetings = [], setView }) {
+function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], deliverables = [], architectureRoles = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], updates = [], meetings = [], setView }) {
   const [openPanel, setOpenPanel] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -1064,10 +1064,10 @@ const meetUrl = safeUrl(project?.linkMeet);
     },
     {
       label: "Perfiles",
-      total: 0,
-      value: 0,
-      note: "Pendiente de datos",
-      segments: [],
+      total: architectureRoles.length,
+      value: architectureRoles.filter((item) => isCompletedStatus(item.status) || isCheckedSheetValue(item.validated)).length,
+      note: architectureRoles.length ? "Validado" : "Pendiente de datos",
+      segments: countByStatus(architectureRoles),
     },
     {
       label: "Nivel de empleabilidad",
@@ -5778,7 +5778,7 @@ useEffect(() => {
   );
 }
 
-function MobilePortalHome({ project, milestones = [], pending = [], meetings = [], updates = [], findings = [], deliverables = [], documents = [], education = [], coeAsIs = [], coeToBe = [], setView }) {
+function MobilePortalHome({ project, milestones = [], pending = [], meetings = [], updates = [], findings = [], deliverables = [], documents = [], education = [], architectureRoles = [], coeAsIs = [], coeToBe = [], setView }) {
   const [mobileSearch, setMobileSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [openMobilePanel, setOpenMobilePanel] = useState("");
@@ -5847,9 +5847,10 @@ const costFor = (item = {}) => {
   });
   const topRouteItems = routeItems.slice(0, 6);
   const bottomRouteItems = routeItems.slice(6, 13);
+  const profileCompletedCount = architectureRoles.filter((item) => isCompletedStatus(item.status) || isCheckedSheetValue(item.validated)).length;
   const systemMetrics = [
     { label: "Hallazgos", total: findings.length, value: findings.filter((item) => isCompletedStatus(item.status)).length, note: "Completado" },
-    { label: "Perfiles", total: 0, value: 0, note: "Pendiente de datos" },
+    { label: "Perfiles", total: architectureRoles.length, value: profileCompletedCount, note: architectureRoles.length ? "Validado" : "Pendiente de datos" },
     { label: "Nivel de empleabilidad", total: 0, value: 0, note: "Pendiente de datos" },
     { label: "Desempeño", total: 0, value: 0, note: "Pendiente de datos" },
     { label: "Masa Salarial", total: 0, value: 0, note: "Pendiente de datos" },
@@ -6568,6 +6569,7 @@ function App() {
                 deliverables={deliverables}
                 documents={documents}
                 education={education}
+                architectureRoles={architectureRoles}
                 coeAsIs={coeAsIs}
                 coeToBe={coeToBe}
                 setView={navigate}
@@ -6583,6 +6585,7 @@ function App() {
               pending={pending}
               findings={findings}
               deliverables={deliverables}
+              architectureRoles={architectureRoles}
               processesAsIs={processesAsIs}
               processesToBe={processesToBe}
               coeAsIs={coeAsIs}
