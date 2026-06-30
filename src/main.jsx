@@ -160,7 +160,7 @@ function Sidebar({ view, setView, project }) {
         [AlertTriangle, "Pendientes cliente", "pendientes"],
       ],
     },
-    { title: "Procesos", items: [[ClipboardCheck, "Lista Maestra de Procesos", "procesos"], [Building2, "Estructura", "estructura"]] },
+    { title: "Procesos", items: [[ClipboardCheck, "Lista Maestra de Procesos", "procesos"], [Building2, "Estructura y perfil", "estructura"]] },
     {
       title: "Documentacion",
       items: [
@@ -2006,6 +2006,7 @@ function StructureView({ project = {}, architectureRoles = [] }) {
         item.gerencia,
         item.area,
         item.cargo,
+        item.profileUrl,
         item.occupationalGroup,
         item.abbreviation,
         item.status,
@@ -2084,8 +2085,8 @@ function StructureView({ project = {}, architectureRoles = [] }) {
     <section className="processMasterSection structureSection">
       <div className="sectionHeader">
         <div>
-          <h2>Estructura</h2>
-          <p>Arquitectura de cargos, grupos ocupacionales sugeridos y validación del cliente.</p>
+          <h2>Estructura y perfil</h2>
+          <p>Arquitectura de cargos, perfiles, grupos ocupacionales sugeridos y validación del cliente.</p>
         </div>
       </div>
 
@@ -2160,7 +2161,7 @@ function StructureView({ project = {}, architectureRoles = [] }) {
       <div className="processTableCard structureTableCard">
         <div className="processTableHeader">
           <div>
-            <h3>Arquitectura de cargos</h3>
+            <h3>Arquitectura de cargos y perfiles</h3>
             <p>Matriz cargada desde la pestaña ArquitecturaCargos.</p>
           </div>
           <Badge status="En validación">{filteredRows.length} visibles</Badge>
@@ -2176,6 +2177,7 @@ function StructureView({ project = {}, architectureRoles = [] }) {
                 <th>Grupo ocupacional sugerido</th>
                 <th>Abreviación</th>
                 <th>Status</th>
+                <th>Ver perfil</th>
                 <th>Validado</th>
               </tr>
             </thead>
@@ -2193,6 +2195,13 @@ function StructureView({ project = {}, architectureRoles = [] }) {
                     <td>{item.occupationalGroup}</td>
                     <td>{item.abbreviation}</td>
                     <td><Badge status={item.status}>{item.status || "Sin status"}</Badge></td>
+                    <td>
+                      {item.profileUrl ? (
+                        <a className="structureProfileLink" href={safeUrl(item.profileUrl)} target="_blank" rel="noreferrer">Ver</a>
+                      ) : (
+                        <span className="structureProfileEmpty">Sin enlace</span>
+                      )}
+                    </td>
                     <td>
                       <label className={`processValidationCheck ${checked ? "validated" : ""} ${saving ? "saving" : ""}`} title="Validar cargo">
                         <input

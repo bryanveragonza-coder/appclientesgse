@@ -582,11 +582,12 @@ function mapArchitectureRoles(rows) {
     gerencia: getRowValue(row, ["GERENCIA", "Gerencia"]),
     area: getRowValue(row, ["ÁREA", "AREA", "Área", "Area"]),
     cargo: getRowValue(row, ["CARGO", "Cargo"]),
+    profileUrl: getRowValue(row, ["Perfil", "URLPerfil", "PerfilURL", "EnlacePerfil", "Enlace Perfil", "URL", "Url"]),
     occupationalGroup: getRowValue(row, ["GRUPO OCUPACIONAL sugerido", "GRUPO OCUPACIONAL", "Grupo Ocupacional sugerido", "Grupo Ocupacional", "Grupo"]),
     abbreviation: getRowValue(row, ["ABREVIACIÓN", "ABREVIACION", "Abreviación", "Abreviacion"]),
     status: getRowValue(row, ["STATUS", "Status", "Estado"]),
     validated: getRowValue(row, ["Validado", "VALIDADO", "Validada"]),
-  })).filter((x) => x.gerencia || x.area || x.cargo || x.occupationalGroup || x.abbreviation || x.status);
+  })).filter((x) => x.gerencia || x.area || x.cargo || x.profileUrl || x.occupationalGroup || x.abbreviation || x.status);
 }
 
 function mapProcessesAsIs(rows) {
