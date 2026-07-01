@@ -23369,6 +23369,23 @@ body {
   box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
 }
 
+.processMapToBeSection {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.processMapToBeImageCard {
+  padding: 24px !important;
+}
+
+.processMapToBeImageCard img {
+  display: block !important;
+  width: 100% !important;
+  max-height: 560px !important;
+  object-fit: contain !important;
+  background: #ffffff !important;
+}
+
 .processMasterSection .structureTableCard {
   border: 0 !important;
   border-radius: 0 !important;

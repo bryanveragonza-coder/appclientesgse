@@ -2225,7 +2225,7 @@ function StructureView({ project = {}, architectureRoles = [] }) {
   );
 }
 
-function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending = [], setView, previousView = "portal" }) {
+function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe = [], pending = [], setView, previousView = "portal" }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("Todos");
   const [macroFilter, setMacroFilter] = useState("Todos");
@@ -2277,6 +2277,7 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
   const validationAsIsWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_ASIS_WEBHOOK_URL || "");
   const validationToBeWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_TOBE_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
+  const processMapToBeImage = getDrivePreviewUrl(project.processMapToBeImage || project.imagenMapadeprocesos || project.imagenMapaProcesos || "");
   const [processValidation, setProcessValidation] = useState({});
   const [savingProcessValidation, setSavingProcessValidation] = useState({});
 
@@ -2612,6 +2613,25 @@ function ProcessesMasterList({ processesAsIs = [], processesToBe = [], pending =
             </div>
           </div>
         </article>
+      </div>
+
+      <div className="processMapToBeSection">
+        <div className="processTableHeader">
+          <div>
+            <h3>Mapa de procesos TO BE</h3>
+            <p>Imagen cargada desde la columna ImagenMapadeprocesos en la pestaña Proyecto.</p>
+          </div>
+        </div>
+        <div className="structureHeroImageCard processMapToBeImageCard">
+          {processMapToBeImage ? (
+            <img src={processMapToBeImage} alt="Mapa de procesos TO BE" />
+          ) : (
+            <div className="structureEmptyImage">
+              <Layers3 size={42} />
+              <span>Agrega ImagenMapadeprocesos en la pestaña Proyecto para mostrar el mapa.</span>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="premiumFilters processFilters">
@@ -6715,7 +6735,7 @@ function App() {
               </div>
             </>
           )}
-          {view === "procesos" && <ProcessesMasterList processesAsIs={processesAsIs} processesToBe={processesToBe} pending={pending} setView={navigate} previousView={previousView} />}
+          {view === "procesos" && <ProcessesMasterList project={project} processesAsIs={processesAsIs} processesToBe={processesToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "estructura" && <StructureView project={project} architectureRoles={architectureRoles} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "hallazgos" && <Findings findings={findings} pending={pending} setView={navigate} previousView={previousView} />}
