@@ -570,6 +570,7 @@ function mapDocuments(rows) {
       responseClient: getRowValue(row, ["RespuestaCliente", "Respuesta Cliente", "Respuesta", "Tiene", "Disponibilidad", "SeleccionCliente", "SelecciÃ³n Cliente"]),
       status: getRowValue(row, ["Estado", "Status", "Situacion", "SituaciÃ³n", "Disponible"]),
       observation: getRowValue(row, ["Observacion", "ObservaciÃ³n", "Notas", "Comentario", "Comentarios", "Observaciones"]),
+      folderLink: getRowValue(row, ["LinkCarpeta", "Link Carpeta", "Carpeta", "URLCarpeta", "URL Carpeta", "EnlaceCarpeta", "Enlace Carpeta"]),
       responseDate: getRowValue(row, ["FechaRespuesta", "Fecha Respuesta", "Fecha", "FechaRegistro"]),
     };
   }).filter((x) => x.item || x.title || x.description || x.detail || x.category);

@@ -24257,3 +24257,630 @@ body {
   color: #8a9ca1 !important;
   font-size: 0.76rem !important;
 }
+
+
+/* DOCUMENTS_CHECKLIST_TABLE_V1 */
+.documentsChecklistPage {
+  display: grid !important;
+  gap: 26px !important;
+}
+
+.documentsTableHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 28px;
+  align-items: end;
+}
+
+.documentsTableHeader span,
+.documentsTableEmpty span {
+  display: block;
+  color: #00b8b5;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.documentsTableHeader h2 {
+  margin: 8px 0 10px;
+  font-size: 34px;
+  line-height: 1.05;
+  font-weight: 600;
+  color: #102e35;
+}
+
+.documentsTableHeader p {
+  max-width: 840px;
+  margin: 0;
+  color: #4e6870;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.documentsProgressBox {
+  background: #ffffff;
+  padding: 22px;
+  box-shadow: 0 16px 38px rgba(0, 88, 86, 0.08);
+}
+
+.documentsProgressBox strong {
+  display: block;
+  color: #00b8b5;
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.documentsProgressBox span {
+  margin: 4px 0 12px;
+  color: #102e35;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.documentsChecklistSummary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(130px, 1fr));
+  gap: 14px;
+}
+
+.documentsChecklistSummary article {
+  background: #ffffff;
+  padding: 18px;
+  min-height: 112px;
+  box-shadow: 0 14px 32px rgba(0, 88, 86, 0.075);
+  border-top: 5px solid #00b8b5;
+}
+
+.documentsChecklistSummary span {
+  display: block;
+  color: #102e35;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.documentsChecklistSummary strong {
+  display: block;
+  margin-top: 18px;
+  color: #00b8b5;
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.documentsChecklistTableCard {
+  background: #ffffff;
+  padding: 22px;
+  box-shadow: 0 18px 45px rgba(0, 88, 86, 0.075);
+}
+
+.documentsChecklistTableWrap {
+  max-height: 68vh;
+  overflow: auto;
+  scrollbar-color: #00b8b5 #e7f5f4;
+  scrollbar-width: thin;
+}
+
+.documentsChecklistTable {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.documentsChecklistTable th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #e6f4f3;
+  color: #102e35;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+  padding: 14px 16px;
+}
+
+.documentsChecklistTable th:nth-child(1) { width: 190px; }
+.documentsChecklistTable th:nth-child(2) { width: 360px; }
+.documentsChecklistTable th:nth-child(3) { width: 190px; }
+.documentsChecklistTable th:nth-child(4) { width: 120px; }
+.documentsChecklistTable th:nth-child(5) { width: 300px; }
+
+.documentsChecklistTable td {
+  padding: 15px 16px;
+  border-bottom: 1px solid rgba(16, 46, 53, 0.09);
+  color: #102e35;
+  font-size: 14px;
+  line-height: 1.35;
+  vertical-align: top;
+}
+
+.documentsChecklistGroupRow td {
+  background: #f6fbfb;
+  color: #00a8a5;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 11px 16px;
+}
+
+.documentsRowToggle {
+  display: inline-grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #102e35;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.documentsRowToggle span {
+  overflow-wrap: anywhere;
+}
+
+.documentsRowToggle svg {
+  margin-top: 1px;
+  transition: transform 0.18s ease;
+}
+
+.documentsRowToggle svg.open {
+  transform: rotate(90deg);
+}
+
+.documentsStatusPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.documentsStatusPill.status-pendiente {
+  background: #c4ccd0;
+  color: #ffffff;
+}
+
+.documentsStatusPill.status-en-revision {
+  background: #f6c66a;
+  color: #3a2b04;
+}
+
+.documentsStatusPill.status-validado {
+  background: #00b8b5;
+  color: #ffffff;
+}
+
+.documentsStatusPill.status-no-disponible {
+  background: #7d898f;
+  color: #ffffff;
+}
+
+.documentsActionGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.documentsActionGroup a,
+.documentsActionGroup button {
+  min-height: 30px;
+  border: 0;
+  background: #00b8b5;
+  color: #ffffff;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.documentsActionGroup button:nth-child(3) {
+  background: #c4ccd0;
+}
+
+.documentsActionGroup button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.tableMessage {
+  display: block;
+  margin-top: 7px;
+  color: #4e6870 !important;
+}
+
+.documentsExpandedRow td {
+  background: #f8fcfc;
+  padding-top: 0;
+}
+
+.documentsExpandedRow div {
+  display: grid;
+  gap: 7px;
+  padding: 14px 16px;
+  border-left: 4px solid #00b8b5;
+}
+
+.documentsExpandedRow p {
+  margin: 0;
+  color: #405a62;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.documentsTableEmpty {
+  max-width: 560px;
+  padding: 24px;
+}
+
+.documentsTableEmpty h3 {
+  margin: 8px 0;
+  color: #102e35;
+  font-size: 24px;
+}
+
+.documentsTableEmpty p {
+  margin: 0;
+  color: #4e6870;
+  line-height: 1.5;
+}
+
+@media (max-width: 1180px) {
+  .documentsChecklistSummary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .documentsTableHeader {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .documentsPage.documentsChecklistPage {
+    display: none !important;
+  }
+}
+
+
+/* DOCUMENTS_CHECKLIST_BARS_V2 */
+.documentsChecklistBars {
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  gap: 18px !important;
+  max-width: 100% !important;
+}
+
+.documentsChecklistBars article {
+  min-height: 0 !important;
+}
+
+.documentsTotalSummaryCard p {
+  margin: 12px 0 10px !important;
+  color: #4e6870 !important;
+  font-size: 13px !important;
+}
+
+.documentsStatusSummaryCard {
+  display: grid !important;
+  grid-template-columns: 220px minmax(0, 1fr) !important;
+  gap: 12px 22px !important;
+  align-content: center !important;
+}
+
+.documentsStatusSummaryCard > div:first-child {
+  grid-row: 1 / span 4 !important;
+  align-self: center !important;
+}
+
+.documentsStatusSummaryCard > div:first-child strong {
+  margin-top: 10px !important;
+}
+
+.documentsSummaryBarRow {
+  display: grid !important;
+  grid-template-columns: 120px minmax(120px, 1fr) 42px !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+.documentsSummaryBarRow span {
+  color: #102e35 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.documentsSummaryBarRow i {
+  display: block !important;
+  height: 11px !important;
+  background: #dcefed !important;
+  overflow: hidden !important;
+}
+
+.documentsSummaryBarRow b {
+  display: block !important;
+  height: 100% !important;
+  background: #00b8b5 !important;
+}
+
+.documentsSummaryBarRow em {
+  color: #00a8a5 !important;
+  font-style: normal !important;
+  font-size: 16px !important;
+  text-align: right !important;
+}
+
+.documentsInstructionsCompact {
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.documentsInstructionsCompact h2 {
+  grid-column: 1 / -1 !important;
+}
+
+.documentsInstructionsCompact p {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+}
+
+@media (max-width: 1180px) {
+  .documentsChecklistBars {
+    grid-template-columns: 1fr !important;
+  }
+
+  .documentsStatusSummaryCard {
+    grid-template-columns: 1fr !important;
+  }
+
+  .documentsStatusSummaryCard > div:first-child {
+    grid-row: auto !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .documentsChecklistBars,
+  .documentsInstructionsCompact {
+    display: none !important;
+  }
+}
+
+
+/* DOCUMENTS_CHECKLIST_WIDTH_V3 */
+.documentsPage.documentsChecklistPage {
+  width: calc(100% - 64px) !important;
+  max-width: 1380px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsTableHeader {
+  grid-template-columns: minmax(0, 1fr) !important;
+  width: 100% !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsTableHeader p {
+  max-width: 980px !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsInstructionsCompact {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px 56px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding-right: 0 !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsInstructionsCompact h2 {
+  margin-bottom: 4px !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsInstructionsCompact div {
+  min-width: 0 !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsInstructionsCompact p {
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+  overflow-wrap: anywhere !important;
+}
+
+@media (max-width: 1180px) {
+  .documentsPage.documentsChecklistPage {
+    width: calc(100% - 40px) !important;
+  }
+
+  .documentsPage.documentsChecklistPage .documentsInstructionsCompact {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+}
+
+
+/* DOCUMENTS_CHECKLIST_LAYOUT_V4 */
+.documentsPage.documentsChecklistPage {
+  width: calc(100% - 128px) !important;
+  max-width: 1160px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsTableHeader h2 {
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+  font-weight: 600 !important;
+  margin: 6px 0 8px !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsTableHeader p {
+  max-width: 920px !important;
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsChecklistBars {
+  grid-template-columns: 300px minmax(0, 1fr) !important;
+  gap: 18px !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsStatusSummaryCard {
+  grid-template-columns: 170px minmax(0, 1fr) !important;
+  gap: 10px 20px !important;
+  overflow: hidden !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsSummaryBarRow {
+  grid-template-columns: 105px minmax(140px, 1fr) 34px !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsSummaryBarRow i {
+  min-width: 0 !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsSummaryBarRow em {
+  display: block !important;
+  min-width: 28px !important;
+  font-size: 15px !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsInstructionsCompact {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px 42px !important;
+  max-width: 100% !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsInstructionsCompact p {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsFilters,
+.documentsPage.documentsChecklistPage .documentsChecklistTableCard {
+  max-width: 100% !important;
+}
+
+@media (max-width: 1280px) {
+  .documentsPage.documentsChecklistPage {
+    width: calc(100% - 80px) !important;
+    max-width: 1060px !important;
+  }
+
+  .documentsPage.documentsChecklistPage .documentsChecklistBars {
+    grid-template-columns: 280px minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .documentsPage.documentsChecklistPage {
+    width: calc(100% - 40px) !important;
+  }
+
+  .documentsPage.documentsChecklistPage .documentsChecklistBars,
+  .documentsPage.documentsChecklistPage .documentsInstructionsCompact {
+    grid-template-columns: 1fr !important;
+  }
+
+  .documentsPage.documentsChecklistPage .documentsStatusSummaryCard {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* DOCUMENTS_RIGHT_MARGIN_TITLE_V5 */
+.documentsPage.documentsChecklistPage {
+  width: auto !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: clamp(56px, 5vw, 96px) !important;
+  padding-right: 0 !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsTableHeader h2 {
+  font-size: 24.8px !important;
+  line-height: 1.15 !important;
+  font-weight: 600 !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsChecklistTableCard {
+  overflow: hidden !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsChecklistTable {
+  min-width: 1080px !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsChecklistTable th:nth-child(1) { width: 170px !important; }
+.documentsPage.documentsChecklistPage .documentsChecklistTable th:nth-child(2) { width: 360px !important; }
+.documentsPage.documentsChecklistPage .documentsChecklistTable th:nth-child(3) { width: 190px !important; }
+.documentsPage.documentsChecklistPage .documentsChecklistTable th:nth-child(4) { width: 110px !important; }
+.documentsPage.documentsChecklistPage .documentsChecklistTable th:nth-child(5) { width: 250px !important; }
+
+.documentsPage.documentsChecklistPage .documentsActionGroup {
+  gap: 7px !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsActionGroup a,
+.documentsPage.documentsChecklistPage .documentsActionGroup button {
+  padding: 0 10px !important;
+  font-size: 11px !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 1280px) {
+  .documentsPage.documentsChecklistPage {
+    margin-right: 52px !important;
+  }
+}
+
+
+/* DOCUMENTS_EQUAL_MARGIN_V6 */
+.documentsPage.documentsChecklistPage {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsTableHeader h2 {
+  font-size: 24.8px !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsChecklistBars,
+.documentsPage.documentsChecklistPage .documentsInstructionsCompact,
+.documentsPage.documentsChecklistPage .documentsFilters,
+.documentsPage.documentsChecklistPage .documentsChecklistTableCard {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsStatusSummaryCard {
+  min-width: 0 !important;
+}
+
+.documentsPage.documentsChecklistPage .documentsSummaryBarRow {
+  grid-template-columns: 105px minmax(0, 1fr) 34px !important;
+}

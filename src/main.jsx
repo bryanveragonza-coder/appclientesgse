@@ -1,5 +1,5 @@
 ﻿
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Fragment, useEffect, useMemo, useState } from "react";
 // RESUMEN_HITOS_BARRA_FINAL
 // RADAR_5_SISTEMAS_GSE
 // BUSCADOR_ENTREGABLES_EDUCACION_FINAL
@@ -5364,6 +5364,8 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
   const [responses, setResponses] = useState({});
   const [saving, setSaving] = useState({});
   const [saveMessage, setSaveMessage] = useState({});
+  const [documentStates, setDocumentStates] = useState({});
+  const [expandedDocuments, setExpandedDocuments] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [requiredFilter, setRequiredFilter] = useState("Todos");
   const [documentStatusFilter, setDocumentStatusFilter] = useState("Todos");
@@ -5373,24 +5375,40 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
   const title = documents.find((item) => item.title)?.title || "Carga de documentos iniciales";
   const description = "Bienvenido al inicio formal de tu proyecto Business Power. Esta sección nos ayudará a conocer cómo opera actualmente tu empresa. Este es el primer paso para dejar atrás el caos operativo y empezar a trabajar con estructura, control y claridad.";
 
-  const getDocumentKey = (item) => item.id || item.item || item.title || "";
-  const getCurrentResponse = (item) => responses[getDocumentKey(item)] ?? item.responseClient ?? "";
-  const getCurrentStatus = (item) => {
-    const response = getCurrentResponse(item);
-    if (response === "Sí tengo") return "Por subir";
-    if (response === "No tengo") return "No disponible";
-    return item.status || "Pendiente";
+  const getDocumentKey = (item) => item.id || item.item || item.title || item.description || "";
+  const normalizeDocumentStatus = (value) => {
+    const normalized = normalizeSystemName(value || "");
+    if (!normalized || normalized === "pendiente") return "Pendiente";
+    if (normalized.includes("validado") || normalized.includes("aprobado")) return "Validado";
+    if (normalized.includes("revision") || normalized.includes("cargado")) return "En revisión";
+    if (normalized.includes("no disponible") || normalized.includes("no tengo")) return "No disponible";
+    return String(value || "Pendiente").trim();
   };
-  const getRequiredLabel = (item) => {
+  const getCurrentResponse = (item) => responses[getDocumentKey(item)] ?? item.responseClient ?? "";
+  const getCurrentStatus = (item) => normalizeDocumentStatus(documentStates[getDocumentKey(item)] ?? item.status ?? "");
+  const isRequiredDocument = (item) => {
     const value = normalizeSystemName(item.required || item.obligatorio || "");
-    return value.startsWith("s") || value.includes("obligatorio") ? "Obligatorio" : "Opcional";
+    return value.startsWith("s") || value.includes("obligatorio");
+  };
+  const getRequiredLabel = (item) => (isRequiredDocument(item) ? "Obligatorio" : "Opcional");
+  const getFolderLink = (item) => safeUrl(item.folderLink || item.linkCarpeta || item.link || "");
+  const getStatusLabel = (status) => {
+    if (status === "En revisión") return "En revisión por GSE";
+    return status || "Pendiente";
   };
 
-  const handleResponseChange = async (item, respuesta) => {
+  const handleDocumentAction = async (item, { respuesta, estado }) => {
     const key = getDocumentKey(item);
-    const previous = responses[key] ?? item.responseClient ?? "";
+    const previousResponse = responses[key] ?? item.responseClient ?? "";
+    const previousStatus = documentStates[key] ?? item.status ?? "";
+
+    if (respuesta === "No tengo" && isRequiredDocument(item)) {
+      const confirmed = window.confirm("Este documento es obligatorio para el avance del proyecto. Si no cuentas con esta información, GSE deberá validar una alternativa.");
+      if (!confirmed) return;
+    }
 
     setResponses((current) => ({ ...current, [key]: respuesta }));
+    setDocumentStates((current) => ({ ...current, [key]: estado }));
     setSaving((current) => ({ ...current, [key]: true }));
     setSaveMessage((current) => ({ ...current, [key]: "Guardando respuesta..." }));
 
@@ -5410,7 +5428,7 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
           id: item.id,
           categoria: item.category,
           respuesta,
-          estado: respuesta === "Sí tengo" ? "Por subir" : "No disponible",
+          estado,
           fecha: new Date().toISOString(),
         }),
       });
@@ -5439,16 +5457,22 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
         return;
       }
 
-      setResponses((current) => ({ ...current, [key]: previous }));
+      setResponses((current) => ({ ...current, [key]: previousResponse }));
+      setDocumentStates((current) => ({ ...current, [key]: previousStatus }));
       setSaveMessage((current) => ({ ...current, [key]: error.message || "No se pudo guardar la respuesta." }));
     } finally {
       setSaving((current) => ({ ...current, [key]: false }));
     }
   };
 
+  const handleResponseChange = async (item, respuesta) => {
+    const estado = respuesta === "Sí tengo" ? "En revisión" : respuesta === "No tengo" ? "No disponible" : "Pendiente";
+    await handleDocumentAction(item, { respuesta, estado });
+  };
+
   const statusOptions = useMemo(
     () => Array.from(new Set(documents.map((item) => getCurrentStatus(item)).filter(Boolean))),
-    [documents, responses]
+    [documents, responses, documentStates]
   );
 
   const filteredDocuments = useMemo(() => {
@@ -5458,6 +5482,7 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
       const searchable = normalizeSystemName(
         [
           item.title,
+          item.description,
           item.category,
           item.item,
           item.detail,
@@ -5471,7 +5496,45 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
       const matchesStatus = documentStatusFilter === "Todos" || getCurrentStatus(item) === documentStatusFilter;
       return matchesSearch && matchesRequired && matchesStatus;
     });
-  }, [documents, responses, searchTerm, requiredFilter, documentStatusFilter]);
+  }, [documents, responses, documentStates, searchTerm, requiredFilter, documentStatusFilter]);
+
+  const documentSummary = useMemo(() => {
+    const total = documents.length;
+    const pendingCount = documents.filter((item) => getCurrentStatus(item) === "Pendiente").length;
+    const reviewCount = documents.filter((item) => getCurrentStatus(item) === "En revisión").length;
+    const validatedCount = documents.filter((item) => getCurrentStatus(item) === "Validado").length;
+    const unavailableCount = documents.filter((item) => getCurrentStatus(item) === "No disponible").length;
+    const completedCount = documents.filter((item) => {
+      const status = getCurrentStatus(item);
+      return status === "Validado" || (status === "No disponible" && !isRequiredDocument(item));
+    }).length;
+
+    return {
+      total,
+      pendingCount,
+      reviewCount,
+      validatedCount,
+      unavailableCount,
+      progress: total ? Math.round((completedCount / total) * 100) : 0,
+    };
+  }, [documents, responses, documentStates]);
+
+  const groupedDocuments = useMemo(() => {
+    return filteredDocuments.reduce((groups, item) => {
+      const group = item.category || item.item || "Documentos";
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(item);
+      return groups;
+    }, {});
+  }, [filteredDocuments]);
+
+  const documentStatusMax = Math.max(
+    documentSummary.pendingCount,
+    documentSummary.reviewCount,
+    documentSummary.validatedCount,
+    documentSummary.unavailableCount,
+    1
+  );
 
   const yesHave = documents.filter((item) => getCurrentResponse(item) === "Sí tengo").length;
   const required = documents.filter((item) => getRequiredLabel(item) === "Obligatorio").length;
@@ -5598,13 +5661,12 @@ useEffect(() => {
 
         <section className={`mobileDocumentsInstructions ${mobileInstructionsOpen ? "open" : ""}`}>
           <h2>Instrucciones:</h2>
-          <p>Carga la información disponible en el formato que tengas: Excel, PDF, Word, imágenes u otros. Para facilitar la revisión, nombra cada archivo con el mismo nombre del documento solicitado.</p>
-          <p>Selecciona <strong>“SÍ TENGO”</strong> cuando cuentes con el documento solicitado o cuando puedas representar la información de forma sencilla, aunque no exista en un formato formal.</p>
-          <p>Si no cuentas con algún documento formal, pero la información existe en la práctica, por favor represéntala de forma sencilla y súbela. Por ejemplo: si no tienes un organigrama diagramado, dibuja o estructura cómo está organizada actualmente la empresa para que podamos conocer su funcionamiento real.</p>
+          <p>Da clic en <strong>“Subir aquí”</strong> para cargar cada documento en su carpeta correspondiente. Luego regresa a la app y selecciona <strong>“Ya lo cargué”</strong> para que GSE pueda revisarlo.</p>
+          <p>Si no tienes un documento formal, pero la información existe en la práctica, represéntala de forma sencilla y súbela.</p>
           {mobileInstructionsOpen && (
             <>
-              <p>Si no cuentas con algún documento o información, marca <strong>“NO TENGO”</strong>. Si está incompleta, desactualizada o en proceso, <strong>SÚBELA EN LA CARPETA CORRESPONDIENTE</strong> e indícalo en el nombre del archivo.</p>
-              <p>No necesitas tener todo completo al 100%. Cada documento nos ayuda a reducir tiempos de levantamiento y enfocar el diagnóstico en los puntos críticos de tu operación.</p>
+              <p>Si la información está incompleta o desactualizada, súbela igual e indícalo en el nombre del archivo.</p>
+              <p>Marca <strong>“No tengo”</strong> solo cuando no cuentes con el documento ni con la información necesaria para representarlo.</p>
             </>
           )}
           <button type="button" onClick={() => setMobileInstructionsOpen((current) => !current)}>
@@ -5650,68 +5712,51 @@ useEffect(() => {
       </nav>
     </section>
 
-    <section className="documentsPage">
-      <div className="documentsHero">
-        <div className="documentsHeroContent">
-          <div className="portalEyebrow">
-            <UploadCloud size={16} />
-            Checklist documental
-          </div>
-
+    <section className="documentsPage documentsChecklistPage">
+      <div className="documentsTableHeader">
+        <div>
+          <span>Checklist documental</span>
           <h2>{title}</h2>
           <p>{description}</p>
-
-          <div className="documentsActions">
-            {uploadLink ? (
-              <a className="primaryPortalButton documentsUploadButton" href={uploadLink} target="_blank" rel="noreferrer">
-                <UploadCloud size={18} />
-                Subir documentos
-                <ExternalLink size={17} />
-              </a>
-            ) : (
-              <button className="primaryPortalButton documentsUploadButton disabledButton" type="button">
-                <UploadCloud size={18} />
-                Enlace de carga pendiente
-              </button>
-            )}
-
-            <button className="secondaryPortalButton documentsSecondaryButton" type="button">
-              <FolderOpen size={18} />
-              {documents.length} ítems solicitados
-            </button>
-          </div>
-        </div>
-
-        <div className="documentsHeroMetrics">
-          <div className="portalMetricCard">
-            <span>Ítems cargados</span>
-            <strong><ChevronRight size={26} />{yesHave}/{documents.length}</strong>
-            <ProgressBar value={documents.length ? (yesHave / documents.length) * 100 : 0} status="Finalizado" />
-          </div>
-          <div className="portalMetricCard">
-            <span>Sí tiene</span>
-            <strong><ChevronRight size={26} />{yesHave}</strong>
-            <ProgressBar value={documents.length ? (yesHave / documents.length) * 100 : 0} status="Finalizado" />
-          </div>
-          <div className="portalMetricCard">
-            <span>Obligatorios</span>
-            <strong><ChevronRight size={26} />{required}</strong>
-            <ProgressBar value={documents.length ? (required / documents.length) * 100 : 0} status="Finalizado" />
-          </div>
         </div>
       </div>
 
-      <section className="documentsInstructions">
+      <div className="documentsChecklistSummary documentsChecklistBars">
+        <article className="documentsTotalSummaryCard">
+          <span>Total documentos solicitados</span>
+          <strong>{documentSummary.total}</strong>
+          <p>{documentSummary.progress}% de avance documental</p>
+          <ProgressBar value={documentSummary.progress} status="Finalizado" />
+        </article>
+        <article className="documentsStatusSummaryCard">
+          <div>
+            <span>Estado de documentos</span>
+            <strong>{documentSummary.progress}%</strong>
+          </div>
+          {[
+            ["Pendientes", documentSummary.pendingCount],
+            ["En revisión", documentSummary.reviewCount],
+            ["Validados", documentSummary.validatedCount],
+            ["No disponibles", documentSummary.unavailableCount],
+          ].map(([label, count]) => (
+            <div className="documentsSummaryBarRow" key={label}>
+              <span>{label}</span>
+              <i><b style={{ width: `${Math.max(3, Math.round((count / documentStatusMax) * 100))}%` }} /></i>
+              <em>{count}</em>
+            </div>
+          ))}
+        </article>
+      </div>
+
+      <section className="documentsInstructions documentsInstructionsCompact">
         <h2>Instrucciones:</h2>
         <div>
-          <p>Carga la información disponible en el formato que tengas: Excel, PDF, Word, imágenes u otros. Para facilitar la revisión, nombra cada archivo con el mismo nombre del documento solicitado.</p>
-          <p>Selecciona <strong>“SÍ TENGO”</strong> cuando cuentes con el documento solicitado o cuando puedas representar la información de forma sencilla, aunque no exista en un formato formal.</p>
-          <p>Si no cuentas con algún documento formal, pero la información existe en la práctica, por favor represéntala de forma sencilla y súbela. Por ejemplo: si no tienes un organigrama diagramado, dibuja o estructura cómo está organizada actualmente la empresa para que podamos conocer su funcionamiento real.</p>
+          <p>Da clic en <strong>“Subir aquí”</strong> para cargar cada documento en su carpeta correspondiente. Luego regresa a la app y selecciona <strong>“Ya lo cargué”</strong> para que GSE pueda revisarlo.</p>
+          <p>Si no tienes un documento formal, pero la información existe en la práctica, represéntala de forma sencilla y súbela.</p>
         </div>
         <div>
-          <p>Si no cuentas con algún documento o información, marca <strong>“NO TENGO”</strong>. Si está incompleta, desactualizada o en proceso, <strong>SÚBELA EN LA CARPETA CORRESPONDIENTE</strong> e indícalo en el nombre del archivo.</p>
-          <p><strong>Ejemplo:</strong> “Organigrama_Incompleto”.</p>
-          <p>No necesitas tener todo completo al 100%. Cada documento nos ayuda a reducir tiempos de levantamiento y enfocar el diagnóstico en los puntos críticos de tu operación.</p>
+          <p>Si la información está incompleta o desactualizada, súbela igual e indícalo en el nombre del archivo.</p>
+          <p>Marca <strong>“No tengo”</strong> solo cuando no cuentes con el documento ni con la información necesaria para representarlo.</p>
         </div>
       </section>
 
@@ -5723,7 +5768,7 @@ useEffect(() => {
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar entregable, sistema o hito..."
+              placeholder="Buscar documento, categoría o estado..."
             />
           </div>
         </label>
@@ -5731,45 +5776,111 @@ useEffect(() => {
         <FilterSelect label="Estado" value={documentStatusFilter} onChange={setDocumentStatusFilter} options={statusOptions} />
       </div>
 
-      <div className="documentsChecklist">
+      <div className="documentsChecklistTableCard">
         {!documents.length && (
-          <div className="documentCategoryBlock">
-            <div className="documentCategoryHeader">
-              <div>
-                <span>Checklist pendiente</span>
-                <h3>No se encontraron ítems en Google Sheet</h3>
-              </div>
-              <Badge status="Pendiente">Revisar pestaña Documentos</Badge>
-            </div>
-            <div className="documentItemsGrid">
-              <article className="documentChecklistItem">
-                <div className="documentCheckIcon"><ClipboardCheck size={19} /></div>
-                <div className="documentChecklistContent">
-                  <div className="documentItemTop">
-                    <h3>Revisa el nombre de la pestaña y los encabezados</h3>
-                  </div>
-                  <p>La app busca una pestaña llamada Documentos con columnas como Titulo, Descripcion, Categoria, Item, Detalle, Obligatorio, RespuestaCliente, Estado, Observacion y FechaRespuesta.</p>
-                </div>
-              </article>
-            </div>
+          <div className="documentsTableEmpty">
+            <span>Checklist pendiente</span>
+            <h3>No se encontraron ítems en Google Sheet</h3>
+            <p>La app busca una pestaña llamada Documentos con columnas como Titulo, Descripcion, Categoria, Item, Detalle, Obligatorio, RespuestaCliente, Estado, Observacion, LinkCarpeta y FechaRespuesta.</p>
           </div>
         )}
 
         {documents.length > 0 && filteredDocuments.length === 0 && (
-          <div className="documentCategoryBlock documentsEmptyState">
-            <div className="documentCategoryHeader">
-              <div>
-                <span>Sin resultados</span>
-                <h3>No hay documentos con esos filtros</h3>
-              </div>
-              <Badge status="Pendiente">Ajustar búsqueda</Badge>
-            </div>
+          <div className="documentsTableEmpty">
+            <span>Sin resultados</span>
+            <h3>No hay documentos con esos filtros</h3>
+            <p>Prueba con otra búsqueda, estado u obligatoriedad.</p>
           </div>
         )}
 
         {filteredDocuments.length > 0 && (
-          <div className="documentItemsGrid documentsFlatGrid">
-            {filteredDocuments.map((item, index) => renderDocumentItem(item, index))}
+          <div className="documentsChecklistTableWrap">
+            <table className="documentsChecklistTable">
+              <thead>
+                <tr>
+                  <th>Estado</th>
+                  <th>Documento solicitado</th>
+                  <th>Categoría</th>
+                  <th>Obligatorio</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(groupedDocuments).map(([group, rows]) => (
+                  <Fragment key={group}>
+                    {rows.map((item, index) => {
+                      const key = getDocumentKey(item) || String(index);
+                      const status = getCurrentStatus(item);
+                      const folderLink = getFolderLink(item);
+                      const isExpanded = Boolean(expandedDocuments[key]);
+                      const isBusy = Boolean(saving[key]);
+                      const statusClass = normalizeSystemName(status).replace(/\s+/g, "-");
+
+                      return (
+                        <Fragment key={`${group}-${key}-${index}`}>
+                          <tr>
+                            <td>
+                              <span className={`documentsStatusPill status-${statusClass}`}>
+                                {getStatusLabel(status)}
+                              </span>
+                            </td>
+                            <td>
+                              <button
+                                className="documentsRowToggle"
+                                type="button"
+                                onClick={() => setExpandedDocuments((current) => ({ ...current, [key]: !current[key] }))}
+                              >
+                                <ChevronRight size={16} className={isExpanded ? "open" : ""} />
+                                <span>{item.description || item.item || item.title || "Documento solicitado"}</span>
+                              </button>
+                            </td>
+                            <td>{item.category || "Sin categoría"}</td>
+                            <td>{isRequiredDocument(item) ? "Sí" : "No"}</td>
+                            <td>
+                              <div className="documentsActionGroup">
+                                {status === "Pendiente" && (
+                                  <>
+                                    {folderLink ? (
+                                      <a href={folderLink} target="_blank" rel="noreferrer">Subir aquí</a>
+                                    ) : (
+                                      <button type="button" disabled>Sin carpeta</button>
+                                    )}
+                                    <button type="button" disabled={isBusy} onClick={() => handleDocumentAction(item, { respuesta: "Sí tengo", estado: "En revisión" })}>Ya lo cargué</button>
+                                    <button type="button" disabled={isBusy} onClick={() => handleDocumentAction(item, { respuesta: "No tengo", estado: "No disponible" })}>No tengo</button>
+                                  </>
+                                )}
+                                {status === "En revisión" && (
+                                  folderLink ? <a href={folderLink} target="_blank" rel="noreferrer">Ver carpeta</a> : <button type="button" disabled>Sin carpeta</button>
+                                )}
+                                {status === "Validado" && (
+                                  folderLink ? <a href={folderLink} target="_blank" rel="noreferrer">Ver carpeta</a> : <button type="button" disabled>Sin carpeta</button>
+                                )}
+                                {status === "No disponible" && (
+                                  <button type="button" disabled={isBusy} onClick={() => handleDocumentAction(item, { respuesta: "", estado: "Pendiente" })}>Cambiar respuesta</button>
+                                )}
+                              </div>
+                              {saveMessage[key] && <span className="documentSaveMessage tableMessage">{saveMessage[key]}</span>}
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr className="documentsExpandedRow">
+                              <td colSpan={5}>
+                                <div>
+                                  {item.item && <p><strong>Ítem:</strong> {item.item}</p>}
+                                  {item.detail && <p><strong>Detalle:</strong> {item.detail}</p>}
+                                  {item.observation && <p><strong>Observación:</strong> {item.observation}</p>}
+                                  {item.responseDate && <p><strong>Última respuesta:</strong> {item.responseDate}</p>}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
