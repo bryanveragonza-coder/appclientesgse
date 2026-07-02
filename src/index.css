@@ -23374,6 +23374,12 @@ body {
   gap: 14px !important;
 }
 
+.processMapToBeSection .processTableHeader h3 {
+  font-size: 24.8px !important;
+  line-height: 1.15 !important;
+  font-weight: 600 !important;
+}
+
 .processMapToBeImageCard {
   padding: 24px !important;
 }

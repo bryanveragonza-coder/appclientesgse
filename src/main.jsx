@@ -160,7 +160,7 @@ function Sidebar({ view, setView, project }) {
         [AlertTriangle, "Pendientes cliente", "pendientes"],
       ],
     },
-    { title: "Procesos", items: [[ClipboardCheck, "Lista Maestra de Procesos", "procesos"], [Building2, "Estructura y perfil", "estructura"]] },
+    { title: "Procesos", items: [[ClipboardCheck, "Mapa y lista maestra de procesos", "procesos"], [Building2, "Estructura y perfil", "estructura"]] },
     {
       title: "Documentacion",
       items: [
@@ -2561,6 +2561,25 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
     </section>
 
     <section className="card premiumSectionCard processMasterSection">
+      <div className="processMapToBeSection">
+        <div className="processTableHeader">
+          <div>
+            <h3>Mapa de procesos TO BE</h3>
+            <p>Imagen cargada desde la columna ImagenMapadeprocesos en la pestaña Proyecto.</p>
+          </div>
+        </div>
+        <div className="structureHeroImageCard processMapToBeImageCard">
+          {processMapToBeImage ? (
+            <img src={processMapToBeImage} alt="Mapa de procesos TO BE" />
+          ) : (
+            <div className="structureEmptyImage">
+              <Layers3 size={42} />
+              <span>Agrega ImagenMapadeprocesos en la pestaña Proyecto para mostrar el mapa.</span>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="sectionHeader">
         <div>
           <h2>Lista Maestra de Procesos</h2>
@@ -2613,25 +2632,6 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
             </div>
           </div>
         </article>
-      </div>
-
-      <div className="processMapToBeSection">
-        <div className="processTableHeader">
-          <div>
-            <h3>Mapa de procesos TO BE</h3>
-            <p>Imagen cargada desde la columna ImagenMapadeprocesos en la pestaña Proyecto.</p>
-          </div>
-        </div>
-        <div className="structureHeroImageCard processMapToBeImageCard">
-          {processMapToBeImage ? (
-            <img src={processMapToBeImage} alt="Mapa de procesos TO BE" />
-          ) : (
-            <div className="structureEmptyImage">
-              <Layers3 size={42} />
-              <span>Agrega ImagenMapadeprocesos en la pestaña Proyecto para mostrar el mapa.</span>
-            </div>
-          )}
-        </div>
       </div>
 
       <div className="premiumFilters processFilters">
