@@ -23392,6 +23392,593 @@ body {
   background: #ffffff !important;
 }
 
+/* Implementación de indicadores */
+.indicatorsSection {
+  display: grid !important;
+  gap: 24px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.indicatorsSection::before,
+.indicatorsSection::after {
+  display: none !important;
+}
+
+.indicatorsHeader h2 {
+  font-size: 24.8px !important;
+  line-height: 1.15 !important;
+}
+
+.indicatorsSummaryGrid {
+  grid-template-columns: minmax(260px, 0.85fr) minmax(420px, 1.35fr) !important;
+}
+
+.indicatorsTotalCleanCard {
+  min-height: 180px !important;
+}
+
+.indicatorsTotalCleanCard span,
+.indicatorsSection .processDashboardStatusCard > span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.indicatorsTotalCleanCard strong {
+  color: #00b8b5 !important;
+  -webkit-text-fill-color: #00b8b5 !important;
+}
+
+.indicatorsSection .processDashboardStatusCard {
+  display: grid !important;
+  align-content: center !important;
+  gap: 24px !important;
+}
+
+.indicatorsSection .processDashboardBarRows {
+  display: grid !important;
+  gap: 15px !important;
+}
+
+.indicatorsSection .processDashboardBarRows div {
+  display: grid !important;
+  grid-template-columns: 92px minmax(140px, 1fr) 42px !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+.indicatorsSection .processDashboardBarRows em {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 0.92rem !important;
+  line-height: 1.1 !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+}
+
+.indicatorsSection .processDashboardBarRows span {
+  display: block !important;
+  height: 9px !important;
+  background: #d9eeee !important;
+  overflow: hidden !important;
+}
+
+.indicatorsSection .processDashboardBarRows i {
+  display: block !important;
+  height: 100% !important;
+  min-width: 3px !important;
+  background: #00b8b5 !important;
+}
+
+.indicatorsSection .processDashboardBarRows b {
+  color: #00a7a4 !important;
+  -webkit-text-fill-color: #00a7a4 !important;
+  font-size: 1rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  text-align: right !important;
+}
+
+.indicatorsFilters {
+  grid-template-columns: minmax(300px, 1.35fr) repeat(3, minmax(150px, 0.55fr)) !important;
+  align-items: end !important;
+}
+
+.indicatorsWorkGrid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)) !important;
+  gap: 22px !important;
+}
+
+.indicatorWorkCard {
+  background: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(16, 47, 55, 0.08) !important;
+  padding: 22px 24px 18px !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 0 !important;
+  border-top: 5px solid #00b8b5 !important;
+}
+
+.indicatorWorkMain {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.indicatorTrendTop {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+}
+
+.indicatorTrendTop h3 {
+  margin: 0 !important;
+  color: #102e35 !important;
+  -webkit-text-fill-color: #102e35 !important;
+  font-size: 1.08rem !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  min-width: 0 !important;
+}
+
+.indicatorTrendTop .badge {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  margin-top: 0 !important;
+  white-space: nowrap !important;
+  font-size: 0.72rem !important;
+}
+
+.indicatorInfoGrid {
+  margin: 0 !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 14px !important;
+}
+
+.indicatorInfoGrid div {
+  min-width: 0 !important;
+}
+
+.indicatorInfoGrid dt {
+  margin: 0 0 8px !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.indicatorInfoGrid dd {
+  margin: 0 !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 1rem !important;
+  line-height: 1.25 !important;
+}
+
+.indicatorActionMeta {
+  display: grid !important;
+  gap: 8px !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.86rem !important;
+  line-height: 1.35 !important;
+}
+
+.indicatorActionMeta b {
+  color: #102e35 !important;
+  -webkit-text-fill-color: #102e35 !important;
+  font-weight: 600 !important;
+}
+
+.indicatorClientFields {
+  align-content: start !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(62px, 1fr)) !important;
+  gap: 8px !important;
+  padding: 0 !important;
+}
+
+.indicatorClientFields label {
+  display: grid !important;
+  gap: 6px !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 0.88rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  text-align: center !important;
+}
+
+.indicatorClientFields .indicatorValueInput {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 30px !important;
+  background: #edf6f6 !important;
+}
+
+.indicatorWorkChart {
+  display: grid !important;
+  align-content: stretch !important;
+}
+
+.indicatorDataPrompt {
+  margin: 0 !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.2 !important;
+}
+
+.indicatorBarChart {
+  position: relative !important;
+  min-height: 230px !important;
+  padding: 0 !important;
+  background: #f4fbfb !important;
+  overflow: hidden !important;
+}
+
+.indicatorChartUnit {
+  position: absolute !important;
+  top: 18px !important;
+  left: 18px !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 0.9rem !important;
+  line-height: 1 !important;
+  font-weight: 400 !important;
+  z-index: 4 !important;
+}
+
+.indicatorBarAxis {
+  position: absolute !important;
+  display: block !important;
+  background: rgba(17, 24, 28, 0.9) !important;
+  z-index: 2 !important;
+}
+
+.indicatorBarAxisY {
+  left: 42px !important;
+  top: 44px !important;
+  bottom: 28px !important;
+  width: 1px !important;
+}
+
+.indicatorBarAxisX {
+  left: 42px !important;
+  right: 20px !important;
+  bottom: 28px !important;
+  height: 1px !important;
+}
+
+.indicatorBarAxisX em {
+  position: absolute !important;
+  right: -6px !important;
+  bottom: -22px !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 0.78rem !important;
+  line-height: 1 !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+}
+
+.indicatorReferenceLine {
+  position: absolute !important;
+  left: 54px !important;
+  right: 20px !important;
+  bottom: calc(28px + var(--ref-height)) !important;
+  height: 1px !important;
+  background: rgba(17, 24, 28, 0.78) !important;
+  z-index: 3 !important;
+}
+
+.indicatorReferenceLine em {
+  position: absolute !important;
+  left: 0 !important;
+  top: -18px !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 0.76rem !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  background: #f4fbfb !important;
+  padding-right: 8px !important;
+}
+
+.indicatorReferenceLine b {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+  font-weight: 500 !important;
+}
+
+.indicatorBars {
+  position: absolute !important;
+  left: 70px !important;
+  right: 38px !important;
+  top: 50px !important;
+  bottom: 28px !important;
+  z-index: 2 !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 28px !important;
+}
+
+.indicatorBarSlot {
+  position: relative !important;
+  height: 100% !important;
+}
+
+.indicatorBarSlot i {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 0 !important;
+  transform: translateX(-50%) !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  width: 62px !important;
+  min-height: 26px !important;
+  height: var(--bar-height) !important;
+  background: #00b8b5 !important;
+  padding-top: 8px !important;
+  font-style: normal !important;
+  overflow: hidden !important;
+}
+
+.indicatorPieChart {
+  position: relative !important;
+  min-height: 230px !important;
+  display: grid !important;
+  grid-template-columns: minmax(150px, 0.85fr) minmax(120px, 0.7fr) !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 18px 20px !important;
+  background: #f4fbfb !important;
+}
+
+.indicatorPieVisual {
+  width: 170px !important;
+  aspect-ratio: 1 !important;
+  border-radius: 50% !important;
+  justify-self: center !important;
+  box-shadow: inset 0 0 0 1px rgba(16, 47, 55, 0.04) !important;
+}
+
+.indicatorPieLegend,
+.indicatorPieTargets {
+  display: grid !important;
+  gap: 9px !important;
+  align-content: center !important;
+}
+
+.indicatorPieLegend span,
+.indicatorPieTargets span {
+  display: grid !important;
+  grid-template-columns: 12px 1fr auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 0.82rem !important;
+  line-height: 1.15 !important;
+  font-weight: 400 !important;
+}
+
+.indicatorPieLegend i {
+  width: 10px !important;
+  height: 10px !important;
+  display: block !important;
+}
+
+.indicatorPieLegend b,
+.indicatorPieTargets b {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+  font-weight: 500 !important;
+}
+
+.indicatorPieLegend em {
+  font-style: normal !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  text-align: right !important;
+}
+
+.indicatorPieTargets {
+  grid-column: 2 !important;
+  margin-top: -18px !important;
+}
+
+.indicatorPieTargets span {
+  grid-template-columns: 1fr auto !important;
+}
+
+.indicatorBarSlot i strong {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-size: 0.95rem !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+.indicatorBarSlot2 i {
+  background: #63b8b4 !important;
+}
+
+.indicatorBarSlot3 i {
+  background: #087d78 !important;
+}
+
+.indicatorBarSlot span {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: -26px !important;
+  transform: translateX(-50%) !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 0.9rem !important;
+  line-height: 1 !important;
+  font-weight: 400 !important;
+}
+
+.indicatorMoreDetails {
+  margin-top: 6px !important;
+}
+
+.indicatorMoreDetails summary {
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  list-style: none !important;
+}
+
+.indicatorMoreDetails summary::-webkit-details-marker {
+  display: none !important;
+}
+
+.indicatorMoreDetails summary::before {
+  content: "⌄" !important;
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.2rem !important;
+  line-height: 1 !important;
+}
+
+.indicatorMoreDetails[open] summary::before {
+  transform: rotate(180deg) !important;
+}
+
+.indicatorMoreDetails .indicatorMoreMeta {
+  margin-top: 12px !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px 16px !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.84rem !important;
+  line-height: 1.35 !important;
+}
+
+.indicatorTrendChart {
+  width: 100% !important;
+  height: 92px !important;
+  border-left: 2px solid rgba(16, 47, 55, 0.2) !important;
+  border-bottom: 2px solid rgba(16, 47, 55, 0.2) !important;
+  background:
+    linear-gradient(to bottom, transparent 24%, rgba(0, 0, 0, 0.05) 25%, transparent 26%),
+    linear-gradient(to bottom, transparent 54%, rgba(0, 0, 0, 0.05) 55%, transparent 56%) !important;
+}
+
+.indicatorTrendMeta {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.82rem !important;
+}
+
+.indicatorTrendMeta b {
+  color: #102e35 !important;
+  -webkit-text-fill-color: #102e35 !important;
+  font-weight: 600 !important;
+}
+
+.indicatorProgressTrack {
+  height: 9px !important;
+  background: rgba(0, 184, 181, 0.14) !important;
+  overflow: hidden !important;
+}
+
+.indicatorProgressTrack i {
+  display: block !important;
+  height: 100% !important;
+  background: #00b8b5 !important;
+}
+
+.indicatorTrendCard small {
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.78rem !important;
+}
+
+.indicatorsTableCard {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+}
+
+.indicatorsTableWrap {
+  max-height: 560px !important;
+}
+
+.indicatorValueInput {
+  width: 96px !important;
+  min-width: 96px !important;
+  height: 36px !important;
+  border: 1px solid rgba(0, 184, 181, 0.35) !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: #102e35 !important;
+  -webkit-text-fill-color: #102e35 !important;
+  font: inherit !important;
+  padding: 0 10px !important;
+  outline: none !important;
+}
+
+.indicatorValueInput:focus {
+  border-color: #00b8b5 !important;
+  box-shadow: 0 0 0 3px rgba(0, 184, 181, 0.12) !important;
+}
+
+.indicatorValueInput.saving {
+  opacity: 0.65 !important;
+}
+
+.indicatorsTable th:nth-child(1), .indicatorsTable td:nth-child(1) { min-width: 70px !important; width: 70px !important; }
+.indicatorsTable th:nth-child(2), .indicatorsTable td:nth-child(2) { min-width: 180px !important; width: 180px !important; }
+.indicatorsTable th:nth-child(3), .indicatorsTable td:nth-child(3) { min-width: 240px !important; width: 240px !important; }
+.indicatorsTable th:nth-child(4), .indicatorsTable td:nth-child(4) { min-width: 260px !important; width: 260px !important; }
+.indicatorsTable th:nth-child(5), .indicatorsTable td:nth-child(5) { min-width: 90px !important; width: 90px !important; }
+.indicatorsTable th:nth-child(6), .indicatorsTable td:nth-child(6) { min-width: 150px !important; width: 150px !important; }
+.indicatorsTable th:nth-child(7), .indicatorsTable td:nth-child(7),
+.indicatorsTable th:nth-child(8), .indicatorsTable td:nth-child(8),
+.indicatorsTable th:nth-child(9), .indicatorsTable td:nth-child(9),
+.indicatorsTable th:nth-child(10), .indicatorsTable td:nth-child(10),
+.indicatorsTable th:nth-child(11), .indicatorsTable td:nth-child(11) { min-width: 130px !important; width: 130px !important; }
+.indicatorsTable th:nth-child(12), .indicatorsTable td:nth-child(12) { min-width: 150px !important; width: 150px !important; }
+.indicatorsTable th:nth-child(13), .indicatorsTable td:nth-child(13) { min-width: 260px !important; width: 260px !important; }
+.indicatorsTable th:nth-child(14), .indicatorsTable td:nth-child(14) { min-width: 170px !important; width: 170px !important; }
+.indicatorsTable th:nth-child(15), .indicatorsTable td:nth-child(15) { min-width: 150px !important; width: 150px !important; }
+.indicatorsTable th:nth-child(16), .indicatorsTable td:nth-child(16) { min-width: 150px !important; width: 150px !important; }
+
+@media (max-width: 1180px) {
+  .indicatorsSummaryGrid,
+  .indicatorsFilters,
+  .indicatorWorkCard {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .processMasterSection .structureTableCard {
   border: 0 !important;
   border-radius: 0 !important;
@@ -24906,4 +25493,265 @@ body {
 
 .documentsPage.documentsChecklistPage .documentsSummaryBarRow {
   grid-template-columns: 105px minmax(0, 1fr) 34px !important;
+}
+
+/* INDICADORES_DASHBOARD_CHART_FIX_V2 */
+.indicatorWorkCard {
+  border-top: 0 !important;
+}
+
+.indicatorBarChart {
+  min-height: 260px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.indicatorChartUnit {
+  top: 14px !important;
+  left: 38px !important;
+  font-size: 0.78rem !important;
+}
+
+.indicatorBarAxisY {
+  left: 52px !important;
+  top: 48px !important;
+  bottom: 54px !important;
+}
+
+.indicatorBarAxisX {
+  left: 52px !important;
+  right: 24px !important;
+  bottom: 54px !important;
+}
+
+.indicatorBarAxisX em {
+  right: -8px !important;
+  bottom: -20px !important;
+}
+
+.indicatorBarGrid {
+  position: absolute !important;
+  left: 52px !important;
+  right: 24px !important;
+  bottom: 54px !important;
+  height: 142px !important;
+  z-index: 1 !important;
+}
+
+.indicatorBarGrid span {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: var(--tick-height) !important;
+  height: 1px !important;
+  background: rgba(16, 47, 55, 0.12) !important;
+}
+
+.indicatorBarTicks {
+  position: absolute !important;
+  left: 18px !important;
+  bottom: 54px !important;
+  width: 26px !important;
+  height: 142px !important;
+  z-index: 2 !important;
+}
+
+.indicatorBarTicks span {
+  position: absolute !important;
+  right: 0 !important;
+  bottom: calc(var(--tick-height) - 6px) !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.68rem !important;
+  line-height: 1 !important;
+}
+
+.indicatorReferenceLine {
+  left: 66px !important;
+  right: 24px !important;
+  bottom: calc(54px + var(--ref-height)) !important;
+  z-index: 5 !important;
+}
+
+.indicatorReferenceGoal {
+  background: repeating-linear-gradient(90deg, rgba(17, 24, 28, 0.78) 0 8px, transparent 8px 12px) !important;
+}
+
+.indicatorReferenceBase {
+  background: rgba(17, 24, 28, 0.78) !important;
+}
+
+.indicatorReferenceLine em {
+  top: -18px !important;
+  background: #f4fbfb !important;
+}
+
+.indicatorBars {
+  left: 78px !important;
+  right: 46px !important;
+  top: auto !important;
+  bottom: 54px !important;
+  height: 142px !important;
+  z-index: 4 !important;
+}
+
+.indicatorBarSlot i {
+  align-items: center !important;
+  padding-top: 0 !important;
+  width: 64px !important;
+  min-height: 24px !important;
+  border-radius: 4px 4px 0 0 !important;
+}
+
+.indicatorBarSlot i strong {
+  font-size: 0.92rem !important;
+  line-height: 1 !important;
+}
+
+.indicatorBarSlot span {
+  bottom: -28px !important;
+}
+
+.indicatorBarLegend {
+  position: absolute !important;
+  left: 52px !important;
+  bottom: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 24px !important;
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+  font-size: 0.72rem !important;
+  line-height: 1 !important;
+  z-index: 6 !important;
+}
+
+.indicatorBarLegend span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.indicatorBarLegend i {
+  display: inline-block !important;
+  width: 22px !important;
+  height: 1px !important;
+}
+
+.indicatorLegendGoal {
+  background: repeating-linear-gradient(90deg, rgba(17, 24, 28, 0.78) 0 5px, transparent 5px 8px) !important;
+}
+
+.indicatorLegendBase {
+  background: rgba(17, 24, 28, 0.78) !important;
+}
+
+.indicatorPieChart {
+  min-height: 260px !important;
+  grid-template-columns: minmax(170px, 0.9fr) minmax(130px, 0.72fr) !important;
+}
+
+.indicatorPieVisual {
+  width: 176px !important;
+  height: 176px !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.indicatorPieEmpty {
+  fill: #edf6f6 !important;
+  stroke: rgba(16, 47, 55, 0.08) !important;
+  stroke-width: 1 !important;
+}
+
+.indicatorPieTargets {
+  margin-top: -8px !important;
+}
+
+/* INDICADORES_REFERENCIAS_LEYENDA_V3 */
+.indicatorReferenceGoal {
+  background: #00b8b5 !important;
+  height: 2px !important;
+}
+
+.indicatorReferenceBase {
+  background: rgba(17, 24, 28, 0.78) !important;
+  height: 1px !important;
+}
+
+.indicatorReferenceLine em {
+  left: 0 !important;
+  top: -17px !important;
+  min-width: 28px !important;
+  background: transparent !important;
+  padding-right: 0 !important;
+  font-weight: 600 !important;
+}
+
+.indicatorReferenceGoal em {
+  color: #00a7a4 !important;
+  -webkit-text-fill-color: #00a7a4 !important;
+}
+
+.indicatorReferenceBase em {
+  color: #202326 !important;
+  -webkit-text-fill-color: #202326 !important;
+}
+
+.indicatorLegendGoal {
+  height: 2px !important;
+  background: #00b8b5 !important;
+}
+
+/* INDICADORES_FILTROS_RESUMEN_AJUSTE_V4 */
+.indicatorsFilters.processFilters,
+.premiumFilters.processFilters.indicatorsFilters {
+  display: grid !important;
+  grid-template-columns: minmax(280px, 1.55fr) minmax(130px, 0.55fr) minmax(150px, 0.7fr) minmax(130px, 0.55fr) !important;
+  gap: 14px !important;
+  align-items: end !important;
+}
+
+.indicatorsFilters.processFilters .filter,
+.indicatorsFilters.processFilters .searchFilter {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.indicatorsFilters.processFilters .searchInputWrap,
+.indicatorsFilters.processFilters select {
+  min-width: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.indicatorsTotalCleanCard,
+.processSummaryCard.indicatorsTotalCleanCard,
+.processDashboardTotalCard.indicatorsTotalCleanCard {
+  border-top: 0 !important;
+}
+
+.indicatorsTotalCleanCard::before,
+.indicatorsTotalCleanCard::after,
+.processSummaryCard.indicatorsTotalCleanCard::before,
+.processSummaryCard.indicatorsTotalCleanCard::after,
+.processDashboardTotalCard.indicatorsTotalCleanCard::before,
+.processDashboardTotalCard.indicatorsTotalCleanCard::after {
+  display: none !important;
+  content: none !important;
+}
+
+.indicatorsTotalCleanCard strong,
+.processSummaryCard.indicatorsTotalCleanCard strong,
+.processDashboardTotalCard.indicatorsTotalCleanCard strong {
+  font-weight: 400 !important;
+}
+
+@media (max-width: 1180px) {
+  .indicatorsFilters.processFilters,
+  .premiumFilters.processFilters.indicatorsFilters {
+    grid-template-columns: minmax(220px, 1.35fr) minmax(118px, 0.55fr) minmax(130px, 0.65fr) minmax(118px, 0.55fr) !important;
+    gap: 10px !important;
+  }
 }

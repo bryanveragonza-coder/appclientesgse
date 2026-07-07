@@ -161,6 +161,7 @@ function Sidebar({ view, setView, project }) {
       ],
     },
     { title: "Procesos", items: [[ClipboardCheck, "Mapa y lista maestra de procesos", "procesos"], [Building2, "Estructura y perfil", "estructura"]] },
+    { title: "Implementación", items: [[Target, "Indicadores", "indicadores"]] },
     {
       title: "Documentacion",
       items: [
@@ -1968,6 +1969,405 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
       {detailed && filteredMilestones.length === 0 && (
         <div className="emptyState">No hay hitos que coincidan con los filtros seleccionados.</div>
       )}
+    </section>
+  );
+}
+
+function ImplementationIndicators({ indicators = [] }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [areaFilter, setAreaFilter] = useState("Todos");
+  const [processFilter, setProcessFilter] = useState("Todos");
+  const [statusFilter, setStatusFilter] = useState("Todos");
+  const [localIndicators, setLocalIndicators] = useState(indicators);
+  const [savingCells, setSavingCells] = useState({});
+
+  useEffect(() => {
+    setLocalIndicators(indicators);
+  }, [indicators]);
+
+  const spreadsheetId = getActiveSpreadsheetId();
+  const indicatorsWebhookUrl = safeUrl(import.meta.env.VITE_INDICATORS_WEBHOOK_URL || "");
+  const editableFields = ["baseline", "month1", "month2", "month3", "goal"];
+  const statusBuckets = [
+    { key: "pendiente", label: "Pendiente" },
+    { key: "curso", label: "En curso" },
+    { key: "cumplido", label: "Cumplido" },
+    { key: "riesgo", label: "En riesgo" },
+  ];
+
+  const getStatusBucket = (status = "") => {
+    const normalized = normalizeSystemName(status);
+    if (normalized.includes("riesgo") || normalized.includes("alerta") || normalized.includes("bloque")) return "riesgo";
+    if (normalized.includes("cumpl") || normalized.includes("final") || normalized.includes("termin") || normalized.includes("aprobad")) return "cumplido";
+    if (normalized.includes("curso") || normalized.includes("proceso") || normalized.includes("desarrollo") || normalized.includes("seguimiento")) return "curso";
+    return "pendiente";
+  };
+
+  const statusOptions = statusBuckets.map((bucket) => bucket.label);
+  const getStatusLabel = (status = "") => statusBuckets.find((bucket) => bucket.key === getStatusBucket(status))?.label || "Pendiente";
+  const areaOptions = useMemo(() => localIndicators.map((item) => item.area).filter(Boolean), [localIndicators]);
+  const processOptions = useMemo(() => localIndicators.map((item) => item.process).filter(Boolean), [localIndicators]);
+
+  const getSeries = (item) => [
+    parseNumericValue(item.baseline),
+    parseNumericValue(item.month1),
+    parseNumericValue(item.month2),
+    parseNumericValue(item.month3),
+  ];
+
+  const getLatestValue = (item) => {
+    const values = [item.month3, item.month2, item.month1, item.baseline].map((value) => String(value || "").trim());
+    return values.find(Boolean) || "Sin dato";
+  };
+
+  const getCompletion = (item) => {
+    const goal = Math.abs(parseNumericValue(item.goal));
+    const latest = Math.abs(parseNumericValue(getLatestValue(item)));
+    if (!goal) return 0;
+    return Math.max(0, Math.min(100, (latest / goal) * 100));
+  };
+
+  const getLinePoints = (item) => {
+    const values = getSeries(item);
+    const max = Math.max(...values, Math.abs(parseNumericValue(item.goal)), 1);
+    return values.map((value, index) => {
+      const x = 8 + index * 28;
+      const y = 46 - (Math.max(0, value) / max) * 34;
+      return `${x},${Math.max(8, Math.min(46, y))}`;
+    }).join(" ");
+  };
+
+  const getChartBars = (item) => {
+    const baseline = parseNumericValue(item.baseline);
+    const goal = parseNumericValue(item.goal);
+    const unitText = String(item.unit || "").trim();
+    const normalizedUnit = normalizeSystemName(unitText);
+    const isPercentage = normalizedUnit.includes("porcentaje") || unitText.includes("%");
+    const unitLabel = isPercentage ? "Porcentaje" : unitText || "Unidades";
+    const formatChartValue = (raw, numericValue) => {
+      const clean = String(raw || "").trim();
+      if (clean) return clean.replace(/%/g, "").trim();
+      return numericValue ? String(numericValue) : "0";
+    };
+    const withUnitSuffix = (value) => {
+      const clean = String(value || "0").trim();
+      return isPercentage && !clean.includes("%") ? `${clean}%` : clean;
+    };
+    const months = [
+      { label: "Mes 1", value: parseNumericValue(item.month1), raw: item.month1 },
+      { label: "Mes 2", value: parseNumericValue(item.month2), raw: item.month2 },
+      { label: "Mes 3", value: parseNumericValue(item.month3), raw: item.month3 },
+    ];
+    const rawMax = Math.max(Math.abs(baseline), Math.abs(goal), ...months.map((month) => Math.abs(month.value)), 1);
+    const scaleStep = rawMax <= 10 ? 2 : rawMax <= 50 ? 10 : rawMax <= 100 ? 20 : rawMax <= 250 ? 50 : 100;
+    const scaleMax = Math.max(scaleStep, Math.ceil(rawMax / scaleStep) * scaleStep);
+    const plotHeight = 142;
+    const toHeight = (value) => Math.max(3, Math.min(plotHeight, (Math.max(0, value) / scaleMax) * plotHeight));
+    const positiveMonths = months.map((month) => Math.max(0, month.value));
+    const pieTotal = positiveMonths.reduce((sum, value) => sum + value, 0);
+    const pieColors = ["#00b8b5", "#63b8b4", "#087d78"];
+    let startPercent = 0;
+    const polarPoint = (percent) => {
+      const angle = (percent / 100) * 360 - 90;
+      const radians = (angle * Math.PI) / 180;
+      const radius = 42;
+      return {
+        x: 50 + radius * Math.cos(radians),
+        y: 50 + radius * Math.sin(radians),
+      };
+    };
+    const makePiePath = (start, end) => {
+      const slice = Math.max(0, end - start);
+      if (!slice) return "";
+      const safeEnd = slice >= 99.999 ? start + 99.999 : end;
+      const from = polarPoint(start);
+      const to = polarPoint(safeEnd);
+      const largeArc = slice > 50 ? 1 : 0;
+      return `M 50 50 L ${from.x.toFixed(3)} ${from.y.toFixed(3)} A 42 42 0 ${largeArc} 1 ${to.x.toFixed(3)} ${to.y.toFixed(3)} Z`;
+    };
+    const pieSegments = months.map((month, index) => {
+      const percent = pieTotal ? (Math.max(0, month.value) / pieTotal) * 100 : 0;
+      const segment = {
+        ...month,
+        displayValue: withUnitSuffix(formatChartValue(month.raw, month.value)),
+        percent,
+        color: pieColors[index],
+        path: makePiePath(startPercent, startPercent + percent),
+      };
+      startPercent += percent;
+      return segment;
+    });
+    const ticks = [scaleMax, scaleMax * 0.75, scaleMax * 0.5, scaleMax * 0.25].map((value) => ({
+      value,
+      label: Number.isInteger(value) ? String(value) : value.toFixed(1).replace(".", ","),
+      height: toHeight(value),
+    }));
+    return {
+      baseline,
+      goal,
+      isPercentage,
+      unitLabel,
+      baselineLabel: withUnitSuffix(formatChartValue(item.baseline, baseline)),
+      goalLabel: withUnitSuffix(formatChartValue(item.goal, goal)),
+      baselineHeight: toHeight(baseline),
+      goalHeight: toHeight(goal),
+      ticks,
+      pieSegments,
+      months: months.map((month) => ({
+        ...month,
+        displayValue: formatChartValue(month.raw, month.value),
+        height: toHeight(month.value),
+      })),
+    };
+  };
+  const summary = useMemo(() => {
+    const total = localIndicators.length;
+    const statuses = statusBuckets.map((bucket) => ({
+      ...bucket,
+      count: localIndicators.filter((item) => getStatusBucket(item.status) === bucket.key).length,
+    }));
+    return { total, statuses };
+  }, [localIndicators]);
+
+  const filteredIndicators = useMemo(() => {
+    const query = normalizeSystemName(searchTerm);
+    const selectedStatusKey = statusBuckets.find((bucket) => bucket.label === statusFilter)?.key;
+    return localIndicators.filter((item) => {
+      const matchesArea = areaFilter === "Todos" || item.area === areaFilter;
+      const matchesProcess = processFilter === "Todos" || item.process === processFilter;
+      const matchesStatus = statusFilter === "Todos" || getStatusBucket(item.status) === selectedStatusKey;
+      const searchable = normalizeSystemName([
+        item.id,
+        item.area,
+        item.process,
+        item.name,
+        item.formula,
+        item.description,
+        item.unit,
+        item.frequency,
+        item.goal,
+        item.baseline,
+        item.month1,
+        item.month2,
+        item.month3,
+        item.trend,
+        item.actionPlan,
+        item.responsible,
+        item.endDate,
+        item.status,
+      ].join(" "));
+      return matchesArea && matchesProcess && matchesStatus && (!query || searchable.includes(query));
+    });
+  }, [localIndicators, searchTerm, areaFilter, processFilter, statusFilter]);
+
+  const updateLocalIndicator = (indicatorId, field, value) => {
+    setLocalIndicators((current) => current.map((item) => (
+      item.id === indicatorId ? { ...item, [field]: value } : item
+    )));
+  };
+
+  const saveIndicatorValue = async (item, field, value) => {
+    if (!editableFields.includes(field) || !indicatorsWebhookUrl) return;
+    const key = `${item.id}-${field}`;
+    setSavingCells((current) => ({ ...current, [key]: true }));
+
+    try {
+      const response = await fetch(indicatorsWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "updateIndicatorValue",
+          spreadsheetId,
+          sheetName: "Indicadores",
+          id: item.id,
+          indicatorName: item.name,
+          process: item.process,
+          field,
+          value,
+        }),
+      });
+
+      const text = await response.text();
+      let result = {};
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = { ok: response.ok, message: text };
+      }
+
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.message || "No se pudo guardar el indicador.");
+      }
+    } catch (error) {
+      console.error(error);
+      window.alert(error.message || "No se pudo guardar el indicador.");
+    } finally {
+      setSavingCells((current) => ({ ...current, [key]: false }));
+    }
+  };
+
+  const renderEditableInput = (item, field) => {
+    const key = `${item.id}-${field}`;
+    return (
+      <input
+        className={`indicatorValueInput ${savingCells[key] ? "saving" : ""}`}
+        value={item[field] || ""}
+        onChange={(event) => updateLocalIndicator(item.id, field, event.target.value)}
+        onBlur={(event) => saveIndicatorValue(item, field, event.target.value)}
+        placeholder="0"
+      />
+    );
+  };
+
+  return (
+    <section className="card premiumSectionCard indicatorsSection">
+      <div className="sectionHeader indicatorsHeader">
+        <div>
+          <h2>Indicadores</h2>
+          <p>Registra línea base y avances mensuales para visualizar la evolución de los indicadores del proyecto.</p>
+        </div>
+      </div>
+
+      <div className="processSummaryGrid processDashboardSummaryGrid indicatorsSummaryGrid">
+        <article className="processSummaryCard processDashboardTotalCard indicatorsTotalCleanCard">
+          <div>
+            <span>Total de indicadores</span>
+            <strong>{summary.total}</strong>
+          </div>
+        </article>
+        <article className="processSummaryCard processDashboardStatusCard">
+          <span>Estado de indicadores</span>
+          <div className="processDashboardBarRows">
+            {summary.statuses.map((bucket) => (
+              <div key={`indicator-status-${bucket.key}`}>
+                <em>{bucket.label}</em>
+                <span><i style={{ width: `${summary.total ? (bucket.count / summary.total) * 100 : 0}%` }} /></span>
+                <b>{bucket.count}</b>
+              </div>
+            ))}
+          </div>
+        </article>
+      </div>
+
+      <div className="premiumFilters processFilters indicatorsFilters">
+        <label className="searchFilter processSearchFilter">
+          <span>Buscar indicador</span>
+          <div className="searchInputWrap">
+            <Search size={18} />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar por proceso, indicador, fórmula o responsable"
+            />
+          </div>
+        </label>
+        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
+        <FilterSelect label="Proceso" value={processFilter} onChange={setProcessFilter} options={processOptions} />
+        <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
+      </div>
+
+      <div className="indicatorsWorkGrid">
+        {filteredIndicators.map((item, index) => {
+          const chart = getChartBars(item);
+          return (
+            <article className="indicatorWorkCard" key={`indicator-card-${item.id}-${index}`}>
+              <div className="indicatorWorkMain">
+                <div className="indicatorTrendTop">
+                  <h3>{item.name || "Indicador sin nombre"}</h3>
+                  <Badge status={item.status || getStatusLabel(item.status)}>{item.status || getStatusLabel(item.status)}</Badge>
+                </div>
+                <div className="indicatorWorkChart">
+                  {chart.isPercentage ? (
+                    <div className="indicatorPieChart">
+                      <svg className="indicatorPieVisual" viewBox="0 0 100 100" role="img" aria-label="Distribución mensual del indicador">
+                        <circle cx="50" cy="50" r="42" className="indicatorPieEmpty" />
+                        {chart.pieSegments.map((segment) => segment.path ? (
+                          <path key={`${item.id}-${segment.label}`} d={segment.path} fill={segment.color} />
+                        ) : null)}
+                      </svg>
+                      <div className="indicatorPieLegend">
+                        {chart.pieSegments.map((segment) => (
+                          <span key={`${item.id}-${segment.label}`}>
+                            <i style={{ background: segment.color }} />
+                            <b>{segment.label}</b>
+                            <em>{segment.displayValue}</em>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="indicatorPieTargets">
+                        <span>Meta: <b>{chart.goalLabel}</b></span>
+                        <span>Línea base: <b>{chart.baselineLabel}</b></span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="indicatorBarChart">
+                      <span className="indicatorChartUnit">{chart.unitLabel}</span>
+                      <div className="indicatorBarGrid" aria-hidden="true">
+                        {chart.ticks.map((tick) => <span key={`${item.id}-tick-${tick.label}`} style={{ "--tick-height": `${tick.height}px` }} />)}
+                      </div>
+                      <div className="indicatorBarTicks" aria-hidden="true">
+                        {chart.ticks.map((tick) => <span key={`${item.id}-tick-label-${tick.label}`} style={{ "--tick-height": `${tick.height}px` }}>{tick.label}</span>)}
+                      </div>
+                      <span className="indicatorBarAxis indicatorBarAxisY" />
+                      <span className="indicatorBarAxis indicatorBarAxisX"><em>tiempo</em></span>
+                      <span className="indicatorReferenceLine indicatorReferenceGoal" style={{ "--ref-height": `${chart.goalHeight}px` }}><em>{chart.goalLabel}</em></span>
+                      <span className="indicatorReferenceLine indicatorReferenceBase" style={{ "--ref-height": `${chart.baselineHeight}px` }}><em>{chart.baselineLabel}</em></span>
+                      <div className="indicatorBars">
+                        {chart.months.map((month, monthIndex) => (
+                          <div className={`indicatorBarSlot indicatorBarSlot${monthIndex + 1}`} key={`${item.id}-${month.label}`}>
+                            <i style={{ "--bar-height": `${month.height}px` }}><strong>{month.displayValue}</strong></i>
+                            <span>{month.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="indicatorBarLegend">
+                        <span><i className="indicatorLegendGoal" /> Meta</span>
+                        <span><i className="indicatorLegendBase" /> Línea Base</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <p className="indicatorDataPrompt">Escribe los datos aquí:</p>
+                <div className="indicatorClientFields">
+                  <label><span>Línea base</span>{renderEditableInput(item, "baseline")}</label>
+                  <label><span>Meta</span>{renderEditableInput(item, "goal")}</label>
+                  <label><span>Mes 1</span>{renderEditableInput(item, "month1")}</label>
+                  <label><span>Mes 2</span>{renderEditableInput(item, "month2")}</label>
+                  <label><span>Mes 3</span>{renderEditableInput(item, "month3")}</label>
+                </div>
+                <details className="indicatorMoreDetails">
+                  <summary>Ver más</summary>
+                  <dl className="indicatorInfoGrid">
+                    <div>
+                      <dt>Fórmula</dt>
+                      <dd>{item.formula || "Por definir"}</dd>
+                    </div>
+                    <div>
+                      <dt>Descripción</dt>
+                      <dd>{item.description || item.actionPlan || "Por definir"}</dd>
+                    </div>
+                    <div>
+                      <dt>Proceso</dt>
+                      <dd>{item.process || "Proceso sin definir"}</dd>
+                    </div>
+                  </dl>
+                  <div className="indicatorMoreMeta">
+                    <span><b>Área:</b> {item.area || "Por definir"}</span>
+                    <span><b>UMD:</b> {item.unit || "Por definir"}</span>
+                    <span><b>Frecuencia:</b> {item.frequency || "Por definir"}</span>
+                    <span><b>Tendencia:</b> {item.trend || "Sin información"}</span>
+                    <span><b>Responsable:</b> {item.responsible || "Por definir"}</span>
+                    <span><b>Fecha termin.:</b> {item.endDate || "Por definir"}</span>
+                    <span><b>Plan de acción:</b> {item.actionPlan || "Por definir"}</span>
+                  </div>
+                </details>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {filteredIndicators.length === 0 && <div className="emptyState">No hay indicadores que coincidan con los filtros seleccionados.</div>}
     </section>
   );
 }
@@ -6618,7 +7018,7 @@ function App() {
       });
   }, [session?.sheetId]);
 
-  const { project, milestones, findings, pending, deliverables, updates, education, meetings = [], documents = [], architectureRoles = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
+  const { project, milestones, findings, pending, deliverables, updates, education, meetings = [], documents = [], architectureRoles = [], indicators = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
   const completedText = useMemo(() => {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
@@ -6677,6 +7077,7 @@ function App() {
               ["pendientes", "Pendientes"],
               ["entregables", "Entregables"],
               ["entregables-clientes", "Entregables clientes"],
+              ["indicadores", "Indicadores"],
               ["documentos", "Documentos"],
               ["educacion", "Lo que vas a recibir"],
             ].map(([value, label]) => (
@@ -6737,6 +7138,7 @@ function App() {
           )}
           {view === "procesos" && <ProcessesMasterList project={project} processesAsIs={processesAsIs} processesToBe={processesToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "estructura" && <StructureView project={project} architectureRoles={architectureRoles} />}
+          {view === "indicadores" && <ImplementationIndicators indicators={indicators} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "hallazgos" && <Findings findings={findings} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} />}
@@ -6920,6 +7322,10 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
+
+
 
 
 

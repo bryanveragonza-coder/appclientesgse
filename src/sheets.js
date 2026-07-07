@@ -57,6 +57,7 @@ export const demoData = {
   coeAsIs: [],
   coeToBe: [],
   architectureRoles: [],
+  indicators: [],
   documents: [
     {
       id: "1",
@@ -599,6 +600,29 @@ function mapArchitectureRoles(rows) {
   })).filter((x) => x.gerencia || x.area || x.cargo || x.profileUrl || x.occupationalGroup || x.abbreviation || x.status);
 }
 
+function mapIndicators(rows) {
+  return rows.map((row, index) => ({
+    id: getRowValue(row, ["N°", "NÂ°", "N", "No", "Numero", "Número", "ID", "Id"]) || String(index + 1),
+    process: getRowValue(row, ["Proceso", "PROCESO", "NombreProceso", "Nombre del proceso"]),
+    area: getRowValue(row, ["Área", "Area", "AREA", "Departamento"]),
+    name: getRowValue(row, ["Nombre del indicador", "NombreIndicador", "Indicador", "Nombre", "KPI"]),
+    formula: getRowValue(row, ["Fórmula", "Formula", "FORMULA"]),
+    description: getRowValue(row, ["Descripción", "Descripcion", "DESCRIPCION", "Detalle", "Descripción del indicador", "Descripcion del indicador"]),
+    unit: getRowValue(row, ["UMD", "Unidad", "Unidad de medida", "UnidadMedida"]),
+    frequency: getRowValue(row, ["Frecuencia de medida", "FrecuenciaMedida", "Frecuencia", "Periodicidad"]),
+    goal: getRowValue(row, ["Meta", "META", "Objetivo"]),
+    baseline: getRowValue(row, ["Línea base", "Linea base", "LineaBase", "LíneaBase", "Base"]),
+    month1: getRowValue(row, ["Mes 1", "Mes1", "MES 1"]),
+    month2: getRowValue(row, ["Mes 2", "Mes2", "MES 2"]),
+    month3: getRowValue(row, ["Mes 3", "Mes3", "MES 3"]),
+    trend: getRowValue(row, ["Tendencia", "tendencia"]),
+    actionPlan: getRowValue(row, ["Plan de acción", "PlanAccion", "Plan de accion", "PlanAcción"]),
+    responsible: getRowValue(row, ["Responsable", "RESPONSABLE"]),
+    endDate: getRowValue(row, ["Fecha termin.", "FechaTermin", "FechaTerminacion", "Fecha terminación", "Fecha de terminación", "Fecha fin"]),
+    status: getRowValue(row, ["Estatus", "Status", "Estado"]),
+  })).filter((x) => x.process || x.name || x.formula || x.goal || x.baseline || x.month1 || x.month2 || x.month3);
+}
+
 function mapProcessesAsIs(rows) {
   return rows.map((row, index) => ({
     id: getRowValue(row, ["NÂ°", "N", "No", "Numero", "NÃºmero", "ID", "Id"]) || String(index + 1),
@@ -675,7 +699,7 @@ export async function loadSheetData() {
     throw new Error("Falta iniciar sesiÃ³n o configurar VITE_SPREADSHEET_ID.");
   }
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, documentRows, architectureRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows] = await Promise.all([
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, documentRows, architectureRows, indicatorRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows] = await Promise.all([
     fetchCsvRows("Proyecto"),
     fetchCsvSheet("Hitos"),
     fetchCsvSheet("Hallazgos"),
@@ -686,6 +710,7 @@ export async function loadSheetData() {
     fetchFirstAvailableSheet(["Reuniones", "ReunionesCliente", "Reuniones Cliente", "Agenda"]),
     fetchFirstAvailableSheet(["Documentos", "CargaDocumentos", "Carga de documentos", "Carga Documentos", "ChecklistDocumentos", "Checklist Documentos", "Checklist"]),
     fetchFirstAvailableSheet(["ArquitecturaCargos", "Arquitectura Cargos", "Estructura", "EstructuraCargos", "Arquitectura"]),
+    fetchFirstAvailableSheet(["Indicadores", "ImplementacionIndicadores", "Implementación Indicadores", "Implementacion Indicadores", "IndicadoresImplementacion", "Indicadores Implementacion"]),
     fetchFirstAvailableSheet(["ProcesosASIS", "Procesos AS IS", "Procesos As Is", "Procesos AS-IS", "Procesos AS_IS", "ListaASIS", "Lista AS IS", "Lista AS-IS", "ASIS", "AS IS"]),
     fetchFirstAvailableSheet(["ProcesosTOBE", "Procesos TO BE", "Procesos To Be", "Procesos TO-BE", "Procesos TO_BE", "ListaTOBE", "Lista TO BE", "Lista TO-BE", "TOBE", "TO BE"]),
     fetchFirstAvailableSheet(["COEASIS", "COE AS IS", "COE As Is", "COE AS-IS", "COE AS_IS", "COE Actual", "COEActual"]),
@@ -703,6 +728,7 @@ export async function loadSheetData() {
     meetings: mapMeetings(meetingRows),
     documents: mapDocuments(documentRows),
     architectureRoles: mapArchitectureRoles(architectureRows),
+    indicators: mapIndicators(indicatorRows),
     processesAsIs: mapProcessesAsIs(processesAsIsRows),
     processesToBe: mapProcessesToBe(processesToBeRows),
     coeAsIs: mapCOERows(coeAsIsRows),
