@@ -3639,14 +3639,13 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
   const getFindingUploadValue = (item, field) => {
     const key = getFindingUploadKey(item, field);
     if (Object.prototype.hasOwnProperty.call(findingUploadStatus, key)) return findingUploadStatus[key];
-    return field === "policy" ? isCheckedSheetValue(item.policyLoaded) : isCheckedSheetValue(item.procedureLoaded);
+    return isCheckedSheetValue(item.policyLoaded) || isCheckedSheetValue(item.procedureLoaded);
   };
 
   const handleFindingUploadChange = async (item, field, nextChecked) => {
     if (!nextChecked) return;
-    const label = field === "policy" ? "política" : "procedimiento";
     const title = item.finding || item.id || "este hallazgo";
-    if (!window.confirm(`¿Confirmas que ya fue cargada la ${label} para ${title}?`)) return;
+    if (!window.confirm(`¿Confirmas que ya fue cargado el entregable para ${title}?`)) return;
 
     const key = getFindingUploadKey(item, field);
     const previous = getFindingUploadValue(item, field);
@@ -3669,7 +3668,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
           action: "updateFindingUploadStatus",
           spreadsheetId,
           sheetName: "Hallazgos",
-          field: field === "policy" ? "PoliticaCargada" : "ProcedimientoCargado",
+          field: "PoliticaCargada",
           value: "SI",
           id: item.id,
           hallazgo: item.finding,
@@ -3700,8 +3699,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
 
   const FindingUploadChecks = ({ item }) => {
     const controls = [
-      { field: "policy", label: "Política cargada" },
-      { field: "procedure", label: "Procedimiento cargado" },
+      { field: "loaded", label: "Cargada" },
     ];
     return (
       <div className="findingUploadChecks" onClick={(event) => event.stopPropagation()}>
@@ -3854,15 +3852,34 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     });
   }, [findings, searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
 
+  const getFindingUniqueKey = (item = {}, index = 0) => {
+    const rawId = String(item.id || "").trim();
+    const numericMatch = rawId.match(/(\d+)(?!.*\d)/);
+    if (numericMatch) return `hallazgo-${Number(numericMatch[1])}`;
+    const fallback = normalizeSystemName(item.finding || item.description || item.recommendation || rawId);
+    return fallback || `hallazgo-fila-${index}`;
+  };
+
+  const uniqueFilteredFindings = useMemo(() => {
+    const map = new Map();
+    filteredFindings.forEach((item, index) => {
+      const key = getFindingUniqueKey(item, index);
+      if (!map.has(key)) map.set(key, item);
+    });
+    return [...map.values()];
+  }, [filteredFindings]);
+
+  const uniqueFindingsCount = uniqueFilteredFindings.length;
+
   const statusSummary = useMemo(() => {
-    return filteredFindings.reduce((acc, item) => {
+    return uniqueFilteredFindings.reduce((acc, item) => {
       const group = getFindingStatusGroup(item.status);
       if (group === "Pendiente") acc.pending += 1;
       if (group === "En proceso") acc.inProcess += 1;
       if (group === "Completado") acc.completed += 1;
       return acc;
     }, { pending: 0, inProcess: 0, completed: 0 });
-  }, [filteredFindings]);
+  }, [uniqueFilteredFindings]);
 
   const visibleDeliverableSummary = useMemo(() => {
     const addLabels = (acc, labels, side) => {
@@ -4099,14 +4116,14 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
           <h2>Hallazgos encontrados</h2>
           <p>Busca, filtra y revisa los hallazgos críticos de la matriz técnica.</p>
         </div>
-        <Badge status="En validación">{filteredFindings.length} visibles</Badge>
+        <Badge status="En validación">{uniqueFindingsCount} visibles</Badge>
       </div>
 
       <div className="findingsSummaryGrid">
         <article className="findingsSummaryCard">
           <div>
             <span>Total de Hallazgos</span>
-            <strong>{filteredFindings.length}</strong>
+            <strong>{uniqueFindingsCount}</strong>
           </div>
           <div className="findingsSummaryIcon" aria-hidden="true">
             <Search size={28} />
@@ -4119,17 +4136,17 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
           <div className="findingsStatusRows">
             <div>
               <span>Pendiente</span>
-              <div><i style={{ width: `${filteredFindings.length ? (statusSummary.pending / filteredFindings.length) * 100 : 0}%` }} /></div>
+              <div><i style={{ width: `${uniqueFindingsCount ? (statusSummary.pending / uniqueFindingsCount) * 100 : 0}%` }} /></div>
               <strong>{statusSummary.pending}</strong>
             </div>
             <div>
               <span>En proceso</span>
-              <div><i style={{ width: `${filteredFindings.length ? (statusSummary.inProcess / filteredFindings.length) * 100 : 0}%` }} /></div>
+              <div><i style={{ width: `${uniqueFindingsCount ? (statusSummary.inProcess / uniqueFindingsCount) * 100 : 0}%` }} /></div>
               <strong>{statusSummary.inProcess}</strong>
             </div>
             <div>
               <span>Completado</span>
-              <div><i style={{ width: `${filteredFindings.length ? (statusSummary.completed / filteredFindings.length) * 100 : 0}%` }} /></div>
+              <div><i style={{ width: `${uniqueFindingsCount ? (statusSummary.completed / uniqueFindingsCount) * 100 : 0}%` }} /></div>
               <strong>{statusSummary.completed}</strong>
             </div>
           </div>
@@ -4823,20 +4840,14 @@ function ClientDeliverables({ findings = [], project = {} }) {
   const getUploadValue = (item, field) => {
     const key = getUploadKey(item, field);
     if (Object.prototype.hasOwnProperty.call(uploadStatus, key)) return uploadStatus[key];
-    return field === "policy" ? isCheckedSheetValue(item.policyLoaded) : isCheckedSheetValue(item.procedureLoaded);
+    return isCheckedSheetValue(item.policyLoaded) || isCheckedSheetValue(item.procedureLoaded);
   };
 
-  const getRowLoaded = (item) => {
-    const type = normalizeSystemName(item.deliverableType);
-    if (type.includes("politica")) return getUploadValue(item, "policy");
-    if (type.includes("procedimiento")) return getUploadValue(item, "procedure");
-    return getUploadValue(item, "policy") || getUploadValue(item, "procedure");
-  };
+  const getRowLoaded = (item) => getUploadValue(item, "loaded");
 
   const handleUploadChange = async (item, field, nextChecked) => {
     if (!nextChecked) return;
-    const label = field === "policy" ? "política" : "procedimiento";
-    if (!window.confirm(`¿Confirmas que ya fue cargado el entregable de ${label}?`)) return;
+    if (!window.confirm("¿Confirmas que ya fue cargado este entregable?")) return;
 
     const key = getUploadKey(item, field);
     const previous = getUploadValue(item, field);
@@ -4858,7 +4869,7 @@ function ClientDeliverables({ findings = [], project = {} }) {
           action: "updateFindingUploadStatus",
           spreadsheetId,
           sheetName: "Hallazgos",
-          field: field === "policy" ? "PoliticaCargada" : "ProcedimientoCargado",
+          field: "PoliticaCargada",
           value: "SI",
           id: item.id,
           hallazgo: item.finding,
@@ -5017,8 +5028,7 @@ function ClientDeliverables({ findings = [], project = {} }) {
                 <th>Proceso</th>
                 <th>Gerencia</th>
                 <th>Área</th>
-                <th>Política cargada</th>
-                <th>Procedimiento cargado</th>
+                <th>Cargada</th>
                 <th>Archivo</th>
               </tr>
             </thead>
@@ -5032,11 +5042,12 @@ function ClientDeliverables({ findings = [], project = {} }) {
                   <td>{item.processArea || "Por definir"}</td>
                   <td>{item.management || item.gerencia || "Por definir"}</td>
                   <td>{item.areaDetail || item.area || "Por definir"}</td>
-                  {["policy", "procedure"].map((field) => {
+                  {(() => {
+                    const field = "loaded";
                     const key = getUploadKey(item, field);
                     const checked = getUploadValue(item, field);
                     return (
-                      <td key={field}>
+                      <td>
                         <label className={`clientDeliverableCheck ${checked ? "checked" : ""}`}>
                           <input
                             type="checkbox"
@@ -5048,7 +5059,7 @@ function ClientDeliverables({ findings = [], project = {} }) {
                         </label>
                       </td>
                     );
-                  })}
+                  })()}
                   <td>
                     {safeUrl(item.link) ? (
                       <a className="clientDeliverableUploadLink" href={safeUrl(item.link)} target="_blank" rel="noreferrer">
@@ -7322,6 +7333,8 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
 
 
 
