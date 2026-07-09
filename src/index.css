@@ -25755,3 +25755,106 @@ body {
     gap: 10px !important;
   }
 }
+
+/* LOGIN_SPLIT_HERO_V1 */
+.loginSplitShell {
+  min-height: 100vh !important;
+  display: grid !important;
+  grid-template-columns: minmax(330px, 38%) minmax(0, 62%) !important;
+  place-items: stretch !important;
+  padding: 0 !important;
+  background: #ffffff !important;
+  overflow: hidden !important;
+}
+
+.loginSplitPanel {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 100vh !important;
+  align-content: center !important;
+  gap: 24px !important;
+  padding: clamp(34px, 6vw, 76px) clamp(34px, 5vw, 70px) !important;
+  box-shadow: none !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.loginBrandBlockVertical {
+  display: block !important;
+}
+
+.loginHorizontalLogo {
+  width: min(210px, 78%) !important;
+  max-height: 76px !important;
+  object-fit: contain !important;
+  object-position: left center !important;
+  display: block !important;
+}
+
+.loginSplitPanel .loginEyebrow {
+  margin-top: 2px !important;
+  color: #00b8b5 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0 !important;
+}
+
+.loginSplitPanel h1 {
+  max-width: 360px !important;
+  font-size: clamp(2.65rem, 5.2vw, 5rem) !important;
+  line-height: 0.96 !important;
+  font-weight: 500 !important;
+}
+
+.loginSplitPanel p {
+  max-width: 360px !important;
+  font-size: 0.94rem !important;
+}
+
+.loginVisualPanel {
+  position: relative !important;
+  min-height: 100vh !important;
+  overflow: hidden !important;
+  background: #00b8b5 !important;
+}
+
+.loginVisualImage,
+.loginVisualFallback {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+.loginVisualFallback {
+  background:
+    linear-gradient(90deg, rgba(0, 184, 181, 0.85), rgba(0, 184, 181, 0.5)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.18) 0 120px, rgba(255,255,255,0.04) 120px 240px) !important;
+}
+
+.loginVisualTint {
+  position: absolute !important;
+  inset: 0 !important;
+  background:
+    linear-gradient(90deg, rgba(0, 184, 181, 0.72), rgba(0, 184, 181, 0.42)),
+    rgba(0, 184, 181, 0.18) !important;
+  mix-blend-mode: multiply !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 860px) {
+  .loginSplitShell {
+    grid-template-columns: 1fr !important;
+    overflow: auto !important;
+  }
+
+  .loginSplitPanel {
+    min-height: auto !important;
+    padding: 34px 26px !important;
+  }
+
+  .loginVisualPanel {
+    display: none !important;
+  }
+}

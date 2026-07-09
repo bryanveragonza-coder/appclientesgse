@@ -34,6 +34,8 @@ export const demoData = {
     generalManager: "Sin informaciÃ³n",
     logoGSE: "",
     logoGSEhorizontal: "",
+    logoGSEhorizontalColor: "",
+    loginImage: "",
     logoClient: "",
     projectPhrase: "Ruta de avance del proyecto",
     whatsappMessage: "Hola, equipo ðŸ‘‹ Ya actualizamos la Ruta de Avance Visibleâ„¢.",
@@ -399,6 +401,8 @@ function projectFromRawRows(rows) {
     generalManager: map.gerentegeneral || map.dueno || map["dueño"] || map.lidercliente || demoData.project.generalManager,
     logoGSE: map.logogse || demoData.project.logoGSE,
     logoGSEhorizontal: map.logogsehorizontal || map.logogsehor || map.logohorizontalgse || findProjectFieldValue(cleanRows, ["LogoGSEhorizontal", "Logo GSE horizontal", "Logo horizontal GSE", "LogoGSECompleto", "Logo GSE completo"]) || demoData.project.logoGSEhorizontal,
+    logoGSEhorizontalColor: map.logogsehorizontalcolor || map.logogsehorizontalcolour || findProjectFieldValue(cleanRows, ["LogoGSEhorizontalcolor", "Logo GSE horizontal color", "Logo GSE horizontal a color", "LogoGSEHorizontalColor"]) || demoData.project.logoGSEhorizontalColor,
+    loginImage: map.imageninicio || map.imagenlogin || findProjectFieldValue(cleanRows, ["ImagenInicio", "Imagen Inicio", "Imagen login", "ImagenLogin"]) || demoData.project.loginImage,
     logoClient: map.logocliente || demoData.project.logoClient,
     projectPhrase: map.fraseproyecto || demoData.project.projectPhrase,
     whatsappMessage: map.mensajewhatsapp || map.whatsapp || demoData.project.whatsappMessage,
@@ -785,6 +789,7 @@ export async function loadSheetData() {
 // HALLAZGOS_V9_LECTURA_COMPLETA_TAGS_2_FILAS_FINAL
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
 
 
 

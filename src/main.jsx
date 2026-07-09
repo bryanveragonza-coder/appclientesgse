@@ -6849,6 +6849,8 @@ function getStoredClientSession() {
 }
 
 function ClientLogin({ onLogin }) {
+  const storedSession = getStoredClientSession() || {};
+  const loginAssetsUrl = import.meta.env.VITE_LOGIN_ASSETS_WEBHOOK_URL || "";
   const loginUrl = import.meta.env.VITE_LOGIN_WEBHOOK_URL || "";
   const localLoginEnabled = import.meta.env.DEV && String(import.meta.env.VITE_LOCAL_LOGIN_ENABLED || "").toLowerCase() === "true";
   const localLoginUser = import.meta.env.VITE_LOCAL_LOGIN_USER || "local";
@@ -6861,6 +6863,45 @@ function ClientLogin({ onLogin }) {
   const [rememberMe, setRememberMe] = useState(() => Boolean(window.localStorage.getItem("gseRememberedUser")));
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [loginAssets, setLoginAssets] = useState({
+    logoGSEhorizontalColor: storedSession.logoGSEhorizontalColor || storedSession.LogoGSEhorizontalcolor || storedSession.logoGSEhorizontal || storedSession.logoGSE || import.meta.env.VITE_LOGIN_LOGO_HORIZONTAL_COLOR || import.meta.env.VITE_LOGIN_LOGO_HORIZONTAL || "",
+    loginImage: storedSession.loginImage || storedSession.ImagenInicio || import.meta.env.VITE_LOGIN_IMAGE || "",
+  });
+
+  useEffect(() => {
+    const cleanUsuario = usuario.trim();
+    if (!loginAssetsUrl || cleanUsuario.length < 2) return;
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      try {
+        const separator = loginAssetsUrl.includes("?") ? "&" : "?";
+        const response = await fetch(`${loginAssetsUrl}${separator}usuario=${encodeURIComponent(cleanUsuario)}`, {
+          method: "GET",
+          signal: controller.signal,
+        });
+        const result = await response.json();
+        const assets = result.loginAssets || result.assets || result.user || result || {};
+        const nextAssets = {
+          logoGSEhorizontalColor: assets.logoGSEhorizontalColor || assets.LogoGSEhorizontalcolor || assets.logoGSEHorizontalColor || assets.logo || "",
+          loginImage: assets.loginImage || assets.ImagenInicio || assets.imagenInicio || assets.image || "",
+        };
+        if (nextAssets.logoGSEhorizontalColor || nextAssets.loginImage) {
+          setLoginAssets((current) => ({ ...current, ...nextAssets }));
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") console.warn("No se pudieron cargar los recursos visuales del login", error);
+      }
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [usuario, loginAssetsUrl]);
+
+  const loginLogoUrl = getDrivePreviewUrl(loginAssets.logoGSEhorizontalColor);
+  const loginImageUrl = getDrivePreviewUrl(loginAssets.loginImage);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -6887,6 +6928,8 @@ function ClientLogin({ onLogin }) {
         rol: import.meta.env.VITE_LOCAL_LOGIN_ROL || "Cliente",
         logoGSE: import.meta.env.VITE_LOCAL_LOGIN_LOGO || "",
         logoGSEhorizontal: import.meta.env.VITE_LOCAL_LOGIN_LOGO_HORIZONTAL || "",
+        logoGSEhorizontalColor: import.meta.env.VITE_LOCAL_LOGIN_LOGO_HORIZONTAL_COLOR || "",
+        loginImage: import.meta.env.VITE_LOCAL_LOGIN_IMAGE || "",
         localDev: true,
         loggedAt: new Date().toISOString(),
       };
@@ -6920,6 +6963,8 @@ function ClientLogin({ onLogin }) {
 
       const session = {
         ...result.user,
+        logoGSEhorizontalColor: result.user.logoGSEhorizontalColor || loginAssets.logoGSEhorizontalColor || "",
+        loginImage: result.user.loginImage || loginAssets.loginImage || "",
         loggedAt: new Date().toISOString(),
       };
       if (rememberMe) {
@@ -6937,11 +6982,14 @@ function ClientLogin({ onLogin }) {
   };
 
   return (
-    <main className="loginShell">
-      <section className="loginPanel">
-        <div className="loginBrandBlock">
-          <div className="loginBrandMark">GSE&CO</div>
-          <span>Portal privado del cliente</span>
+    <main className="loginShell loginSplitShell">
+      <section className="loginPanel loginSplitPanel">
+        <div className="loginBrandBlock loginBrandBlockVertical">
+          {loginLogoUrl ? (
+            <img src={loginLogoUrl} alt="GSE&CO" className="loginHorizontalLogo" />
+          ) : (
+            <div className="loginBrandMark">GSE&CO</div>
+          )}
         </div>
         <div>
           <span className="loginEyebrow">Ruta de Implementación Visible</span>
@@ -6998,6 +7046,14 @@ function ClientLogin({ onLogin }) {
             )}
           </p>
         </div>
+      </section>
+      <section className="loginVisualPanel" aria-hidden="true">
+        {loginImageUrl ? (
+          <img src={loginImageUrl} alt="" className="loginVisualImage" />
+        ) : (
+          <div className="loginVisualFallback" />
+        )}
+        <div className="loginVisualTint" />
       </section>
     </main>
   );
@@ -7333,6 +7389,9 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
+
 
 
 
