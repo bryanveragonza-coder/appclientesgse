@@ -2629,18 +2629,21 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("Todos");
   const [macroFilter, setMacroFilter] = useState("Todos");
-  const [statusFilter, setStatusFilter] = useState("Todos");
+  const [areaFilter, setAreaFilter] = useState("Todos");
+  const [responsibleFilter, setResponsibleFilter] = useState("Todos");
 
   const allProcesses = [...processesAsIs, ...processesToBe];
   const typeOptions = useMemo(() => allProcesses.map((item) => item.type).filter(Boolean), [allProcesses]);
   const macroOptions = useMemo(() => allProcesses.map((item) => item.macroName).filter(Boolean), [allProcesses]);
-  const statusOptions = useMemo(() => processesToBe.map((item) => item.status).filter(Boolean), [processesToBe]);
+  const areaOptions = useMemo(() => processesToBe.map((item) => item.area).filter(Boolean), [processesToBe]);
+  const responsibleOptions = useMemo(() => processesToBe.map((item) => item.responsible).filter(Boolean), [processesToBe]);
 
   const filterProcess = (item, source) => {
     const query = normalizeSystemName(searchTerm);
     const matchesType = typeFilter === "Todos" || item.type === typeFilter;
     const matchesMacro = macroFilter === "Todos" || item.macroName === macroFilter;
-    const matchesStatus = source === "ASIS" || statusFilter === "Todos" || item.status === statusFilter;
+    const matchesArea = source === "ASIS" || areaFilter === "Todos" || item.area === areaFilter;
+    const matchesResponsible = source === "ASIS" || responsibleFilter === "Todos" || item.responsible === responsibleFilter;
     const searchable = normalizeSystemName([
       item.id,
       item.type,
@@ -2651,20 +2654,22 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
       item.description,
       item.changes,
       item.status,
+      item.area,
+      item.responsible,
       item.link,
       item.technicalSheet,
     ].join(" "));
-    return matchesType && matchesMacro && matchesStatus && (!query || searchable.includes(query));
+    return matchesType && matchesMacro && matchesArea && matchesResponsible && (!query || searchable.includes(query));
   };
 
   const filteredAsIs = useMemo(
     () => processesAsIs.filter((item) => filterProcess(item, "ASIS")),
-    [processesAsIs, searchTerm, typeFilter, macroFilter, statusFilter]
+    [processesAsIs, searchTerm, typeFilter, macroFilter, areaFilter, responsibleFilter]
   );
 
   const filteredToBe = useMemo(
     () => processesToBe.filter((item) => filterProcess(item, "TOBE")),
-    [processesToBe, searchTerm, typeFilter, macroFilter, statusFilter]
+    [processesToBe, searchTerm, typeFilter, macroFilter, areaFilter, responsibleFilter]
   );
   const processBackView = previousView === "pendientes" ? "pendientes" : "portal";
   const activePending = pending.filter(isPendingActive).length;
@@ -3048,7 +3053,8 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
         </label>
         <FilterSelect label="Tipo de proceso" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
         <FilterSelect label="Macroproceso" value={macroFilter} onChange={setMacroFilter} options={macroOptions} />
-        <FilterSelect label="Status TO BE" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
+        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
+        <FilterSelect label="Responsable" value={responsibleFilter} onChange={setResponsibleFilter} options={responsibleOptions} />
       </div>
 
       <div className="processTablesStack">
@@ -7456,6 +7462,9 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
+
 
 
 

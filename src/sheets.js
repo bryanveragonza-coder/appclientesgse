@@ -661,8 +661,9 @@ function mapProcessesToBe(rows) {
     imageValidated: getRowValue(row, ["ImagenValidada", "Imagen Validada", "Imagen validada"]),
     technicalSheetValidated: getRowValue(row, ["FichaValidada", "Ficha Validada", "Ficha validada"]),
     status: getRowValue(row, ["Status", "Estado"]),
+    area: getRowValue(row, ["Area", "Área", "Ã�rea", "Ãrea"]),
     consultant: getRowValue(row, ["Consultor"]),
-    responsible: getRowValue(row, ["Responsable"]),
+    responsible: getRowValue(row, ["Responsable", "ResponsableValidacion", "Responsable Validacion", "Responsable Validación", "Responsable de validación", "Responsable de Validacion"]),
   })).filter((x) => x.processName || x.processCode || x.macroName || x.changes);
 }
 
@@ -789,6 +790,8 @@ export async function loadSheetData() {
 // HALLAZGOS_V9_LECTURA_COMPLETA_TAGS_2_FILAS_FINAL
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
 
 
 
