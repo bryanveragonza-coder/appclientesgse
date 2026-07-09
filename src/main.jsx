@@ -6870,13 +6870,15 @@ function ClientLogin({ onLogin }) {
 
   useEffect(() => {
     const cleanUsuario = usuario.trim();
-    if (!loginAssetsUrl || cleanUsuario.length < 2) return;
+    if (!loginAssetsUrl) return;
+    if (cleanUsuario.length === 1) return;
 
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
         const separator = loginAssetsUrl.includes("?") ? "&" : "?";
-        const response = await fetch(`${loginAssetsUrl}${separator}usuario=${encodeURIComponent(cleanUsuario)}`, {
+        const query = cleanUsuario.length >= 2 ? `${separator}usuario=${encodeURIComponent(cleanUsuario)}` : "";
+        const response = await fetch(`${loginAssetsUrl}${query}`, {
           method: "GET",
           signal: controller.signal,
         });
@@ -6892,7 +6894,7 @@ function ClientLogin({ onLogin }) {
       } catch (error) {
         if (error.name !== "AbortError") console.warn("No se pudieron cargar los recursos visuales del login", error);
       }
-    }, 350);
+    }, cleanUsuario ? 350 : 0);
 
     return () => {
       window.clearTimeout(timer);
@@ -7389,6 +7391,7 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
 
 
 
