@@ -6848,8 +6848,25 @@ function getStoredClientSession() {
   }
 }
 
+function getCachedLoginAssets() {
+  try {
+    return JSON.parse(window.localStorage.getItem("gseLoginAssets") || "null") || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveCachedLoginAssets(assets) {
+  try {
+    window.localStorage.setItem("gseLoginAssets", JSON.stringify(assets));
+  } catch {
+    // El login no debe fallar si el navegador bloquea localStorage.
+  }
+}
+
 function ClientLogin({ onLogin }) {
   const storedSession = getStoredClientSession() || {};
+  const cachedLoginAssets = getCachedLoginAssets();
   const loginAssetsUrl = import.meta.env.VITE_LOGIN_ASSETS_WEBHOOK_URL || "";
   const loginUrl = import.meta.env.VITE_LOGIN_WEBHOOK_URL || "";
   const localLoginEnabled = import.meta.env.DEV && String(import.meta.env.VITE_LOCAL_LOGIN_ENABLED || "").toLowerCase() === "true";
@@ -6864,8 +6881,8 @@ function ClientLogin({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [loginAssets, setLoginAssets] = useState({
-    logoGSEhorizontalColor: storedSession.logoGSEhorizontalColor || storedSession.LogoGSEhorizontalcolor || storedSession.logoGSEhorizontal || storedSession.logoGSE || import.meta.env.VITE_LOGIN_LOGO_HORIZONTAL_COLOR || import.meta.env.VITE_LOGIN_LOGO_HORIZONTAL || "",
-    loginImage: storedSession.loginImage || storedSession.ImagenInicio || import.meta.env.VITE_LOGIN_IMAGE || "",
+    logoGSEhorizontalColor: storedSession.logoGSEhorizontalColor || storedSession.LogoGSEhorizontalcolor || cachedLoginAssets.logoGSEhorizontalColor || cachedLoginAssets.LogoGSEhorizontalcolor || storedSession.logoGSEhorizontal || storedSession.logoGSE || import.meta.env.VITE_LOGIN_LOGO_HORIZONTAL_COLOR || import.meta.env.VITE_LOGIN_LOGO_HORIZONTAL || "",
+    loginImage: storedSession.loginImage || storedSession.ImagenInicio || cachedLoginAssets.loginImage || cachedLoginAssets.ImagenInicio || import.meta.env.VITE_LOGIN_IMAGE || "",
   });
 
   useEffect(() => {
@@ -6889,7 +6906,11 @@ function ClientLogin({ onLogin }) {
           loginImage: assets.loginImage || assets.ImagenInicio || assets.imagenInicio || assets.image || "",
         };
         if (nextAssets.logoGSEhorizontalColor || nextAssets.loginImage) {
-          setLoginAssets((current) => ({ ...current, ...nextAssets }));
+          setLoginAssets((current) => {
+            const mergedAssets = { ...current, ...nextAssets };
+            saveCachedLoginAssets(mergedAssets);
+            return mergedAssets;
+          });
         }
       } catch (error) {
         if (error.name !== "AbortError") console.warn("No se pudieron cargar los recursos visuales del login", error);
@@ -7391,6 +7412,8 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
+
 
 
 
