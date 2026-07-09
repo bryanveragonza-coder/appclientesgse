@@ -3822,34 +3822,78 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     return [...new Set(values)];
   }, [findings, dateFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
 
+  const getFindingSearchText = (item) => {
+    const area = getFindingField(item, "area");
+    const management = getFindingField(item, "management");
+    const deliveryDate = getFindingField(item, "date");
+    const priority = getFindingField(item, "priority");
+    const status = getFindingField(item, "status");
+    const statusGroup = getFindingStatusGroup(status);
+    return normalizeSystemName([
+      item.id,
+      management,
+      area,
+      deliveryDate,
+      item.processArea,
+      item.process,
+      item.finding,
+      item.description,
+      item.recommendation || item.solution,
+      item.solutionType || item.system,
+      item.deliverableGSE,
+      item.deliverableClient,
+      ...getDeliverableTypeMatches(item),
+      status,
+      statusGroup,
+      priority,
+    ].join(" "));
+  };
+
+  const getFindingSearchScore = (item, query, queryWords) => {
+    if (!query) return 0;
+    const title = normalizeSystemName(item.finding || "");
+    const id = normalizeSystemName(item.id || "");
+    const description = normalizeSystemName(item.description || "");
+    const recommendation = normalizeSystemName(item.recommendation || item.solution || "");
+    const fullText = getFindingSearchText(item);
+    let score = 0;
+
+    if (title === query) score += 1200;
+    if (title.startsWith(query)) score += 900;
+    if (title.includes(query)) score += 700;
+    if (id === query) score += 650;
+    if (description.includes(query)) score += 520;
+    if (recommendation.includes(query)) score += 360;
+    if (fullText.includes(query)) score += 220;
+
+    queryWords.forEach((word) => {
+      if (!word) return;
+      if (title.includes(word)) score += 45;
+      if (description.includes(word)) score += 28;
+      if (recommendation.includes(word)) score += 18;
+      if (fullText.includes(word)) score += 8;
+    });
+
+    return score;
+  };
+
   const filteredFindings = useMemo(() => {
     const query = normalizeSystemName(searchTerm);
-    return findings.filter((item) => {
-      const area = getFindingField(item, "area");
-      const management = getFindingField(item, "management");
-      const deliveryDate = getFindingField(item, "date");
-      const priority = getFindingField(item, "priority");
-      const status = getFindingField(item, "status");
-      const statusGroup = getFindingStatusGroup(status);
-      const searchable = normalizeSystemName([
-        item.id,
-        management,
-        area,
-        deliveryDate,
-        item.processArea,
-        item.finding,
-        item.description,
-        item.recommendation || item.solution,
-        item.solutionType || item.system,
-        item.deliverableGSE,
-        item.deliverableClient,
-        ...getDeliverableTypeMatches(item),
-        status,
-        statusGroup,
-        priority,
-      ].join(" "));
-      return matchesCurrentFilters(item) && (!query || searchable.includes(query));
-    });
+    const queryWords = query.split(" ").filter(Boolean);
+    const matchesQuery = (item) => {
+      if (!query) return true;
+      const searchText = getFindingSearchText(item);
+      return searchText.includes(query) || queryWords.every((word) => searchText.includes(word));
+    };
+
+    return findings
+      .map((item, index) => ({ item, index, score: getFindingSearchScore(item, query, queryWords) }))
+      .filter(({ item }) => matchesCurrentFilters(item) && matchesQuery(item))
+      .sort((a, b) => {
+        if (query && b.score !== a.score) return b.score - a.score;
+        return a.index - b.index;
+      })
+      .map(({ item }) => item);
   }, [findings, searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
 
   const getFindingUniqueKey = (item = {}, index = 0) => {
@@ -4077,7 +4121,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
 
         <div className="mobileFindingsGrid">
           {filteredFindings.slice(0, mobileFindingsVisible).map((item) => (
-            <MobileFindingCard key={`${item.id}-${item.finding || item.description}`} item={item} />
+            <MobileFindingCard key={`${item.id || "sin-id"}-${item.finding || item.description || item.recommendation || item.solution || "sin-titulo"}-${filteredFindings.indexOf(item)}`} item={item} />
           ))}
         </div>
 
@@ -4216,7 +4260,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
           const recommendation = item.recommendation || item.solution;
           const solutionType = item.solutionType || item.system;
           const link = safeUrl(item.link || item.image);
-          const key = `${item.id}-${item.finding || item.description}`;
+          const key = `${item.id || "sin-id"}-${item.finding || item.description || item.recommendation || item.solution || "sin-titulo"}-${filteredFindings.indexOf(item)}`;
           const isOpen = open === key;
           const status = item.status || "Pendiente";
           const deliveryDate = getFindingField(item, "date");
@@ -7412,6 +7456,7 @@ createRoot(document.getElementById("root")).render(<App />);
 
 
 // HALLAZGOS_V12_FILTROS_FECHAMAX_FINAL
+
 
 
 
