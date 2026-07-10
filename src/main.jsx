@@ -154,6 +154,7 @@ function Sidebar({ view, setView, project }) {
       title: "Seguimiento",
       items: [
         [BarChart3, "Resumen", "resumen"],
+        [CalendarDays, "Calendario", "calendario"],
         [Target, "Ruta del proyecto", "ruta"],
         [BarChart3, "COE", "coe"],
         [Search, "Hallazgos", "hallazgos"],
@@ -1685,6 +1686,195 @@ function ProjectHero({ project, completedText }) {
     </div>
   );
 }
+
+
+function parseCalendarDate(value = "") {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+    const [year, month, day] = raw.slice(0, 10).split("-").map(Number);
+    return new Date(year, month - 1, day);
+  }
+  const match = raw.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if (match) {
+    const day = Number(match[1]);
+    const month = Number(match[2]) - 1;
+    const year = Number(match[3].length === 2 ? `20${match[3]}` : match[3]);
+    return new Date(year, month, day);
+  }
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function parseCalendarHour(value = "") {
+  const raw = String(value || "").toLowerCase();
+  const match = raw.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+  if (!match) return 9;
+  let hour = Number(match[1]);
+  const period = match[3];
+  if (period === "pm" && hour < 12) hour += 12;
+  if (period === "am" && hour === 12) hour = 0;
+  return Math.max(0, Math.min(hour, 23));
+}
+
+function formatCalendarDate(date, options = {}) {
+  return date.toLocaleDateString("es-ES", options);
+}
+
+function sameCalendarDay(a, b) {
+  return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function CalendarView({ meetings = [] }) {
+  const today = new Date();
+  const [mode, setMode] = useState("Semana");
+  const [cursorDate, setCursorDate] = useState(today);
+  const [selectedMeeting, setSelectedMeeting] = useState(null);
+
+  const calendarMeetings = useMemo(() => meetings.map((meeting) => {
+    const date = parseCalendarDate(meeting.date);
+    return { ...meeting, dateObject: date, hour: parseCalendarHour(meeting.time) };
+  }).filter((meeting) => meeting.dateObject), [meetings]);
+
+  const monthStart = new Date(cursorDate.getFullYear(), cursorDate.getMonth(), 1);
+  const monthLabel = formatCalendarDate(cursorDate, { month: "long", year: "numeric" });
+  const weekStart = new Date(cursorDate);
+  weekStart.setDate(cursorDate.getDate() - ((cursorDate.getDay() + 6) % 7));
+  const visibleDays = mode === "DÃ­a"
+    ? [new Date(cursorDate)]
+    : Array.from({ length: mode === "Semana" ? 7 : 35 }, (_, index) => {
+        const base = mode === "Semana" ? new Date(weekStart) : new Date(monthStart.getFullYear(), monthStart.getMonth(), 1 - ((monthStart.getDay() + 6) % 7));
+        base.setDate(base.getDate() + index);
+        return base;
+      });
+
+  const meetingsByStatus = calendarMeetings.reduce((acc, meeting) => {
+    const key = meeting.status || "Sin estado";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const maxStatus = Math.max(1, ...Object.values(meetingsByStatus));
+  const hours = Array.from({ length: 12 }, (_, index) => index + 8);
+
+  const moveCursor = (direction) => {
+    const next = new Date(cursorDate);
+    next.setDate(next.getDate() + direction * (mode === "DÃ­a" ? 1 : mode === "Semana" ? 7 : 30));
+    setCursorDate(next);
+  };
+
+  return (
+    <section className="calendarPage">
+      <aside className="calendarSidebarPanel">
+        <div className="calendarTitle"><CalendarDays size={24} /><h2>Calendario</h2></div>
+        <div className="miniCalendarCard">
+          <div className="miniCalendarHeader">{monthLabel}</div>
+          <div className="miniCalendarGrid miniCalendarWeekdays">{["L", "M", "M", "J", "V", "S", "D"].map((day) => <span key={day}>{day}</span>)}</div>
+          <div className="miniCalendarGrid">
+            {Array.from({ length: 35 }, (_, index) => {
+              const first = new Date(monthStart.getFullYear(), monthStart.getMonth(), 1 - ((monthStart.getDay() + 6) % 7));
+              first.setDate(first.getDate() + index);
+              const hasMeeting = calendarMeetings.some((meeting) => sameCalendarDay(meeting.dateObject, first));
+              return (
+                <button key={first.toISOString()} className={`${sameCalendarDay(first, cursorDate) ? "active" : ""} ${hasMeeting ? "hasMeeting" : ""}`} onClick={() => setCursorDate(first)}>
+                  {first.getDate()}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <button className="calendarSearchButton"><Search size={16} /> Buscar reuniÃ³n</button>
+        <div className="calendarMetricCard">
+          <span>Reuniones totales</span>
+          <strong><ChevronRight size={22} />{calendarMeetings.length}</strong>
+        </div>
+        <div className="calendarStatusCard">
+          <h3>Estado reuniones</h3>
+          {Object.entries(meetingsByStatus).map(([status, count]) => (
+            <div className="calendarStatusRow" key={status}>
+              <span>{status}</span>
+              <div><i style={{ width: `${(count / maxStatus) * 100}%` }} /></div>
+              <b>{count}</b>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <div className="calendarMainPanel">
+        <div className="calendarToolbar">
+          <button onClick={() => setCursorDate(new Date())}>Hoy</button>
+          <button onClick={() => moveCursor(-1)}><ChevronLeft size={16} /></button>
+          <button onClick={() => moveCursor(1)}><ChevronRight size={16} /></button>
+          <h3>{mode === "DÃ­a" ? formatCalendarDate(cursorDate, { day: "numeric", month: "long", year: "numeric" }) : monthLabel}</h3>
+          <select value={mode} onChange={(event) => setMode(event.target.value)}>
+            <option>DÃ­a</option>
+            <option>Semana</option>
+            <option>Mes</option>
+          </select>
+        </div>
+
+        {mode === "Mes" ? (
+          <div className="calendarMonthGrid">
+            {visibleDays.map((day) => (
+              <div className={`calendarMonthCell ${day.getMonth() !== cursorDate.getMonth() ? "muted" : ""}`} key={day.toISOString()}>
+                <button onClick={() => { setCursorDate(day); setMode("DÃ­a"); }}>{day.getDate()}</button>
+                {calendarMeetings.filter((meeting) => sameCalendarDay(meeting.dateObject, day)).slice(0, 3).map((meeting) => (
+                  <button className="calendarMonthEvent" key={meeting.id} onClick={() => setSelectedMeeting(meeting)}>{meeting.title || "ReuniÃ³n"}</button>
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="calendarWeekGrid" style={{ gridTemplateColumns: `72px repeat(${visibleDays.length}, minmax(130px, 1fr))` }}>
+            <div className="calendarCorner">GMT-05</div>
+            {visibleDays.map((day) => (
+              <div className="calendarDayHeader" key={day.toISOString()}>
+                <span>{formatCalendarDate(day, { weekday: "short" })}</span>
+                <strong className={sameCalendarDay(day, today) ? "today" : ""}>{day.getDate()}</strong>
+              </div>
+            ))}
+            {hours.map((hour) => (
+              <Fragment key={hour}>
+                <div className="calendarHour">{hour > 12 ? hour - 12 : hour} {hour >= 12 ? "PM" : "AM"}</div>
+                {visibleDays.map((day) => {
+                  const events = calendarMeetings.filter((meeting) => sameCalendarDay(meeting.dateObject, day) && meeting.hour === hour);
+                  return (
+                    <div className="calendarSlot" key={`${day.toISOString()}-${hour}`}>
+                      {events.map((meeting) => (
+                        <button className="calendarEvent" key={meeting.id} onClick={() => setSelectedMeeting(meeting)}>
+                          <strong>{meeting.title || "ReuniÃ³n"}</strong>
+                          <span>{meeting.time || "Hora por definir"}</span>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })}
+              </Fragment>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {selectedMeeting && (
+        <div className="calendarModalBackdrop" onClick={() => setSelectedMeeting(null)}>
+          <article className="calendarMeetingModal" onClick={(event) => event.stopPropagation()}>
+            <button className="calendarModalClose" onClick={() => setSelectedMeeting(null)}><X size={16} /></button>
+            <Badge status={selectedMeeting.status}>{selectedMeeting.status || "Sin estado"}</Badge>
+            <h3>{selectedMeeting.title || "Reunión"}</h3>
+            <p>{formatCalendarDate(selectedMeeting.dateObject, { weekday: "long", day: "numeric", month: "long", year: "numeric" })} · {selectedMeeting.time || "Hora por definir"}</p>
+            {selectedMeeting.description && <div className="calendarModalBlock"><b>Descripción</b><span>{selectedMeeting.description}</span></div>}
+            {selectedMeeting.invited && <div className="calendarModalBlock"><b>Invitados</b><span>{selectedMeeting.invited}</span></div>}
+            {selectedMeeting.observation && <div className="calendarModalBlock"><b>Observación</b><span>{selectedMeeting.observation}</span></div>}
+            <div className="calendarModalLinks">
+              {selectedMeeting.link && <a href={safeUrl(selectedMeeting.link)} target="_blank" rel="noreferrer">Abrir reunión <ExternalLink size={15} /></a>}
+              {selectedMeeting.minutesLink && <a href={safeUrl(selectedMeeting.minutesLink)} target="_blank" rel="noreferrer">Acta de reunión <ExternalLink size={15} /></a>}
+            </div>
+          </article>
+        </div>
+      )}
+    </section>
+  );
+}
+
 
 function Timeline({ milestones, deliverables = [], detailed = false, setView, setSelectedDeliverable, selectedHito = "", setSelectedHito }) {
   const [openRouteSections, setOpenRouteSections] = useState({});
@@ -7210,6 +7400,7 @@ function App() {
             {[
               ["portal", "Portal"],
               ["resumen", "Resumen"],
+              ["calendario", "Calendario"],
               ["ruta", "Ruta"],
               ["procesos", "Procesos"],
               ["coe", "COE"],
@@ -7267,6 +7458,8 @@ function App() {
               setView={navigate}
             />
           )}
+
+          {view === "calendario" && <CalendarView meetings={meetings} />}
 
           {view === "ruta" && (
             <>
