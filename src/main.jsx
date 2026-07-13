@@ -148,6 +148,7 @@ function Logo({ src, fallback, className = "" }) {
 }
 
 function Sidebar({ view, setView, project }) {
+  const [sidebarTooltip, setSidebarTooltip] = useState(null);
   const groups = [
     { title: "", items: [[Sparkles, "Portal del proyecto", "portal"]] },
     {
@@ -178,50 +179,90 @@ function Sidebar({ view, setView, project }) {
   const sidebarLogoHorizontal = getDrivePreviewUrl(project.logoGSEhorizontal || "");
   const contact = project.contactName || project.generalManager || project.responsibleClient;
   const role = project.contactRole || "cargo de empresa";
+  const handleSidebarWheel = (event) => {
+    if (window.innerWidth <= 760) return;
+    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+
+    const content = document.querySelector(".main .content");
+    if (!content) return;
+
+    event.preventDefault();
+    content.scrollBy({ top: event.deltaY, behavior: "auto" });
+  };
+  const showSidebarTooltip = (event, label) => {
+    if (window.innerWidth <= 760) return;
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    setSidebarTooltip({
+      label,
+      top: rect.top + rect.height / 2,
+      left: rect.right + 12,
+    });
+  };
+  const hideSidebarTooltip = () => setSidebarTooltip(null);
 
   return (
-    <aside className="sidebar premiumSidebar">
-      <div className="brand premiumBrand sidebarHorizontalBrand">
-        {sidebarLogoHorizontal ? (
-          <img src={sidebarLogoHorizontal} alt="GSE&CO" className="sidebarHorizontalLogo" />
-        ) : null}
-      </div>
-
-      <div className="clientProfile">
-        <div className="clientProfileTop">
-          <Logo src={project.logoClient} fallback={company?.slice(0, 2) || "CL"} className="clientMiniLogo" />
-          <div>
-            <span>Cliente</span>
-            <strong>{company}</strong>
-          </div>
+    <>
+      <aside className="sidebar premiumSidebar" onWheel={handleSidebarWheel} onMouseLeave={hideSidebarTooltip}>
+        <div className="brand premiumBrand sidebarHorizontalBrand">
+          {sidebarLogoHorizontal ? (
+            <img src={sidebarLogoHorizontal} alt="GSE&CO" className="sidebarHorizontalLogo" />
+          ) : null}
         </div>
 
-        <div className="clientProfileLine">
-          <Users size={15} />
-          <div>
-            <span>{contact || "Sin contacto definido"}</span>
-            <small>{role}</small>
+        <div className="clientProfile">
+          <div className="clientProfileTop">
+            <Logo src={project.logoClient} fallback={company?.slice(0, 2) || "CL"} className="clientMiniLogo" />
+            <div>
+              <span>Cliente</span>
+              <strong>{company}</strong>
+            </div>
           </div>
+
+          <div className="clientProfileLine">
+            <Users size={15} />
+            <div>
+              <span>{contact || "Sin contacto definido"}</span>
+              <small>{role}</small>
+            </div>
+          </div>
+
         </div>
 
-      </div>
+        <nav className="nav premiumNav">
+          {groups.map((group, groupIndex) => (
+            <div className="navGroup" key={`${group.title}-${groupIndex}`}>
+              {group.title && <span className="navGroupTitle">{group.title}</span>}
+              {group.items.map(([Icon, label, value]) => (
+                <button
+                  key={label}
+                  className={`navItem ${view === value ? "active" : ""}`}
+                  onClick={() => setView(value)}
+                  onMouseEnter={(event) => showSidebarTooltip(event, label)}
+                  onFocus={(event) => showSidebarTooltip(event, label)}
+                  onMouseLeave={hideSidebarTooltip}
+                  onBlur={hideSidebarTooltip}
+                  aria-label={label}
+                >
+                  <Icon size={17} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          ))}
+        </nav>
 
-      <nav className="nav premiumNav">
-        {groups.map((group, groupIndex) => (
-          <div className="navGroup" key={`${group.title}-${groupIndex}`}>
-            {group.title && <span className="navGroupTitle">{group.title}</span>}
-            {group.items.map(([Icon, label, value]) => (
-              <button key={label} className={`navItem ${view === value ? "active" : ""}`} onClick={() => setView(value)}>
-                <Icon size={17} />
-                {label}
-              </button>
-            ))}
-          </div>
-        ))}
-      </nav>
-
-      <div className="sidebarVersion">V 0.1</div>
-    </aside>
+        <div className="sidebarVersion">V 0.1</div>
+      </aside>
+      {sidebarTooltip ? (
+        <div
+          className="collapsedSidebarTooltip"
+          style={{ top: `${sidebarTooltip.top}px`, left: `${sidebarTooltip.left}px` }}
+        >
+          {sidebarTooltip.label}
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -1725,22 +1766,50 @@ function sameCalendarDay(a, b) {
   return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
+function normalizeCalendarTerm(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 function CalendarView({ meetings = [] }) {
   const today = new Date();
   const [mode, setMode] = useState("Semana");
   const [cursorDate, setCursorDate] = useState(today);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
+  const [calendarSearch, setCalendarSearch] = useState("");
 
   const calendarMeetings = useMemo(() => meetings.map((meeting) => {
     const date = parseCalendarDate(meeting.date);
     return { ...meeting, dateObject: date, hour: parseCalendarHour(meeting.time) };
   }).filter((meeting) => meeting.dateObject), [meetings]);
 
+  const visibleMeetings = useMemo(() => {
+    const query = normalizeCalendarTerm(calendarSearch);
+    if (!query) return calendarMeetings;
+    return calendarMeetings.filter((meeting) => normalizeCalendarTerm([
+      meeting.title,
+      meeting.description,
+      meeting.status,
+      meeting.observation,
+      meeting.invited,
+    ].join(" ")).includes(query));
+  }, [calendarMeetings, calendarSearch]);
+
+  useEffect(() => {
+    const query = normalizeCalendarTerm(calendarSearch);
+    const firstMatch = visibleMeetings[0];
+    if (query && firstMatch?.dateObject && !sameCalendarDay(firstMatch.dateObject, cursorDate)) {
+      setCursorDate(new Date(firstMatch.dateObject));
+    }
+  }, [calendarSearch, visibleMeetings, cursorDate]);
+
   const monthStart = new Date(cursorDate.getFullYear(), cursorDate.getMonth(), 1);
   const monthLabel = formatCalendarDate(cursorDate, { month: "long", year: "numeric" });
   const weekStart = new Date(cursorDate);
   weekStart.setDate(cursorDate.getDate() - ((cursorDate.getDay() + 6) % 7));
-  const visibleDays = mode === "DÃ­a"
+  const visibleDays = mode === "Día"
     ? [new Date(cursorDate)]
     : Array.from({ length: mode === "Semana" ? 7 : 35 }, (_, index) => {
         const base = mode === "Semana" ? new Date(weekStart) : new Date(monthStart.getFullYear(), monthStart.getMonth(), 1 - ((monthStart.getDay() + 6) % 7));
@@ -1748,7 +1817,7 @@ function CalendarView({ meetings = [] }) {
         return base;
       });
 
-  const meetingsByStatus = calendarMeetings.reduce((acc, meeting) => {
+  const meetingsByStatus = visibleMeetings.reduce((acc, meeting) => {
     const key = meeting.status || "Sin estado";
     acc[key] = (acc[key] || 0) + 1;
     return acc;
@@ -1758,7 +1827,7 @@ function CalendarView({ meetings = [] }) {
 
   const moveCursor = (direction) => {
     const next = new Date(cursorDate);
-    next.setDate(next.getDate() + direction * (mode === "DÃ­a" ? 1 : mode === "Semana" ? 7 : 30));
+    next.setDate(next.getDate() + direction * (mode === "Día" ? 1 : mode === "Semana" ? 7 : 30));
     setCursorDate(next);
   };
 
@@ -1782,10 +1851,17 @@ function CalendarView({ meetings = [] }) {
             })}
           </div>
         </div>
-        <button className="calendarSearchButton"><Search size={16} /> Buscar reuniÃ³n</button>
+        <label className="calendarSearchField">
+          <Search size={16} />
+          <input
+            value={calendarSearch}
+            onChange={(event) => setCalendarSearch(event.target.value)}
+            placeholder="Buscar reunión"
+          />
+        </label>
         <div className="calendarMetricCard">
           <span>Reuniones totales</span>
-          <strong><ChevronRight size={22} />{calendarMeetings.length}</strong>
+          <strong><ChevronRight size={22} />{visibleMeetings.length}</strong>
         </div>
         <div className="calendarStatusCard">
           <h3>Estado reuniones</h3>
@@ -1804,9 +1880,9 @@ function CalendarView({ meetings = [] }) {
           <button onClick={() => setCursorDate(new Date())}>Hoy</button>
           <button onClick={() => moveCursor(-1)}><ChevronLeft size={16} /></button>
           <button onClick={() => moveCursor(1)}><ChevronRight size={16} /></button>
-          <h3>{mode === "DÃ­a" ? formatCalendarDate(cursorDate, { day: "numeric", month: "long", year: "numeric" }) : monthLabel}</h3>
+          <h3>{mode === "Día" ? formatCalendarDate(cursorDate, { day: "numeric", month: "long", year: "numeric" }) : monthLabel}</h3>
           <select value={mode} onChange={(event) => setMode(event.target.value)}>
-            <option>DÃ­a</option>
+            <option>Día</option>
             <option>Semana</option>
             <option>Mes</option>
           </select>
@@ -1816,9 +1892,9 @@ function CalendarView({ meetings = [] }) {
           <div className="calendarMonthGrid">
             {visibleDays.map((day) => (
               <div className={`calendarMonthCell ${day.getMonth() !== cursorDate.getMonth() ? "muted" : ""}`} key={day.toISOString()}>
-                <button onClick={() => { setCursorDate(day); setMode("DÃ­a"); }}>{day.getDate()}</button>
-                {calendarMeetings.filter((meeting) => sameCalendarDay(meeting.dateObject, day)).slice(0, 3).map((meeting) => (
-                  <button className="calendarMonthEvent" key={meeting.id} onClick={() => setSelectedMeeting(meeting)}>{meeting.title || "ReuniÃ³n"}</button>
+                <button onClick={() => { setCursorDate(day); setMode("Día"); }}>{day.getDate()}</button>
+                {visibleMeetings.filter((meeting) => sameCalendarDay(meeting.dateObject, day)).slice(0, 3).map((meeting) => (
+                  <button className="calendarMonthEvent" key={meeting.id} onClick={() => setSelectedMeeting(meeting)}>{meeting.title || "Reunión"}</button>
                 ))}
               </div>
             ))}
@@ -1836,12 +1912,12 @@ function CalendarView({ meetings = [] }) {
               <Fragment key={hour}>
                 <div className="calendarHour">{hour > 12 ? hour - 12 : hour} {hour >= 12 ? "PM" : "AM"}</div>
                 {visibleDays.map((day) => {
-                  const events = calendarMeetings.filter((meeting) => sameCalendarDay(meeting.dateObject, day) && meeting.hour === hour);
+                  const events = visibleMeetings.filter((meeting) => sameCalendarDay(meeting.dateObject, day) && meeting.hour === hour);
                   return (
                     <div className="calendarSlot" key={`${day.toISOString()}-${hour}`}>
                       {events.map((meeting) => (
                         <button className="calendarEvent" key={meeting.id} onClick={() => setSelectedMeeting(meeting)}>
-                          <strong>{meeting.title || "ReuniÃ³n"}</strong>
+                          <strong>{meeting.title || "Reunión"}</strong>
                           <span>{meeting.time || "Hora por definir"}</span>
                         </button>
                       ))}
@@ -1861,11 +1937,16 @@ function CalendarView({ meetings = [] }) {
             <Badge status={selectedMeeting.status}>{selectedMeeting.status || "Sin estado"}</Badge>
             <h3>{selectedMeeting.title || "Reunión"}</h3>
             <p>{formatCalendarDate(selectedMeeting.dateObject, { weekday: "long", day: "numeric", month: "long", year: "numeric" })} · {selectedMeeting.time || "Hora por definir"}</p>
+            <div className="calendarModalDetails">
+              <div><b>Fecha</b><span>{selectedMeeting.date || "Por definir"}</span></div>
+              <div><b>Hora</b><span>{selectedMeeting.time || "Por definir"}</span></div>
+              <div><b>Estado</b><span>{selectedMeeting.status || "Sin estado"}</span></div>
+            </div>
             {selectedMeeting.description && <div className="calendarModalBlock"><b>Descripción</b><span>{selectedMeeting.description}</span></div>}
             {selectedMeeting.invited && <div className="calendarModalBlock"><b>Invitados</b><span>{selectedMeeting.invited}</span></div>}
             {selectedMeeting.observation && <div className="calendarModalBlock"><b>Observación</b><span>{selectedMeeting.observation}</span></div>}
             <div className="calendarModalLinks">
-              {selectedMeeting.link && <a href={safeUrl(selectedMeeting.link)} target="_blank" rel="noreferrer">Abrir reunión <ExternalLink size={15} /></a>}
+              {selectedMeeting.link && <a href={safeUrl(selectedMeeting.link)} target="_blank" rel="noreferrer">Entrar a la reunión <ExternalLink size={15} /></a>}
               {selectedMeeting.minutesLink && <a href={safeUrl(selectedMeeting.minutesLink)} target="_blank" rel="noreferrer">Acta de reunión <ExternalLink size={15} /></a>}
             </div>
           </article>

@@ -543,13 +543,16 @@ function mapUpdates(rows) {
 
 function mapMeetings(rows) {
   return rows.map((row, index) => ({
-    id: getRowValue(row, ["ID", "Id", "Codigo", "CÃ³digo"]) || String(index + 1),
-    date: getRowValue(row, ["Fecha", "FechaReunion", "Fecha ReuniÃ³n", "Fecha Reunion"]),
-    time: getRowValue(row, ["Hora", "HoraReunion", "Hora ReuniÃ³n", "Hora Reunion"]),
-    title: getRowValue(row, ["Titulo", "TÃ­tulo", "Title", "Nombre", "Reunion", "ReuniÃ³n"]),
+    id: getRowValue(row, ["ID", "Id", "Codigo", "Código"]) || String(index + 1),
+    date: getRowValue(row, ["Fecha", "FechaReunion", "Fecha Reunión", "Fecha Reunion"]),
+    time: getRowValue(row, ["Hora", "HoraReunion", "Hora Reunión", "Hora Reunion"]),
+    title: getRowValue(row, ["Titulo", "Título", "Title", "Nombre", "Reunion", "Reunión", "Hora Titulo", "HoraTitulo"]),
+    description: getRowValue(row, ["Descripcion", "Descripción", "Description", "Detalle"]),
     status: getRowValue(row, ["Estado", "Status"]),
     link: getRowValue(row, ["Link", "LinkMeet", "Link Meet", "URL", "Enlace"]),
-    observation: getRowValue(row, ["Observacion", "ObservaciÃ³n", "Notas", "Comentario"]),
+    observation: getRowValue(row, ["Observacion", "Observación", "Notas", "Comentario", "Observaciones"]),
+    invited: getRowValue(row, ["Invitados", "Invitado", "Asistentes", "Participantes", "Correos", "Correos invitados", "Correo invitados", "Emails", "Equipo"]),
+    minutesLink: getRowValue(row, ["linkActa", "LinkActa", "Link Acta", "Acta", "Acta Reunion", "Acta Reunión", "LinkActaReunion", "Link Acta Reunion", "Link Acta Reunión", "EnlaceActa", "Enlace Acta"]),
   })).filter((x) => x.title || x.date || x.time || x.link);
 }
 
