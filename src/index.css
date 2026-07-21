@@ -7275,7 +7275,7 @@ div:has(> table.coeMatrixTable)::-webkit-scrollbar-track {
 }
 
 .processTableCard > .processTableWrap > table.processTable {
-  min-width: 1450px !important;
+  min-width: 2130px !important;
 }
 
 .coeTableCard > .processTableWrap > table.coeTable,
@@ -7880,10 +7880,11 @@ table.coeMatrixTable {
 .processTable:not(.coeTable) th:nth-child(4), .processTable:not(.coeTable) td:nth-child(4) { width: 280px !important; min-width: 280px !important; max-width: 280px !important; }
 .processTable:not(.coeTable) th:nth-child(5), .processTable:not(.coeTable) td:nth-child(5) { width: 160px !important; min-width: 160px !important; max-width: 160px !important; }
 .processTable:not(.coeTable) th:nth-child(6), .processTable:not(.coeTable) td:nth-child(6) { width: 300px !important; min-width: 300px !important; max-width: 300px !important; }
-.processTable:not(.coeTable) th:nth-child(7), .processTable:not(.coeTable) td:nth-child(7) { width: 360px !important; min-width: 360px !important; max-width: 360px !important; }
-.processTable:not(.coeTable) th:nth-child(8), .processTable:not(.coeTable) td:nth-child(8) { width: 160px !important; min-width: 160px !important; max-width: 160px !important; text-align: center !important; }
-.processTable:not(.coeTable) th:nth-child(9), .processTable:not(.coeTable) td:nth-child(9) { width: 160px !important; min-width: 160px !important; max-width: 160px !important; text-align: center !important; }
-.processTable:not(.coeTable) th:nth-child(10), .processTable:not(.coeTable) td:nth-child(10) { width: 160px !important; min-width: 160px !important; max-width: 160px !important; text-align: center !important; }
+.processTable:not(.coeTable) th:nth-child(7), .processTable:not(.coeTable) td:nth-child(7) { width: 190px !important; min-width: 190px !important; max-width: 190px !important; }
+.processTable:not(.coeTable) th:nth-child(8), .processTable:not(.coeTable) td:nth-child(8) { width: 360px !important; min-width: 360px !important; max-width: 360px !important; }
+.processTable:not(.coeTable) th:nth-child(9), .processTable:not(.coeTable) td:nth-child(9) { width: 150px !important; min-width: 150px !important; max-width: 150px !important; text-align: center !important; }
+.processTable:not(.coeTable) th:nth-child(10), .processTable:not(.coeTable) td:nth-child(10) { width: 150px !important; min-width: 150px !important; max-width: 150px !important; text-align: center !important; }
+.processTable:not(.coeTable) th:nth-child(11), .processTable:not(.coeTable) td:nth-child(11) { width: 150px !important; min-width: 150px !important; max-width: 150px !important; text-align: center !important; }
 
 /* COE: anchos fijos para campos */
 .coeTable th:nth-child(1), .coeTable td:nth-child(1) { width: 150px !important; min-width: 150px !important; max-width: 150px !important; }
@@ -21730,7 +21731,7 @@ body {
 
   .mobileProcessMatrixWrap table {
     width: 100% !important;
-    min-width: 430px !important;
+    min-width: 560px !important;
     border-collapse: collapse !important;
     table-layout: fixed !important;
   }
@@ -21770,14 +21771,20 @@ body {
 
   .mobileProcessMatrixWrap th:nth-child(3),
   .mobileProcessMatrixWrap td:nth-child(3) {
-    width: 150px !important;
+    width: 96px !important;
     text-align: center !important;
   }
 
   .mobileProcessMatrixWrap th:nth-child(4),
-  .mobileProcessMatrixWrap td:nth-child(4),
+  .mobileProcessMatrixWrap td:nth-child(4) {
+    width: 150px !important;
+    text-align: center !important;
+  }
+
   .mobileProcessMatrixWrap th:nth-child(5),
-  .mobileProcessMatrixWrap td:nth-child(5) {
+  .mobileProcessMatrixWrap td:nth-child(5),
+  .mobileProcessMatrixWrap th:nth-child(6),
+  .mobileProcessMatrixWrap td:nth-child(6) {
     width: 58px !important;
     text-align: center !important;
   }

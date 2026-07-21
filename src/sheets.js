@@ -640,6 +640,7 @@ function mapProcessesAsIs(rows) {
     processCode: getRowValue(row, ["CodigoProceso", "CÃ³digo Proceso", "CÃ³d. Proceso", "Cod Proceso", "Codigo Proceso"]),
     processName: getRowValue(row, ["NombreProceso", "Nombre del Proceso", "Nombre Proceso", "Proceso"]),
     description: getRowValue(row, ["DescripcionProceso", "DescripciÃ³n del Proceso", "Descripcion del Proceso", "DescripciÃ³n Proceso", "Descripcion Proceso", "Descripcion", "DescripciÃ³n"]),
+    responsible: getRowValue(row, ["Responsable", "ResponsableValidacion", "Responsable Validacion", "Responsable Validación", "Responsable de validación", "Responsable de Validacion"]),
     link: getRowValue(row, ["Link", "link", "URL", "Url", "Enlace", "Imagen", "ImagenPreview", "Imagen Preview", "VistaPrevia", "Vista Previa", "LinkImagen", "Link Imagen"]),
     imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
     technicalSheet: getRowValue(row, ["Ficha", "FichaTecnica", "Ficha TÃ©cnica", "Ficha Tecnica", "FichaTecnicaProceso", "Ficha Proceso", "LinkFicha", "Link Ficha", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),

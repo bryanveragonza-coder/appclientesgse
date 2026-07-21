@@ -2907,14 +2907,14 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
   const typeOptions = useMemo(() => allProcesses.map((item) => item.type).filter(Boolean), [allProcesses]);
   const macroOptions = useMemo(() => allProcesses.map((item) => item.macroName).filter(Boolean), [allProcesses]);
   const areaOptions = useMemo(() => processesToBe.map((item) => item.area).filter(Boolean), [processesToBe]);
-  const responsibleOptions = useMemo(() => processesToBe.map((item) => item.responsible).filter(Boolean), [processesToBe]);
+  const responsibleOptions = useMemo(() => allProcesses.map((item) => item.responsible).filter(Boolean), [allProcesses]);
 
   const filterProcess = (item, source) => {
     const query = normalizeSystemName(searchTerm);
     const matchesType = typeFilter === "Todos" || item.type === typeFilter;
     const matchesMacro = macroFilter === "Todos" || item.macroName === macroFilter;
     const matchesArea = source === "ASIS" || areaFilter === "Todos" || item.area === areaFilter;
-    const matchesResponsible = source === "ASIS" || responsibleFilter === "Todos" || item.responsible === responsibleFilter;
+    const matchesResponsible = responsibleFilter === "Todos" || item.responsible === responsibleFilter;
     const searchable = normalizeSystemName([
       item.id,
       item.type,
@@ -3088,6 +3088,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
               <th>Macroproceso</th>
               <th>Cód. Proceso</th>
               <th>Proceso</th>
+              <th>Responsable</th>
               {variant === "asis" ? <th>Descripción</th> : <th>Cambios / Observaciones</th>}
               {variant === "tobe" && <th>Status</th>}
               <th>Imagen</th>
@@ -3103,6 +3104,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
                 <td>{item.macroName}</td>
                 <td>{item.processCode}</td>
                 <td><strong>{item.processName}</strong></td>
+                <td>{item.responsible || "Por definir"}</td>
                 <td>{variant === "asis" ? item.description : item.changes}</td>
                 {variant === "tobe" && <td><Badge status={item.status}>{item.status || "Sin status"}</Badge></td>}
                 <td className="imageProcessCell">
@@ -3137,6 +3139,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
             <tr>
               <th>CÓDIGO</th>
               <th>Proceso</th>
+              <th>Responsable</th>
               <th>{variant === "asis" ? "Descripción" : "Cambios"}</th>
               <th>Imagen</th>
               <th>Ficha</th>
@@ -3150,6 +3153,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
                 <tr key={`mobile-${variant}-${item.id}-${item.processCode}-${index}`}>
                   <td>{item.processCode || item.id}</td>
                   <td>{item.processName || "Por definir"}</td>
+                  <td>{item.responsible || "Por definir"}</td>
                   <td>{variant === "asis" ? item.description : item.changes}</td>
                   <td><ProcessAssetCell item={item} variant={variant} field="image" url={imageUrl} /></td>
                   <td><ProcessAssetCell item={item} variant={variant} field="sheet" url={sheetUrl} /></td>
@@ -3199,6 +3203,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
         <div className="mobileProcessFilters">
           <FilterSelect label="Tipo de proceso" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
           <FilterSelect label="Macroproceso" value={macroFilter} onChange={setMacroFilter} options={macroOptions} />
+          <FilterSelect label="Responsable" value={responsibleFilter} onChange={setResponsibleFilter} options={responsibleOptions} />
         </div>
 
         <MobileProcessTable
@@ -3318,7 +3323,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar por código, proceso, macroproceso, descripción o cambios"
+              placeholder="Buscar por código, proceso, macroproceso, responsable, descripción o cambios"
             />
           </div>
         </label>
