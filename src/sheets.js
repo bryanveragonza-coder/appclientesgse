@@ -138,15 +138,16 @@ function getSpreadsheetId(rawValue) {
   return { id: raw, type: "editable" };
 }
 
-function csvUrl(sheetName) {
-  const { id, type } = getSpreadsheetId(getActiveSpreadsheetId());
-  const encodedSheet = encodeURIComponent(sheetName);
+function csvUrl(sheetName, spreadsheetId = getActiveSpreadsheetId()) {
+  const { id, type } = getSpreadsheetId(spreadsheetId);
+  const encodedSheet = encodeURIComponent(sheetName || "");
+  const sheetQuery = encodedSheet ? `&sheet=${encodedSheet}` : "";
 
   if (type === "published") {
-    return `https://docs.google.com/spreadsheets/d/e/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodedSheet}`;
+    return `https://docs.google.com/spreadsheets/d/e/${id}/gviz/tq?tqx=out:csv&headers=1${sheetQuery}`;
   }
 
-  return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodedSheet}`;
+  return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1${sheetQuery}`;
 }
 
 function parseCsvRows(csvText) {
@@ -205,8 +206,8 @@ function rowsToObjects(rows) {
   });
 }
 
-async function fetchCsvRows(sheetName, required = true) {
-  const url = csvUrl(sheetName);
+async function fetchCsvRows(sheetName, required = true, spreadsheetId) {
+  const url = csvUrl(sheetName, spreadsheetId);
   const response = await fetch(url, { cache: "no-store" });
 
   if (!response.ok) {
@@ -224,17 +225,89 @@ async function fetchCsvRows(sheetName, required = true) {
   return parseCsvRows(text);
 }
 
-async function fetchCsvSheet(sheetName, required = true) {
-  const rows = await fetchCsvRows(sheetName, required);
+async function fetchCsvSheet(sheetName, required = true, spreadsheetId) {
+  const rows = await fetchCsvRows(sheetName, required, spreadsheetId);
   return rowsToObjects(rows);
 }
 
-async function fetchFirstAvailableSheet(sheetNames = []) {
+async function fetchFirstAvailableSheet(sheetNames = [], spreadsheetId) {
   for (const sheetName of sheetNames) {
-    const rows = await fetchCsvSheet(sheetName, false);
+    const rows = await fetchCsvSheet(sheetName, false, spreadsheetId);
     if (rows.length) return rows;
   }
   return [];
+}
+
+function mapLoginMasterClients(rows) {
+  const bySheet = new Map();
+
+  rows.forEach((row, index) => {
+    const rawSheet = getRowValue(row, [
+      "sheetId", "SheetId", "ID Sheet", "Id Sheet", "SpreadsheetId", "Spreadsheet ID",
+      "GoogleSheetId", "Google Sheet ID", "Link RIV", "LinkRIV", "RIV", "URL RIV",
+      "Sheet", "Google Sheet", "GoogleSheet", "Link", "URL"
+    ]);
+    const sheetId = getSpreadsheetId(rawSheet).id;
+    if (!sheetId) return;
+
+    const client = getRowValue(row, [
+      "Cliente", "EmpresaCliente", "Empresa Cliente", "Nombre Cliente", "Cliente RIV",
+      "Empresa", "Compañía", "Compania", "NombreEmpresa", "Nombre Empresa"
+    ]);
+    const logoClient = getRowValue(row, [
+      "LogoCliente", "Logo Cliente", "Logo", "LogoEmpresa", "Logo Empresa",
+      "ImagenCliente", "Imagen Cliente"
+    ]);
+    const manager = getRowValue(row, [
+      "ResponsableGSE", "Responsable GSE", "Responsable", "Consultor", "LiderGSE",
+      "Líder GSE", "Lider", "Líder"
+    ]);
+    const service = getRowValue(row, ["Proyecto", "Servicio", "Programa", "Producto"]);
+    const status = getRowValue(row, ["Estado", "EstadoGeneral", "Estado General", "Status"]);
+
+    if (!bySheet.has(sheetId)) {
+      bySheet.set(sheetId, {
+        id: `master-${sheetId}`,
+        source: "master",
+        rowNumber: index + 2,
+        name: client || "Cliente GSE",
+        sheetId,
+        logoClient,
+        manager,
+        service,
+        status,
+      });
+      return;
+    }
+
+    const current = bySheet.get(sheetId);
+    bySheet.set(sheetId, {
+      ...current,
+      name: current.name || client,
+      logoClient: current.logoClient || logoClient,
+      manager: current.manager || manager,
+      service: current.service || service,
+      status: current.status || status,
+    });
+  });
+
+  return Array.from(bySheet.values()).sort((a, b) => a.name.localeCompare(b.name, "es"));
+}
+
+export async function loadLoginMasterClients(spreadsheetId) {
+  const rows = await fetchFirstAvailableSheet([
+    "",
+    "Login",
+    "Usuarios",
+    "Clientes",
+    "Accesos",
+    "Base",
+    "Maestro",
+    "RIV",
+    "Proyectos",
+  ], spreadsheetId);
+
+  return mapLoginMasterClients(rows);
 }
 
 function getRowValue(row, possibleKeys) {
@@ -291,6 +364,12 @@ function projectFromRawRows(rows) {
     "proximopasoactual",
     "fechaproximopaso",
     "proximafecha",
+    "fechacobro",
+    "proximocobro",
+    "fechaproximocobro",
+    "estadocobro",
+    "valorcobro",
+    "montocobro",
     "linkmeet",
     "meet",
     "googlemeet",
@@ -396,6 +475,9 @@ function projectFromRawRows(rows) {
     progress: parseNumber(map.avancegeneral || map.avance, demoData.project.progress),
     nextStep: map.proximopaso || map.proximopasoactual || demoData.project.nextStep,
     nextDate: map.fechaproximopaso || map.proximafecha || demoData.project.nextDate,
+    paymentDate: map.fechacobro || map.proximocobro || map.fechaproximocobro || "",
+    paymentStatus: map.estadocobro || "",
+    paymentAmount: map.valorcobro || map.montocobro || "",
     linkMeet: map.linkmeet || map.meet || map.googlemeet || demoData.project.linkMeet,
     responsibleClient: map.responsablecliente || map.responsable || demoData.project.responsibleClient,
     generalManager: map.gerentegeneral || map.dueno || map["dueño"] || map.lidercliente || demoData.project.generalManager,
@@ -521,6 +603,8 @@ function mapDeliverables(rows) {
     milestone: getRowValue(row, ["Hito"]),
     deliverable: getRowValue(row, ["Entregable"]),
     status: getRowValue(row, ["Estado"]),
+    date: getRowValue(row, ["Fecha", "Fecha entrega", "FechaEntrega", "Fecha máxima", "Fecha maxima", "FechaMax", "Fechamax"]),
+    overdue: getRowValue(row, ["Vencido", "EstaVencido", "Está vencido", "Estado vencido", "Vencimiento"]),
     responsible: getRowValue(row, ["Responsable", "responsable", "Owner", "Encargado", "ResponsableEntregable", "Responsable Entregable"]),
     progress: parseNumber(getRowValue(row, ["% Avance", "Avance", "Progreso"])),
     link: getRowValue(row, [
@@ -554,6 +638,33 @@ function mapMeetings(rows) {
     invited: getRowValue(row, ["Invitados", "Invitado", "Asistentes", "Participantes", "Correos", "Correos invitados", "Correo invitados", "Emails", "Equipo"]),
     minutesLink: getRowValue(row, ["linkActa", "LinkActa", "Link Acta", "Acta", "Acta Reunion", "Acta Reunión", "LinkActaReunion", "Link Acta Reunion", "Link Acta Reunión", "EnlaceActa", "Enlace Acta"]),
   })).filter((x) => x.title || x.date || x.time || x.link);
+}
+
+function mapCharges(rows) {
+  return rows.map((row, index) => ({
+    id: getRowValue(row, ["N°", "NÂ°", "No", "N", "Numero", "Número", "ID", "Id"]) || String(index + 1),
+    client: getRowValue(row, ["Cliente"]),
+    project: getRowValue(row, ["Proyecto"]),
+    payment: getRowValue(row, ["Pago", "Cuota", "Concepto"]),
+    originalDueDate: getRowValue(row, ["Fecha vencimiento original", "FechaVencimientoOriginal", "Vencimiento original"]),
+    originalDay: getRowValue(row, ["Día original", "Dia original", "DiaOriginal", "DíaOriginal"]),
+    adjustedDueDate: getRowValue(row, ["Fecha vencimiento ajustada", "FechaVencimientoAjustada", "Vencimiento ajustado", "Vencimiento ajustada"]),
+    adjustedDay: getRowValue(row, ["Día ajustado", "Dia ajustado", "DiaAjustado", "DíaAjustado"]),
+    value: getRowValue(row, ["Valor", "Monto", "Importe"]),
+    paymentStatus: getRowValue(row, ["Estado pago", "EstadoPago", "Estado de pago", "Estado"]),
+    paymentDate: getRowValue(row, ["Fecha pago", "FechaPago", "Fecha de pago"]),
+    daysDue: getRowValue(row, ["Días vencido / por vencer", "Dias vencido / por vencer", "DiasVencidoPorVencer", "Días vencido por vencer"]),
+    cutStatus: getRowValue(row, ["Estado al corte", "EstadoAlCorte", "Estado corte"]),
+    reminder5Days: getRowValue(row, ["Recordatorio 5 días antes", "Recordatorio 5 dias antes", "Recordatorio5DiasAntes", "Recordatorio 5 días"]),
+    reminder24Hours: getRowValue(row, ["Recordatorio 24 horas antes", "Recordatorio24HorasAntes", "Recordatorio 24h antes"]),
+    dueDayMessage: getRowValue(row, ["Mensaje día del vencimiento", "Mensaje dia del vencimiento", "MensajeDiaVencimiento"]),
+    after24HoursMessage: getRowValue(row, ["Mensaje 24 horas después", "Mensaje 24 horas despues", "Mensaje24HorasDespues"]),
+    after72HoursMessage: getRowValue(row, ["Mensaje 72 horas después", "Mensaje 72 horas despues", "Mensaje72HorasDespues"]),
+    callDate: getRowValue(row, ["Fecha llamada", "FechaLlamada"]),
+    messageFollowUp: getRowValue(row, ["Seguimiento de mensajes", "SeguimientoMensajes", "Seguimiento"]),
+    nextAction: getRowValue(row, ["Próxima acción sugerida", "Proxima accion sugerida", "ProximaAccionSugerida", "Próxima acción"]),
+    observation: getRowValue(row, ["Observación", "Observacion", "Observación.", "Observacion.", "Notas", "Comentario"]),
+  })).filter((x) => x.client || x.project || x.payment || x.adjustedDueDate || x.originalDueDate || x.value || x.paymentStatus);
 }
 
 function mapDocuments(rows) {
@@ -704,26 +815,31 @@ function mapCOERows(rows) {
 }
 
 export async function loadSheetData() {
-  if (!getActiveSpreadsheetId()) {
+  return loadSheetDataForSpreadsheetId(getActiveSpreadsheetId());
+}
+
+export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
+  if (!spreadsheetId) {
     throw new Error("Falta iniciar sesiÃ³n o configurar VITE_SPREADSHEET_ID.");
   }
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, documentRows, architectureRows, indicatorRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows] = await Promise.all([
-    fetchCsvRows("Proyecto"),
-    fetchCsvSheet("Hitos"),
-    fetchCsvSheet("Hallazgos"),
-    fetchFirstAvailableSheet(["PendientesCliente", "Pendientes del cliente", "Pendientes Cliente", "Pendientes"]),
-    fetchCsvSheet("Entregables"),
-    fetchCsvSheet("Actualizaciones", false),
-    fetchFirstAvailableSheet(["Educacion", "EducaciÃ³n", "Lo que vas a recibir", "Educacion Cliente"]),
-    fetchFirstAvailableSheet(["Reuniones", "ReunionesCliente", "Reuniones Cliente", "Agenda"]),
-    fetchFirstAvailableSheet(["Documentos", "CargaDocumentos", "Carga de documentos", "Carga Documentos", "ChecklistDocumentos", "Checklist Documentos", "Checklist"]),
-    fetchFirstAvailableSheet(["ArquitecturaCargos", "Arquitectura Cargos", "Estructura", "EstructuraCargos", "Arquitectura"]),
-    fetchFirstAvailableSheet(["Indicadores", "ImplementacionIndicadores", "Implementación Indicadores", "Implementacion Indicadores", "IndicadoresImplementacion", "Indicadores Implementacion"]),
-    fetchFirstAvailableSheet(["ProcesosASIS", "Procesos AS IS", "Procesos As Is", "Procesos AS-IS", "Procesos AS_IS", "ListaASIS", "Lista AS IS", "Lista AS-IS", "ASIS", "AS IS"]),
-    fetchFirstAvailableSheet(["ProcesosTOBE", "Procesos TO BE", "Procesos To Be", "Procesos TO-BE", "Procesos TO_BE", "ListaTOBE", "Lista TO BE", "Lista TO-BE", "TOBE", "TO BE"]),
-    fetchFirstAvailableSheet(["COEASIS", "COE AS IS", "COE As Is", "COE AS-IS", "COE AS_IS", "COE Actual", "COEActual"]),
-    fetchFirstAvailableSheet(["COETOBE", "COE TO BE", "COE To Be", "COE TO-BE", "COE TO_BE", "COE Propuesto", "COEPropuesto"]),
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, chargeRows, documentRows, architectureRows, indicatorRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows] = await Promise.all([
+    fetchCsvRows("Proyecto", true, spreadsheetId),
+    fetchCsvSheet("Hitos", true, spreadsheetId),
+    fetchCsvSheet("Hallazgos", true, spreadsheetId),
+    fetchFirstAvailableSheet(["PendientesCliente", "Pendientes del cliente", "Pendientes Cliente", "Pendientes"], spreadsheetId),
+    fetchCsvSheet("Entregables", true, spreadsheetId),
+    fetchCsvSheet("Actualizaciones", false, spreadsheetId),
+    fetchFirstAvailableSheet(["Educacion", "EducaciÃ³n", "Lo que vas a recibir", "Educacion Cliente"], spreadsheetId),
+    fetchFirstAvailableSheet(["Reuniones", "ReunionesCliente", "Reuniones Cliente", "Agenda"], spreadsheetId),
+    fetchFirstAvailableSheet(["Cobros", "Pagos", "Cobranzas", "Facturacion", "Facturación"], spreadsheetId),
+    fetchFirstAvailableSheet(["Documentos", "CargaDocumentos", "Carga de documentos", "Carga Documentos", "ChecklistDocumentos", "Checklist Documentos", "Checklist"], spreadsheetId),
+    fetchFirstAvailableSheet(["ArquitecturaCargos", "Arquitectura Cargos", "Estructura", "EstructuraCargos", "Arquitectura"], spreadsheetId),
+    fetchFirstAvailableSheet(["Indicadores", "ImplementacionIndicadores", "Implementación Indicadores", "Implementacion Indicadores", "IndicadoresImplementacion", "Indicadores Implementacion"], spreadsheetId),
+    fetchFirstAvailableSheet(["ProcesosASIS", "Procesos AS IS", "Procesos As Is", "Procesos AS-IS", "Procesos AS_IS", "ListaASIS", "Lista AS IS", "Lista AS-IS", "ASIS", "AS IS"], spreadsheetId),
+    fetchFirstAvailableSheet(["ProcesosTOBE", "Procesos TO BE", "Procesos To Be", "Procesos TO-BE", "Procesos TO_BE", "ListaTOBE", "Lista TO BE", "Lista TO-BE", "TOBE", "TO BE"], spreadsheetId),
+    fetchFirstAvailableSheet(["COEASIS", "COE AS IS", "COE As Is", "COE AS-IS", "COE AS_IS", "COE Actual", "COEActual"], spreadsheetId),
+    fetchFirstAvailableSheet(["COETOBE", "COE TO BE", "COE To Be", "COE TO-BE", "COE TO_BE", "COE Propuesto", "COEPropuesto"], spreadsheetId),
   ]);
 
   return {
@@ -735,6 +851,7 @@ export async function loadSheetData() {
     updates: mapUpdates(updateRows),
     education: mapEducation(educationRows),
     meetings: mapMeetings(meetingRows),
+    charges: mapCharges(chargeRows),
     documents: mapDocuments(documentRows),
     architectureRoles: mapArchitectureRoles(architectureRows),
     indicators: mapIndicators(indicatorRows),

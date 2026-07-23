@@ -24,7 +24,6 @@ import {
   ExternalLink,
   FileText,
   UploadCloud,
-  FolderOpen,
   Flag,
   Hourglass,
   Layers3,
@@ -45,7 +44,7 @@ import {
   X,
   MessageCircle,
 } from "lucide-react";
-import { loadSheetData, demoData, getActiveSpreadsheetId } from "./sheets";
+import { loadSheetData, loadSheetDataForSpreadsheetId, loadLoginMasterClients, demoData, getActiveSpreadsheetId } from "./sheets";
 import "./index.css";
 
 const BRAND = "#00b8b5";
@@ -7408,6 +7407,544 @@ function ClientLogin({ onLogin }) {
   );
 }
 
+const INTERNAL_NOTES_KEY = "gseInternalProjectNotes";
+const LOGIN_MASTER_SPREADSHEET_ID = "10cQa_lSzt3hxr5H5n-qYGeeP5lS-Ykk5rrC6ctNM2pY";
+
+function readInternalStorage(key, fallback) {
+  try {
+    return JSON.parse(window.localStorage.getItem(key) || "null") || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeInternalStorage(key, value) {
+  window.localStorage.setItem(key, JSON.stringify(value));
+}
+
+function parseInternalDate(value = "") {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  const direct = new Date(raw);
+  if (!Number.isNaN(direct.getTime())) return direct;
+  const match = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+  if (!match) return null;
+  const [, day, month, year] = match;
+  const fullYear = Number(year.length === 2 ? `20${year}` : year);
+  const parsed = new Date(fullYear, Number(month) - 1, Number(day));
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function isPaidCharge(charge = {}) {
+  const status = normalizeSystemName(`${charge.paymentStatus || ""} ${charge.cutStatus || ""}`);
+  return status.includes("pagado") || status.includes("cancelado") || status.includes("cobrado");
+}
+
+function getChargeDueDate(charge = {}) {
+  if (!charge) return "";
+  return charge.adjustedDueDate || charge.originalDueDate || "";
+}
+
+function getNextCharge(charges = []) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const candidates = charges
+    .map((charge, index) => ({
+      charge,
+      index,
+      parsedDate: parseInternalDate(getChargeDueDate(charge)),
+      paid: isPaidCharge(charge),
+    }))
+    .filter((item) => item.charge);
+
+  const unpaid = candidates.filter((item) => !item.paid);
+  const withFutureDate = unpaid
+    .filter((item) => item.parsedDate)
+    .sort((a, b) => Math.abs(a.parsedDate - today) - Math.abs(b.parsedDate - today));
+
+  return withFutureDate[0]?.charge || unpaid[0]?.charge || candidates[0]?.charge || null;
+}
+
+function getInternalProjectSummary(entry = {}, data = {}) {
+  const project = data.project || {};
+  const milestones = data.milestones || [];
+  const deliverables = data.deliverables || [];
+  const meetings = data.meetings || [];
+  const pending = data.pending || [];
+  const charges = data.charges || [];
+  const nextCharge = getNextCharge(charges);
+  const completed = milestones.filter((item) => isCompletedStatus(item.status)).length;
+  const deliverableSummary = deliverables.reduce((acc, item) => {
+    const status = normalizeSystemName(item.status || "");
+    const overdue = normalizeSystemName(item.overdue || "");
+    if (status.includes("finalizado") || status.includes("aprobado") || status.includes("terminado")) acc.finished += 1;
+    else if (status.includes("desarrollo") || status.includes("progreso")) acc.inProgress += 1;
+    else acc.pending += 1;
+    if (overdue.includes("si") || overdue.includes("vencido")) acc.overdue += 1;
+    return acc;
+  }, { finished: 0, pending: 0, inProgress: 0, overdue: 0 });
+  const progress = Number(project.progress) || (milestones.length ? Math.round((completed / milestones.length) * 100) : 0);
+  const nextMeeting = meetings[0] || {};
+  const activePending = pending.filter(isPendingActive).length;
+  const paymentDate = getChargeDueDate(nextCharge) || project.paymentDate || entry.paymentDate || "Por definir";
+
+  return {
+    id: entry.id,
+    sheetId: entry.sheetId,
+    name: project.companyClient || project.client || entry.name || "Cliente sin nombre",
+    logoClient: project.logoClient || entry.logoClient || "",
+    manager: entry.manager || project.responsibleClient || "Sin responsable",
+    status: project.status || entry.status || "En seguimiento",
+    service: project.service || entry.service || "Business Power",
+    progress,
+    completed,
+    totalMilestones: milestones.length,
+    activePending,
+    nextStep: project.nextStep || "Por definir",
+    nextDate: project.nextDate || nextMeeting.date || "Por definir",
+    meetingTitle: nextMeeting.title || project.nextStep || "Próxima reunión",
+    meetingDate: [nextMeeting.date, nextMeeting.time].filter(Boolean).join(" · ") || project.nextDate || "Por definir",
+    meetingLink: safeUrl(nextMeeting.link) || safeUrl(project.linkMeet),
+    paymentDate,
+    paymentStatus: nextCharge?.paymentStatus || nextCharge?.cutStatus || project.paymentStatus || entry.paymentStatus || "Pendiente de registrar",
+    paymentAmount: nextCharge?.value || project.paymentAmount || entry.paymentAmount || "",
+    nextCharge,
+    charges,
+    deliverables,
+    deliverableSummary,
+    milestones,
+    pending,
+  };
+}
+
+function InternalProjectsPortal() {
+  const [masterEntries, setMasterEntries] = useState([]);
+  const [masterError, setMasterError] = useState("");
+  const [notes, setNotes] = useState(() => readInternalStorage(INTERNAL_NOTES_KEY, {}));
+  const [loaded, setLoaded] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [loadingMaster, setLoadingMaster] = useState(false);
+  const [selectedId, setSelectedId] = useState("");
+  const [query, setQuery] = useState("");
+  const [noteDraft, setNoteDraft] = useState("");
+  const [editingNoteIndex, setEditingNoteIndex] = useState(null);
+  const [editingNoteText, setEditingNoteText] = useState("");
+
+  useEffect(() => {
+    writeInternalStorage(INTERNAL_NOTES_KEY, notes);
+  }, [notes]);
+
+  useEffect(() => {
+    let active = true;
+    setLoadingMaster(true);
+    setMasterError("");
+
+    loadLoginMasterClients(LOGIN_MASTER_SPREADSHEET_ID)
+      .then((clients) => {
+        if (!active) return;
+        setMasterEntries(clients);
+        setSelectedId((current) => current || clients[0]?.id || "");
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!active) return;
+        setMasterEntries([]);
+        setMasterError("No se pudo leer el Google Sheet maestro de login. Revisa que el Apps Script o la publicación permitan lectura de la lista interna.");
+      })
+      .finally(() => {
+        if (active) setLoadingMaster(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const allEntries = useMemo(() => {
+    const bySheet = new Map();
+    masterEntries.forEach((entry) => {
+      if (!entry.sheetId) return;
+      if (!bySheet.has(entry.sheetId)) {
+        bySheet.set(entry.sheetId, entry);
+        return;
+      }
+      const current = bySheet.get(entry.sheetId);
+      bySheet.set(entry.sheetId, { ...entry, ...current, source: current.source || entry.source });
+    });
+    return Array.from(bySheet.values());
+  }, [masterEntries]);
+
+  useEffect(() => {
+    if (!allEntries.length) {
+      setLoaded({});
+      return;
+    }
+    let active = true;
+    setLoading(true);
+
+    Promise.all(allEntries.map(async (entry) => {
+      try {
+        const data = await loadSheetDataForSpreadsheetId(entry.sheetId);
+        return [entry.id, { data, error: "" }];
+      } catch (error) {
+        return [entry.id, { data: null, error: "No se pudo leer este Sheet. Revisa permisos/publicación y nombres de pestañas." }];
+      }
+    })).then((results) => {
+      if (!active) return;
+      setLoaded(Object.fromEntries(results));
+      setSelectedId((current) => current || results[0]?.[0] || "");
+      setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [allEntries]);
+
+  const summaries = useMemo(() => allEntries.map((entry) => {
+    const state = loaded[entry.id] || {};
+    return {
+      entry,
+      error: state.error || "",
+      summary: getInternalProjectSummary(entry, state.data || {}),
+    };
+  }), [allEntries, loaded]);
+
+  const filteredSummaries = useMemo(() => {
+    const needle = normalizeSystemName(query);
+    if (!needle) return summaries;
+    return summaries.filter(({ summary }) => normalizeSystemName([
+      summary.name,
+      summary.manager,
+      summary.status,
+      summary.service,
+      summary.nextStep,
+      summary.name,
+      summary.paymentStatus,
+      summary.paymentDate,
+    ].join(" ")).includes(needle));
+  }, [query, summaries]);
+
+  const selected = summaries.find((item) => item.entry.id === selectedId) || summaries[0];
+  const selectedSummary = selected?.summary;
+  const selectedNotes = selectedSummary ? notes[selectedSummary.id] || [] : [];
+  const totals = summaries.reduce((acc, item) => {
+    acc.projects += 1;
+    acc.progress += item.summary.progress;
+    acc.pending += item.summary.activePending;
+    acc.deliverables += item.summary.deliverables.length;
+    acc.charges += item.summary.charges.length;
+    return acc;
+  }, { projects: 0, progress: 0, pending: 0, deliverables: 0, charges: 0 });
+  const averageProgress = totals.projects ? Math.round(totals.progress / totals.projects) : 0;
+
+  const refreshMaster = () => {
+    setLoadingMaster(true);
+    setMasterError("");
+    loadLoginMasterClients(LOGIN_MASTER_SPREADSHEET_ID)
+      .then((clients) => {
+        setMasterEntries(clients);
+        setSelectedId((current) => current || clients[0]?.id || "");
+      })
+      .catch((error) => {
+        console.error(error);
+        setMasterError("No se pudo leer el Google Sheet maestro de login.");
+      })
+      .finally(() => setLoadingMaster(false));
+  };
+
+  const addNote = () => {
+    const clean = noteDraft.trim();
+    if (!clean || !selectedSummary) return;
+    const stamp = new Date().toLocaleString("es-EC", { dateStyle: "medium", timeStyle: "short" });
+    setNotes((current) => ({
+      ...current,
+      [selectedSummary.id]: [{ text: clean, stamp }, ...(current[selectedSummary.id] || [])],
+    }));
+    setNoteDraft("");
+  };
+
+  const startEditNote = (index, text) => {
+    setEditingNoteIndex(index);
+    setEditingNoteText(text || "");
+  };
+
+  const cancelEditNote = () => {
+    setEditingNoteIndex(null);
+    setEditingNoteText("");
+  };
+
+  const saveEditedNote = (index) => {
+    const clean = editingNoteText.trim();
+    if (!clean || !selectedSummary) return;
+    setNotes((current) => ({
+      ...current,
+      [selectedSummary.id]: (current[selectedSummary.id] || []).map((note, noteIndex) =>
+        noteIndex === index ? { ...note, text: clean, edited: true } : note
+      ),
+    }));
+    cancelEditNote();
+  };
+
+  const deleteNote = (index) => {
+    if (!selectedSummary) return;
+    setNotes((current) => ({
+      ...current,
+      [selectedSummary.id]: (current[selectedSummary.id] || []).filter((_, noteIndex) => noteIndex !== index),
+    }));
+    if (editingNoteIndex === index) cancelEditNote();
+  };
+
+  const openClientRiv = (summary) => {
+    window.localStorage.setItem("gseClientSession", JSON.stringify({
+      sheetId: summary.sheetId,
+      cliente: summary.name,
+      usuario: "Equipo GSE",
+      interno: true,
+    }));
+    window.location.href = "/";
+  };
+
+  return (
+    <main className="internalPortal">
+      <header className="internalHeader">
+        <div>
+          <span>Portal interno GSE</span>
+          <h1>RIV CLIENTES</h1>
+        </div>
+        <div className="internalHeaderActions">
+          <button type="button" className="internalGhostLink" onClick={refreshMaster}>Actualizar maestro</button>
+          <a href="/" className="internalGhostLink">Volver al RIV</a>
+        </div>
+      </header>
+
+      <section className="internalMetrics">
+        <article><BarChart3 size={20} /><span>Avance promedio total</span><strong>{averageProgress}%</strong></article>
+        <article><Building2 size={20} /><span>Clientes activos</span><strong>{totals.projects}</strong></article>
+        <article><AlertTriangle size={20} /><span>Pendientes activos</span><strong>{totals.pending}</strong></article>
+        <article><Clock3 size={20} /><span>Cobros registrados</span><strong>{totals.charges}</strong></article>
+      </section>
+
+      <section className="internalWorkspace">
+        <aside className="internalSidePanel">
+          <label className="internalSearch">
+            <Search size={17} />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar cliente, proyecto o responsable" />
+          </label>
+          {(loadingMaster || masterError) && (
+            <div className={masterError ? "internalError compact" : "internalNotice compact"}>
+              {loadingMaster ? "Leyendo clientes desde el maestro de login..." : masterError}
+            </div>
+          )}
+
+          <div className="internalProjectList">
+            {filteredSummaries.map(({ entry, summary, error }) => (
+              <button
+                type="button"
+                key={entry.id}
+                className={selectedId === entry.id ? "active" : ""}
+                onClick={() => setSelectedId(entry.id)}
+              >
+                <Logo src={summary.logoClient} fallback={(summary.name || "CL").slice(0, 2)} className="internalClientCardLogo" />
+                <span>{summary.name}</span>
+                <strong>{error ? "Revisar conexión" : `${summary.progress}%`}</strong>
+                <small>{summary.manager} · {entry.source === "master" ? "Maestro login" : "Manual"}</small>
+              </button>
+            ))}
+            {!allEntries.length && <p className="internalEmpty">No se encontraron clientes en el maestro todavía.</p>}
+            {allEntries.length > 0 && !filteredSummaries.length && <p className="internalEmpty">No hay clientes con ese filtro.</p>}
+          </div>
+        </aside>
+
+        <section className="internalDetail">
+          {loading && <div className="internalNotice">Cargando información desde Google Sheets...</div>}
+
+          {!selectedSummary && (
+            <div className="internalBlank">
+              <LockKeyhole size={34} />
+              <h2>Panel interno listo</h2>
+              <p>Conecta uno o varios Sheets de clientes para ver avance, reuniones, cobros, entregables y observaciones internas.</p>
+            </div>
+          )}
+
+          {selectedSummary && (
+            <>
+              <div className="internalClientHero">
+                <Logo src={selectedSummary.logoClient} fallback={(selectedSummary.name || "CL").slice(0, 2)} className="internalHeroLogo" />
+                <div>
+                  <span>{selectedSummary.service}</span>
+                  <h2>{selectedSummary.name}</h2>
+                  <p>{selectedSummary.manager} · {selectedSummary.status}</p>
+                  <div className="internalDeliverableSummary">
+                    <b className="done">Finalizados: {selectedSummary.deliverableSummary.finished}</b>
+                    <b className="pending">Pendientes: {selectedSummary.deliverableSummary.pending}</b>
+                    <b className="overdue">Vencidos: {selectedSummary.deliverableSummary.overdue}</b>
+                  </div>
+                </div>
+                <div className="internalProgressDial" style={{ "--progress": `${selectedSummary.progress}%` }}>
+                  <strong>{selectedSummary.progress}%</strong>
+                  <span>avance</span>
+                </div>
+              </div>
+
+              {selected?.error && <div className="internalError">{selected.error}</div>}
+
+              <div className="internalInfoGrid">
+                <article>
+                  <CalendarDays size={19} />
+                  <span>Siguiente reunión</span>
+                  <strong>{selectedSummary.meetingDate}</strong>
+                  <p>{selectedSummary.meetingTitle}</p>
+                  {selectedSummary.meetingLink && <a href={selectedSummary.meetingLink} target="_blank" rel="noreferrer">Abrir reunión</a>}
+                </article>
+                <article>
+                  <Flag size={19} />
+                  <span>Próximo paso</span>
+                  <strong>{selectedSummary.nextDate}</strong>
+                  <p>{selectedSummary.nextStep}</p>
+                </article>
+                <article>
+                  <Clock3 size={19} />
+                  <span>Próximo cobro</span>
+                  <strong>{selectedSummary.paymentDate}</strong>
+                  <p>{[selectedSummary.paymentStatus, selectedSummary.paymentAmount].filter(Boolean).join(" · ")}</p>
+                </article>
+                <article>
+                  <Target size={19} />
+                  <span>Ruta</span>
+                  <strong>{selectedSummary.completed}/{selectedSummary.totalMilestones || 0}</strong>
+                  <p>Hitos completados</p>
+                </article>
+              </div>
+
+              {selectedSummary.nextCharge && (
+                <section className="internalChargePanel">
+                  <div className="internalSectionHead">
+                    <h3>Seguimiento de cobro</h3>
+                    <span>{selectedSummary.nextCharge.payment || "Pago registrado"}</span>
+                  </div>
+                  <div className="internalChargeGrid">
+                    <article><span>Vencimiento original</span><strong>{selectedSummary.nextCharge.originalDueDate || "Sin fecha"}</strong><p>{selectedSummary.nextCharge.originalDay || ""}</p></article>
+                    <article><span>Vencimiento ajustado</span><strong>{selectedSummary.nextCharge.adjustedDueDate || "Sin ajuste"}</strong><p>{selectedSummary.nextCharge.adjustedDay || ""}</p></article>
+                    <article><span>Días vencido / por vencer</span><strong>{selectedSummary.nextCharge.daysDue || "Sin cálculo"}</strong><p>{selectedSummary.nextCharge.cutStatus || "Sin estado al corte"}</p></article>
+                    <article><span>Fecha pago</span><strong>{selectedSummary.nextCharge.paymentDate || "Pendiente"}</strong><p>{selectedSummary.nextCharge.callDate ? `Llamada: ${selectedSummary.nextCharge.callDate}` : "Sin llamada registrada"}</p></article>
+                  </div>
+                  <div className="internalReminderGrid">
+                    <p><strong>5 días antes:</strong> {selectedSummary.nextCharge.reminder5Days || "Sin fecha"}</p>
+                    <p><strong>24 horas antes:</strong> {selectedSummary.nextCharge.reminder24Hours || "Sin fecha"}</p>
+                    <p><strong>Día del vencimiento:</strong> {selectedSummary.nextCharge.dueDayMessage || "Sin fecha"}</p>
+                    <p><strong>24 horas después:</strong> {selectedSummary.nextCharge.after24HoursMessage || "Sin fecha"}</p>
+                    <p><strong>72 horas después:</strong> {selectedSummary.nextCharge.after72HoursMessage || "Sin fecha"}</p>
+                  </div>
+                  <div className="internalNextAction">
+                    <strong>Próxima acción sugerida</strong>
+                    <p>{selectedSummary.nextCharge.nextAction || "Sin acción sugerida"}</p>
+                    {selectedSummary.nextCharge.observation && <small>{selectedSummary.nextCharge.observation}</small>}
+                  </div>
+                </section>
+              )}
+
+              <div className="internalSplit">
+                <section className="internalDeliverablesPanel">
+                  <div className="internalSectionHead">
+                    <h3>Entregables GSE</h3>
+                    <button type="button" onClick={() => openClientRiv(selectedSummary)}>Abrir RIV cliente</button>
+                  </div>
+                  {selectedSummary.deliverables.length > 0 ? (
+                    <div className="internalDeliverablesMatrix">
+                      <div className="internalDeliverablesHead">
+                        <span>Entregable</span>
+                        <span>Estado</span>
+                        <span>Fecha</span>
+                        <span>Vencido</span>
+                        <span>Link</span>
+                      </div>
+                      <div className="internalDeliverablesBody">
+                        {selectedSummary.deliverables.map((item, index) => {
+                          const overdue = String(item.overdue || "").trim();
+                          const isOverdue = normalizeSystemName(overdue).includes("si") || normalizeSystemName(overdue).includes("vencido");
+                          const statusKey = normalizeSystemName(item.status || "");
+                          const statusClass = statusKey.includes("finalizado") || statusKey.includes("aprobado") || statusKey.includes("terminado")
+                            ? "done"
+                            : statusKey.includes("desarrollo") || statusKey.includes("progreso")
+                              ? "progress"
+                              : "pending";
+                          return (
+                            <article key={`${item.deliverable}-${index}`} className={isOverdue ? "isOverdue" : ""}>
+                              <div>
+                                <strong>{item.deliverable || item.deliverableGSE || "Entregable GSE"}</strong>
+                                <small>{[item.milestone, item.system].filter(Boolean).join(" · ") || "Sin hito asociado"}</small>
+                              </div>
+                              <i className={statusClass}>{item.status || "Sin estado"}</i>
+                              <span>{item.date || "Sin fecha"}</span>
+                              <em>{overdue || "No"}</em>
+                              {safeUrl(item.link) ? (
+                                <a href={safeUrl(item.link)} target="_blank" rel="noreferrer">Abrir</a>
+                              ) : (
+                                <b>Sin link</b>
+                              )}
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="internalEmpty">No hay entregables en el Sheet o falta la pestaña Entregables.</p>
+                  )}
+                </section>
+
+                <section className="internalNotesPanel">
+                  <h3>Observaciones internas</h3>
+                  <textarea value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Añadir observación para el equipo GSE..." />
+                  <button type="button" onClick={addNote}><MessageCircle size={17} /> Añadir observación</button>
+                  <div className="internalNotesList">
+                    {selectedNotes.map((note, index) => (
+                      <article key={`${note.stamp}-${index}`}>
+                        <div className="internalNoteHeader">
+                          <span>{note.stamp}{note.edited ? " · editado" : ""}</span>
+                          <div>
+                            <button type="button" onClick={() => startEditNote(index, note.text)}>Editar</button>
+                            <button type="button" onClick={() => deleteNote(index)} aria-label="Eliminar observación"><X size={14} /></button>
+                          </div>
+                        </div>
+                        {editingNoteIndex === index ? (
+                          <div className="internalNoteEditor">
+                            <textarea value={editingNoteText} onChange={(event) => setEditingNoteText(event.target.value)} />
+                            <div>
+                              <button type="button" onClick={() => saveEditedNote(index)}>Guardar</button>
+                              <button type="button" onClick={cancelEditNote}>Cancelar</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p>{note.text}</p>
+                        )}
+                      </article>
+                    ))}
+                    {!selectedNotes.length && <p className="internalEmpty">Sin observaciones todavía.</p>}
+                  </div>
+                </section>
+              </div>
+
+            </>
+          )}
+        </section>
+      </section>
+    </main>
+  );
+}
+
+function Root() {
+  const params = new URLSearchParams(window.location.search);
+  const isInternalRoute = window.location.pathname.replace(/\/$/, "") === "/interno" || params.get("interno") === "1";
+
+  if (isInternalRoute) {
+    return <InternalProjectsPortal />;
+  }
+
+  return <App />;
+}
+
 function App() {
   const [session, setSession] = useState(() => getStoredClientSession());
   const [view, setView] = useState("portal");
@@ -7571,7 +8108,7 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById("root")).render(<Root />);
 
 
 // PENDIENTESCLIENTE_FIX_FINAL
