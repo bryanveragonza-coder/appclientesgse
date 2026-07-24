@@ -7432,6 +7432,7 @@ function formatInternalNoteDate(value) {
 function normalizeInternalNote(note = {}) {
   return {
     id: note.id || "",
+    parentId: note.parentId || note.parentid || note.respondeA || note.respondea || "",
     stamp: formatInternalNoteDate(note.fecha || note.stamp),
     text: note.observacion || note.text || "",
     user: note.usuario || "Equipo GSE",
@@ -7656,6 +7657,7 @@ function InternalProjectsPortal() {
   const [noteDraft, setNoteDraft] = useState("");
   const [noteUser, setNoteUser] = useState("Equipo GSE");
   const [noteDeliverable, setNoteDeliverable] = useState("");
+  const [replyDrafts, setReplyDrafts] = useState({});
   const [editingNoteIndex, setEditingNoteIndex] = useState(null);
   const [editingNoteText, setEditingNoteText] = useState("");
 
@@ -7757,6 +7759,16 @@ function InternalProjectsPortal() {
   const selected = summaries.find((item) => item.entry.id === selectedId) || summaries[0];
   const selectedSummary = selected?.summary;
   const selectedNotes = selectedSummary ? notes[selectedSummary.id] || [] : [];
+  const getNoteThreadKey = (note) => note.id || note.localId || `local-${note.stamp || ""}-${note.text || ""}`;
+  const notesByParent = selectedNotes.reduce((acc, note, index) => {
+    if (!note.parentId) return acc;
+    const key = note.parentId;
+    acc[key] = [...(acc[key] || []), { note, index }];
+    return acc;
+  }, {});
+  const parentNotes = selectedNotes
+    .map((note, index) => ({ note, index }))
+    .filter((item) => !item.note.parentId);
   const selectedChargeDashboard = summarizeInternalCharges(selectedSummary?.charges || []);
   const deliverableResponsibleOptions = [...new Set((selectedSummary?.deliverables || [])
     .map((item) => item.responsible)
@@ -8041,9 +8053,52 @@ function InternalProjectsPortal() {
 
     setNotes((current) => ({
       ...current,
-      [selectedSummary.id]: [{ text: clean, stamp, user: noteUser || "Equipo GSE", deliverable: noteDeliverable }, ...(current[selectedSummary.id] || [])],
+      [selectedSummary.id]: [{ id: `local-${Date.now()}`, text: clean, stamp, user: noteUser || "Equipo GSE", deliverable: noteDeliverable }, ...(current[selectedSummary.id] || [])],
     }));
     setNoteDraft("");
+  };
+
+  const addReply = async (parentNote, parentKey) => {
+    const parentId = parentNote?.id || parentKey || "";
+    const clean = String(replyDrafts[parentId] || "").trim();
+    if (!clean || !selectedSummary || !parentId) return;
+    const replyPayload = {
+      parentId,
+      observacion: clean,
+      entregable: parentNote.deliverable || noteDeliverable,
+      fecha: new Date(),
+      usuario: noteUser || "Equipo GSE",
+    };
+
+    if (internalNotesUrl) {
+      try {
+        setNoteMessage("");
+        const result = await postInternalNoteAction(internalNotesUrl, {
+          action: "addNote",
+          sheetId: selectedSummary.sheetId,
+          parentId,
+          usuario: replyPayload.usuario,
+          entregable: replyPayload.entregable,
+          observacion: clean,
+        });
+        const nextReply = normalizeInternalNote(result.note || replyPayload);
+        setNotes((current) => ({
+          ...current,
+          [selectedSummary.id]: [nextReply, ...(current[selectedSummary.id] || [])],
+        }));
+        setReplyDrafts((current) => ({ ...current, [parentId]: "" }));
+      } catch (error) {
+        console.error(error);
+        setNoteMessage(error.message || "No se pudo guardar la respuesta.");
+      }
+      return;
+    }
+
+    setNotes((current) => ({
+      ...current,
+      [selectedSummary.id]: [{ ...normalizeInternalNote(replyPayload), id: `local-${Date.now()}` }, ...(current[selectedSummary.id] || [])],
+    }));
+    setReplyDrafts((current) => ({ ...current, [parentId]: "" }));
   };
 
   const startEditNote = (index, text) => {
@@ -8619,8 +8674,10 @@ function InternalProjectsPortal() {
                   </div>
                 )}
                 <div className="internalNotesList">
-                  {selectedNotes.map((note, index) => (
-                    <article key={`${note.id || note.stamp}-${index}`}>
+                  {parentNotes.map(({ note, index }) => {
+                    const noteKey = getNoteThreadKey(note);
+                    return (
+                    <article key={`${noteKey}-${index}`}>
                       <div className="internalNoteHeader">
                         <span>{note.stamp}{note.edited ? " · editado" : ""}</span>
                         <div>
@@ -8640,10 +8697,48 @@ function InternalProjectsPortal() {
                         <>
                           <small>{[note.deliverable, note.user].filter(Boolean).join(" · ")}</small>
                           <p>{note.text}</p>
+                          <div className="internalReplyBox">
+                            <textarea
+                              value={replyDrafts[noteKey] || ""}
+                              onChange={(event) => setReplyDrafts((current) => ({ ...current, [noteKey]: event.target.value }))}
+                              placeholder="Responder esta observación..."
+                            />
+                            <button type="button" onClick={() => addReply(note, noteKey)}>Responder</button>
+                          </div>
+                          {(notesByParent[noteKey] || []).length > 0 && (
+                            <div className="internalReplies">
+                              {(notesByParent[noteKey] || []).map(({ note: reply, index: replyIndex }) => (
+                                <article key={`${reply.id || reply.stamp}-${replyIndex}`}>
+                                  <div className="internalNoteHeader">
+                                    <span>{reply.stamp}{reply.edited ? " · editado" : ""}</span>
+                                    <div>
+                                      <button type="button" onClick={() => startEditNote(replyIndex, reply.text)}>Editar</button>
+                                      <button type="button" onClick={() => deleteNote(replyIndex)} aria-label="Eliminar respuesta"><X size={14} /></button>
+                                    </div>
+                                  </div>
+                                  {editingNoteIndex === replyIndex ? (
+                                    <div className="internalNoteEditor">
+                                      <textarea value={editingNoteText} onChange={(event) => setEditingNoteText(event.target.value)} />
+                                      <div>
+                                        <button type="button" onClick={() => saveEditedNote(replyIndex)}>Guardar</button>
+                                        <button type="button" onClick={cancelEditNote}>Cancelar</button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <small>{[reply.deliverable, reply.user].filter(Boolean).join(" · ")}</small>
+                                      <p>{reply.text}</p>
+                                    </>
+                                  )}
+                                </article>
+                              ))}
+                            </div>
+                          )}
                         </>
                       )}
                     </article>
-                  ))}
+                    );
+                  })}
                   {!selectedNotes.length && <p className="internalEmpty">Sin observaciones todavía.</p>}
                 </div>
               </section>

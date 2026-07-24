@@ -1773,6 +1773,35 @@ button.internalGhostLink {
   resize: vertical;
 }
 
+.internalReplyBox {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.internalReplyBox textarea {
+  min-height: 64px;
+}
+
+.internalReplyBox button {
+  justify-self: start;
+}
+
+.internalReplies {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding-left: 14px;
+  border-left: 3px solid #b6ecea;
+}
+
+.internalReplies article {
+  padding: 10px;
+  box-shadow: none;
+}
+
 .internalRemove {
   margin-top: 14px;
   border: 0;
