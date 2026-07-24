@@ -7422,6 +7422,36 @@ function writeInternalStorage(key, value) {
   window.localStorage.setItem(key, JSON.stringify(value));
 }
 
+function formatInternalNoteDate(value) {
+  if (!value) return new Date().toLocaleString("es-EC", { dateStyle: "medium", timeStyle: "short" });
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString("es-EC", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function normalizeInternalNote(note = {}) {
+  return {
+    id: note.id || "",
+    stamp: formatInternalNoteDate(note.fecha || note.stamp),
+    text: note.observacion || note.text || "",
+    user: note.usuario || "Equipo GSE",
+    edited: Boolean(note.editado) && String(note.editado).toLowerCase() !== "no",
+  };
+}
+
+async function postInternalNoteAction(url, payload) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+  });
+  const result = await response.json();
+  if (!response.ok || result.ok === false) {
+    throw new Error(result.message || "No se pudo guardar la observación.");
+  }
+  return result;
+}
+
 function parseInternalDate(value = "") {
   const raw = String(value || "").trim();
   if (!raw) return null;
@@ -7519,9 +7549,12 @@ function getInternalProjectSummary(entry = {}, data = {}) {
 }
 
 function InternalProjectsPortal() {
+  const internalNotesUrl = import.meta.env.VITE_INTERNAL_NOTES_WEBHOOK_URL || "";
   const [masterEntries, setMasterEntries] = useState([]);
   const [masterError, setMasterError] = useState("");
   const [notes, setNotes] = useState(() => readInternalStorage(INTERNAL_NOTES_KEY, {}));
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [noteMessage, setNoteMessage] = useState("");
   const [loaded, setLoaded] = useState({});
   const [loading, setLoading] = useState(false);
   const [loadingMaster, setLoadingMaster] = useState(false);
@@ -7629,6 +7662,42 @@ function InternalProjectsPortal() {
   const selected = summaries.find((item) => item.entry.id === selectedId) || summaries[0];
   const selectedSummary = selected?.summary;
   const selectedNotes = selectedSummary ? notes[selectedSummary.id] || [] : [];
+
+  useEffect(() => {
+    if (!selectedSummary) return;
+    cancelEditNote();
+    setNoteMessage("");
+
+    if (!internalNotesUrl) {
+      setNoteMessage("Observaciones en modo local: falta configurar VITE_INTERNAL_NOTES_WEBHOOK_URL.");
+      return;
+    }
+
+    let active = true;
+    setNotesLoading(true);
+    const separator = internalNotesUrl.includes("?") ? "&" : "?";
+    fetch(`${internalNotesUrl}${separator}action=listNotes&sheetId=${encodeURIComponent(selectedSummary.sheetId)}`, { method: "GET" })
+      .then((response) => response.json())
+      .then((result) => {
+        if (!active) return;
+        if (result.ok === false) throw new Error(result.message || "No se pudieron leer las observaciones.");
+        const nextNotes = (result.notes || []).map(normalizeInternalNote);
+        setNotes((current) => ({ ...current, [selectedSummary.id]: nextNotes }));
+      })
+      .catch((error) => {
+        if (!active) return;
+        console.error(error);
+        setNoteMessage(error.message || "No se pudieron leer las observaciones del Sheet.");
+      })
+      .finally(() => {
+        if (active) setNotesLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedSummary?.id, selectedSummary?.sheetId, internalNotesUrl]);
+
   const totals = summaries.reduce((acc, item) => {
     acc.projects += 1;
     acc.progress += item.summary.progress;
@@ -7654,10 +7723,33 @@ function InternalProjectsPortal() {
       .finally(() => setLoadingMaster(false));
   };
 
-  const addNote = () => {
+  const addNote = async () => {
     const clean = noteDraft.trim();
     if (!clean || !selectedSummary) return;
     const stamp = new Date().toLocaleString("es-EC", { dateStyle: "medium", timeStyle: "short" });
+
+    if (internalNotesUrl) {
+      try {
+        setNoteMessage("");
+        const result = await postInternalNoteAction(internalNotesUrl, {
+          action: "addNote",
+          sheetId: selectedSummary.sheetId,
+          usuario: "Equipo GSE",
+          observacion: clean,
+        });
+        const nextNote = normalizeInternalNote(result.note || { observacion: clean, fecha: new Date(), usuario: "Equipo GSE" });
+        setNotes((current) => ({
+          ...current,
+          [selectedSummary.id]: [nextNote, ...(current[selectedSummary.id] || [])],
+        }));
+        setNoteDraft("");
+      } catch (error) {
+        console.error(error);
+        setNoteMessage(error.message || "No se pudo guardar la observación.");
+      }
+      return;
+    }
+
     setNotes((current) => ({
       ...current,
       [selectedSummary.id]: [{ text: clean, stamp }, ...(current[selectedSummary.id] || [])],
@@ -7675,9 +7767,31 @@ function InternalProjectsPortal() {
     setEditingNoteText("");
   };
 
-  const saveEditedNote = (index) => {
+  const saveEditedNote = async (index) => {
     const clean = editingNoteText.trim();
     if (!clean || !selectedSummary) return;
+    const note = selectedNotes[index];
+
+    if (internalNotesUrl) {
+      if (!note?.id) {
+        setNoteMessage("Esta observación no tiene ID en el Sheet. Crea una nueva observación para poder editarla.");
+        return;
+      }
+      try {
+        setNoteMessage("");
+        await postInternalNoteAction(internalNotesUrl, {
+          action: "editNote",
+          sheetId: selectedSummary.sheetId,
+          id: note.id,
+          observacion: clean,
+        });
+      } catch (error) {
+        console.error(error);
+        setNoteMessage(error.message || "No se pudo editar la observación.");
+        return;
+      }
+    }
+
     setNotes((current) => ({
       ...current,
       [selectedSummary.id]: (current[selectedSummary.id] || []).map((note, noteIndex) =>
@@ -7687,8 +7801,29 @@ function InternalProjectsPortal() {
     cancelEditNote();
   };
 
-  const deleteNote = (index) => {
+  const deleteNote = async (index) => {
     if (!selectedSummary) return;
+    const note = selectedNotes[index];
+
+    if (internalNotesUrl) {
+      if (!note?.id) {
+        setNoteMessage("Esta observación no tiene ID en el Sheet. No se puede cerrar desde la app.");
+        return;
+      }
+      try {
+        setNoteMessage("");
+        await postInternalNoteAction(internalNotesUrl, {
+          action: "closeNote",
+          sheetId: selectedSummary.sheetId,
+          id: note.id,
+        });
+      } catch (error) {
+        console.error(error);
+        setNoteMessage(error.message || "No se pudo cerrar la observación.");
+        return;
+      }
+    }
+
     setNotes((current) => ({
       ...current,
       [selectedSummary.id]: (current[selectedSummary.id] || []).filter((_, noteIndex) => noteIndex !== index),
@@ -7897,10 +8032,15 @@ function InternalProjectsPortal() {
                 <section className="internalNotesPanel">
                   <h3>Observaciones internas</h3>
                   <textarea value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Añadir observación para el equipo GSE..." />
-                  <button type="button" onClick={addNote}><MessageCircle size={17} /> Añadir observación</button>
+                  <button type="button" onClick={addNote} disabled={notesLoading}><MessageCircle size={17} /> Añadir observación</button>
+                  {(notesLoading || noteMessage) && (
+                    <div className={noteMessage.includes("modo local") ? "internalNotice compact" : "internalError compact"}>
+                      {notesLoading ? "Cargando observaciones desde el Sheet del cliente..." : noteMessage}
+                    </div>
+                  )}
                   <div className="internalNotesList">
                     {selectedNotes.map((note, index) => (
-                      <article key={`${note.stamp}-${index}`}>
+                      <article key={`${note.id || note.stamp}-${index}`}>
                         <div className="internalNoteHeader">
                           <span>{note.stamp}{note.edited ? " · editado" : ""}</span>
                           <div>
