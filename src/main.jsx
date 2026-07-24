@@ -7910,6 +7910,30 @@ function InternalProjectsPortal() {
     }
   };
 
+  const getDeliverableStatusOption = (value) => {
+    const current = normalizeSystemName(value || "");
+    if (current.includes("finalizado") || current.includes("aprobado") || current.includes("terminado")) return "Finalizado";
+    if (current.includes("desarrollo") || current.includes("progreso")) return "En desarrollo";
+    return "Pendiente";
+  };
+
+  const getOverdueOption = (value) => {
+    const current = normalizeSystemName(value || "");
+    return current.includes("si") || current.includes("vencido") ? "Si" : "No";
+  };
+
+  const getChargeStatusOption = (value) => {
+    const current = normalizeSystemName(value || "");
+    if (current.includes("pagado") || current.includes("cobrado") || current.includes("cancelado")) return "Pagado";
+    if (current.includes("vencido") || current.includes("mora")) return "Vencido";
+    if (current.includes("pendiente")) return "Pendiente";
+    return "Sin estado";
+  };
+
+  const updateDeliverableStatus = (item, next) => {
+    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Estado", value: next });
+  };
+
   const cycleDeliverableStatus = (item) => {
     const current = normalizeSystemName(item.status || "");
     const next = current.includes("finalizado") || current.includes("aprobado") || current.includes("terminado")
@@ -7923,6 +7947,10 @@ function InternalProjectsPortal() {
   const toggleDeliverableOverdue = (item) => {
     const current = normalizeSystemName(item.overdue || "");
     const next = current.includes("si") || current.includes("vencido") ? "No" : "Si";
+    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Vencido", value: next });
+  };
+
+  const updateDeliverableOverdue = (item, next) => {
     updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Vencido", value: next });
   };
 
@@ -7941,6 +7969,10 @@ function InternalProjectsPortal() {
         : current.includes("pendiente")
           ? "Pagado"
           : "Pendiente";
+    updateInternalSheetCell({ sheetName: "Cobros", rowNumber: charge.rowNumber, columnName: "Estado pago", value: next });
+  };
+
+  const updateChargeStatus = (charge, next) => {
     updateInternalSheetCell({ sheetName: "Cobros", rowNumber: charge.rowNumber, columnName: "Estado pago", value: next });
   };
 
@@ -8423,7 +8455,16 @@ function InternalProjectsPortal() {
                           return (
                             <article key={`${charge.id || charge.payment}-${index}`}>
                               <strong>{charge.payment || `Pago ${index + 1}`}</strong>
-                              <button type="button" className={`internalTableButton ${chargeClass}`} onClick={() => cycleChargeStatus(charge)}>{charge.paymentStatus || charge.cutStatus || "Sin estado"}</button>
+                              <select
+                                className={`internalTableSelect ${chargeClass}`}
+                                value={getChargeStatusOption(charge.paymentStatus || charge.cutStatus)}
+                                onChange={(event) => updateChargeStatus(charge, event.target.value)}
+                              >
+                                <option>Sin estado</option>
+                                <option>Pendiente</option>
+                                <option>Pagado</option>
+                                <option>Vencido</option>
+                              </select>
                               <span>{charge.originalDueDate || "Sin fecha"}</span>
                               <span>{charge.adjustedDueDate || "Sin ajuste"}</span>
                               <span>{charge.daysDue || "Sin cálculo"}</span>
@@ -8478,9 +8519,24 @@ function InternalProjectsPortal() {
                                 <strong>{item.deliverable || item.deliverableGSE || "Entregable GSE"}</strong>
                                 <small>{[item.milestone, item.system].filter(Boolean).join(" · ") || "Sin hito asociado"}</small>
                               </div>
-                              <button type="button" className={`internalTableButton ${statusClass}`} onClick={() => cycleDeliverableStatus(item)}>{item.status || "Sin estado"}</button>
+                              <select
+                                className={`internalTableSelect ${statusClass}`}
+                                value={getDeliverableStatusOption(item.status)}
+                                onChange={(event) => updateDeliverableStatus(item, event.target.value)}
+                              >
+                                <option>Finalizado</option>
+                                <option>En desarrollo</option>
+                                <option>Pendiente</option>
+                              </select>
                               <span>{item.date || "Sin fecha"}</span>
-                              <button type="button" className={`internalTableButton ${isOverdue ? "late" : "done"}`} onClick={() => toggleDeliverableOverdue(item)}>{overdue || "No"}</button>
+                              <select
+                                className={`internalTableSelect ${isOverdue ? "late" : "done"}`}
+                                value={getOverdueOption(overdue)}
+                                onChange={(event) => updateDeliverableOverdue(item, event.target.value)}
+                              >
+                                <option>No</option>
+                                <option>Si</option>
+                              </select>
                               {safeUrl(item.link) ? (
                                 <a className="internalTableButton link" href={safeUrl(item.link)} target="_blank" rel="noreferrer">Abrir</a>
                               ) : (
