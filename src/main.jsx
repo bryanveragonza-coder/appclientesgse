@@ -7435,6 +7435,7 @@ function normalizeInternalNote(note = {}) {
     stamp: formatInternalNoteDate(note.fecha || note.stamp),
     text: note.observacion || note.text || "",
     user: note.usuario || "Equipo GSE",
+    deliverable: note.entregable || note.entregables || note.deliverable || "",
     edited: Boolean(note.editado) && String(note.editado).toLowerCase() !== "no",
   };
 }
@@ -7585,6 +7586,7 @@ function getInternalProjectSummary(entry = {}, data = {}) {
   const pending = data.pending || [];
   const charges = data.charges || [];
   const findings = data.findings || [];
+  const users = data.users || [];
   const nextCharge = getNextCharge(charges);
   const completed = milestones.filter((item) => isCompletedStatus(item.status)).length;
   const deliverableSummary = deliverables.reduce((acc, item) => {
@@ -7631,6 +7633,7 @@ function getInternalProjectSummary(entry = {}, data = {}) {
     clientDeliverables,
     milestones,
     pending,
+    users,
   };
 }
 
@@ -7651,6 +7654,8 @@ function InternalProjectsPortal() {
   const [clientTab, setClientTab] = useState("cobros");
   const [query, setQuery] = useState("");
   const [noteDraft, setNoteDraft] = useState("");
+  const [noteUser, setNoteUser] = useState("Equipo GSE");
+  const [noteDeliverable, setNoteDeliverable] = useState("");
   const [editingNoteIndex, setEditingNoteIndex] = useState(null);
   const [editingNoteText, setEditingNoteText] = useState("");
 
@@ -7753,6 +7758,11 @@ function InternalProjectsPortal() {
   const selectedSummary = selected?.summary;
   const selectedNotes = selectedSummary ? notes[selectedSummary.id] || [] : [];
   const selectedChargeDashboard = summarizeInternalCharges(selectedSummary?.charges || []);
+  const deliverableResponsibleOptions = [...new Set((selectedSummary?.deliverables || [])
+    .map((item) => item.responsible)
+    .filter(Boolean))];
+  const noteUserOptions = deliverableResponsibleOptions.length ? deliverableResponsibleOptions : ["Equipo GSE"];
+  const noteDeliverableOptions = selectedSummary?.deliverables?.map((item) => item.deliverable).filter(Boolean) || [];
   const selectedDeliverableTotal = selectedSummary
     ? selectedSummary.deliverableSummary.finished + selectedSummary.deliverableSummary.inProgress + selectedSummary.deliverableSummary.pending
     : 0;
@@ -7764,6 +7774,8 @@ function InternalProjectsPortal() {
     if (!selectedSummary) return;
     cancelEditNote();
     setNoteMessage("");
+    setNoteUser((current) => current && noteUserOptions.includes(current) ? current : noteUserOptions[0] || "Equipo GSE");
+    setNoteDeliverable("");
 
     if (!internalNotesUrl) {
       setNoteMessage("Observaciones en modo local: falta configurar VITE_INTERNAL_NOTES_WEBHOOK_URL.");
@@ -7954,6 +7966,14 @@ function InternalProjectsPortal() {
     updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Vencido", value: next });
   };
 
+  const updateDeliverableValidated = (item, next) => {
+    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Validado", value: next });
+  };
+
+  const updateDeliverableResponsible = (item, next) => {
+    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Responsable", value: next });
+  };
+
   const updateDeliverableLink = (item) => {
     const next = window.prompt("Pega el link del entregable:", item.link || "");
     if (next === null) return;
@@ -8002,10 +8022,11 @@ function InternalProjectsPortal() {
         const result = await postInternalNoteAction(internalNotesUrl, {
           action: "addNote",
           sheetId: selectedSummary.sheetId,
-          usuario: "Equipo GSE",
+          usuario: noteUser || "Equipo GSE",
+          entregable: noteDeliverable,
           observacion: clean,
         });
-        const nextNote = normalizeInternalNote(result.note || { observacion: clean, fecha: new Date(), usuario: "Equipo GSE" });
+        const nextNote = normalizeInternalNote(result.note || { observacion: clean, entregable: noteDeliverable, fecha: new Date(), usuario: noteUser || "Equipo GSE" });
         setNotes((current) => ({
           ...current,
           [selectedSummary.id]: [nextNote, ...(current[selectedSummary.id] || [])],
@@ -8020,7 +8041,7 @@ function InternalProjectsPortal() {
 
     setNotes((current) => ({
       ...current,
-      [selectedSummary.id]: [{ text: clean, stamp }, ...(current[selectedSummary.id] || [])],
+      [selectedSummary.id]: [{ text: clean, stamp, user: noteUser || "Equipo GSE", deliverable: noteDeliverable }, ...(current[selectedSummary.id] || [])],
     }));
     setNoteDraft("");
   };
@@ -8501,6 +8522,8 @@ function InternalProjectsPortal() {
                         <span>Estado</span>
                         <span>Fecha</span>
                         <span>Vencido</span>
+                        <span>Validado</span>
+                        <span>Responsable</span>
                         <span>Link</span>
                       </div>
                       <div className="internalDeliverablesBody">
@@ -8537,6 +8560,22 @@ function InternalProjectsPortal() {
                                 <option>No</option>
                                 <option>Si</option>
                               </select>
+                              <select
+                                className={`internalTableSelect ${getOverdueOption(item.validated) === "Si" ? "done" : "pending"}`}
+                                value={getOverdueOption(item.validated)}
+                                onChange={(event) => updateDeliverableValidated(item, event.target.value)}
+                              >
+                                <option>No</option>
+                                <option>Si</option>
+                              </select>
+                              <select
+                                className="internalTableSelect neutral"
+                                value={item.responsible || ""}
+                                onChange={(event) => updateDeliverableResponsible(item, event.target.value)}
+                              >
+                                <option value="">Sin responsable</option>
+                                {[...new Set([...(item.responsible ? [item.responsible] : []), ...deliverableResponsibleOptions])].map((user) => <option key={user} value={user}>{user}</option>)}
+                              </select>
                               {safeUrl(item.link) ? (
                                 <a className="internalTableButton link" href={safeUrl(item.link)} target="_blank" rel="noreferrer">Abrir</a>
                               ) : (
@@ -8557,6 +8596,21 @@ function InternalProjectsPortal() {
               {clientTab === "observaciones" && (
               <section className="internalNotesPanel internalNotesFull">
                 <h3>Observaciones internas</h3>
+                <div className="internalNoteFields">
+                  <label>
+                    <span>Entregable</span>
+                    <select value={noteDeliverable} onChange={(event) => setNoteDeliverable(event.target.value)}>
+                      <option value="">Observación general</option>
+                      {noteDeliverableOptions.map((deliverable) => <option key={deliverable} value={deliverable}>{deliverable}</option>)}
+                    </select>
+                  </label>
+                  <label>
+                    <span>Usuario</span>
+                    <select value={noteUser} onChange={(event) => setNoteUser(event.target.value)}>
+                      {noteUserOptions.map((user) => <option key={user} value={user}>{user}</option>)}
+                    </select>
+                  </label>
+                </div>
                 <textarea value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Añadir observación para el equipo GSE..." />
                 <button type="button" onClick={addNote} disabled={notesLoading}><MessageCircle size={17} /> Añadir observación</button>
                 {(notesLoading || noteMessage) && (
@@ -8583,7 +8637,10 @@ function InternalProjectsPortal() {
                           </div>
                         </div>
                       ) : (
-                        <p>{note.text}</p>
+                        <>
+                          <small>{[note.deliverable, note.user].filter(Boolean).join(" · ")}</small>
+                          <p>{note.text}</p>
+                        </>
                       )}
                     </article>
                   ))}

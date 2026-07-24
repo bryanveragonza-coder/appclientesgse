@@ -606,6 +606,7 @@ function mapDeliverables(rows) {
     status: getRowValue(row, ["Estado"]),
     date: getRowValue(row, ["Fecha", "Fecha entrega", "FechaEntrega", "Fecha máxima", "Fecha maxima", "FechaMax", "Fechamax"]),
     overdue: getRowValue(row, ["Vencido", "EstaVencido", "Está vencido", "Estado vencido", "Vencimiento"]),
+    validated: getRowValue(row, ["Validado", "Validada", "Validacion", "Validación", "Estado validado"]),
     responsible: getRowValue(row, ["Responsable", "responsable", "Owner", "Encargado", "ResponsableEntregable", "Responsable Entregable"]),
     progress: parseNumber(getRowValue(row, ["% Avance", "Avance", "Progreso"])),
     link: getRowValue(row, [
@@ -616,6 +617,13 @@ function mapDeliverables(rows) {
     technicalSheet: getRowValue(row, ["Ficha", "FichaTecnica", "Ficha TÃ©cnica", "Ficha Tecnica", "FichaTecnicaProceso", "Ficha Proceso", "LinkFicha", "Link Ficha", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
     observation: getRowValue(row, ["Observacion", "ObservaciÃ³n", "Notas", "Comentario"]),
   })).filter((x) => x.deliverable);
+}
+
+function mapUsers(rows) {
+  return rows.map((row) => ({
+    name: getRowValue(row, ["Nombre", "Usuario", "Colaborador", "Persona", "Responsable", "Empleado"]),
+    email: getRowValue(row, ["Email", "Correo", "Correo electronico", "Correo electrónico"]),
+  })).filter((x) => x.name || x.email);
 }
 
 function mapUpdates(rows) {
@@ -825,7 +833,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     throw new Error("Falta iniciar sesiÃ³n o configurar VITE_SPREADSHEET_ID.");
   }
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, chargeRows, documentRows, architectureRows, indicatorRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows] = await Promise.all([
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, chargeRows, documentRows, architectureRows, indicatorRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
     fetchCsvRows("Proyecto", true, spreadsheetId),
     fetchCsvSheet("Hitos", true, spreadsheetId),
     fetchCsvSheet("Hallazgos", true, spreadsheetId),
@@ -842,6 +850,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchFirstAvailableSheet(["ProcesosTOBE", "Procesos TO BE", "Procesos To Be", "Procesos TO-BE", "Procesos TO_BE", "ListaTOBE", "Lista TO BE", "Lista TO-BE", "TOBE", "TO BE"], spreadsheetId),
     fetchFirstAvailableSheet(["COEASIS", "COE AS IS", "COE As Is", "COE AS-IS", "COE AS_IS", "COE Actual", "COEActual"], spreadsheetId),
     fetchFirstAvailableSheet(["COETOBE", "COE TO BE", "COE To Be", "COE TO-BE", "COE TO_BE", "COE Propuesto", "COEPropuesto"], spreadsheetId),
+    fetchFirstAvailableSheet(["Usuarios", "UsuariosInternos", "Usuarios Internos", "Equipo", "Colaboradores"], spreadsheetId),
   ]);
 
   return {
@@ -861,6 +870,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     processesToBe: mapProcessesToBe(processesToBeRows),
     coeAsIs: mapCOERows(coeAsIsRows),
     coeToBe: mapCOERows(coeToBeRows),
+    users: mapUsers(userRows),
   };
 }
 

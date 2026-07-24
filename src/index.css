@@ -1450,18 +1450,20 @@ button.internalGhostLink {
 
 .internalDeliverablesHead,
 .internalDeliverablesBody {
-  min-width: 700px;
+  min-width: 940px;
 }
 
 .internalDeliverablesHead,
 .internalDeliverablesBody article {
   display: grid;
   grid-template-columns:
-    minmax(190px, 1.15fr)
-    minmax(112px, 0.7fr)
-    minmax(104px, 0.65fr)
-    minmax(96px, 0.6fr)
-    minmax(90px, 0.55fr);
+    minmax(180px, 1.1fr)
+    minmax(112px, 0.62fr)
+    minmax(96px, 0.55fr)
+    minmax(88px, 0.48fr)
+    minmax(88px, 0.48fr)
+    minmax(140px, 0.8fr)
+    minmax(82px, 0.45fr);
   align-items: stretch;
   gap: 0;
 }
@@ -1594,6 +1596,11 @@ button.internalGhostLink {
   color: #b91c1c;
 }
 
+.internalTableSelect.neutral {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
 .internalTableSelect:hover,
 .internalTableSelect:focus {
   border-color: rgba(0, 184, 181, 0.45);
@@ -1668,6 +1675,36 @@ button.internalGhostLink {
   display: grid;
   align-content: start;
   gap: 10px;
+}
+
+.internalNoteFields {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(180px, 0.7fr);
+  gap: 10px;
+}
+
+.internalNoteFields label {
+  display: grid;
+  gap: 5px;
+}
+
+.internalNoteFields span {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.internalNoteFields select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid #d9e3ea;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
 }
 
 .internalNotesPanel textarea {
