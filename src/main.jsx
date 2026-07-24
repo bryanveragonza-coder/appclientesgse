@@ -7606,6 +7606,8 @@ function getInternalProjectSummary(entry = {}, data = {}) {
     id: entry.id,
     sheetId: entry.sheetId,
     name: project.companyClient || project.client || entry.name || "Cliente sin nombre",
+    logoGSEhorizontal: project.logoGSEhorizontal || "",
+    logoGSEhorizontalColor: project.logoGSEhorizontalColor || project.logoGSEhorizontal || "",
     logoClient: project.logoClient || entry.logoClient || "",
     manager: entry.manager || project.responsibleClient || "Sin responsable",
     status: project.status || entry.status || "En seguimiento",
@@ -7634,11 +7636,13 @@ function getInternalProjectSummary(entry = {}, data = {}) {
 
 function InternalProjectsPortal() {
   const internalNotesUrl = import.meta.env.VITE_INTERNAL_NOTES_WEBHOOK_URL || "";
+  const internalWriteUrl = import.meta.env.VITE_INTERNAL_UPDATE_WEBHOOK_URL || internalNotesUrl;
   const [masterEntries, setMasterEntries] = useState([]);
   const [masterError, setMasterError] = useState("");
   const [notes, setNotes] = useState(() => readInternalStorage(INTERNAL_NOTES_KEY, {}));
   const [notesLoading, setNotesLoading] = useState(false);
   const [noteMessage, setNoteMessage] = useState("");
+  const [internalActionMessage, setInternalActionMessage] = useState("");
   const [loaded, setLoaded] = useState({});
   const [loading, setLoading] = useState(false);
   const [loadingMaster, setLoadingMaster] = useState(false);
@@ -7866,6 +7870,79 @@ function InternalProjectsPortal() {
     }))
     .sort((a, b) => b.pendingClient + b.pendingGse - (a.pendingClient + a.pendingGse))
     .slice(0, 8);
+  const internalLogoUrl = selectedSummary?.logoGSEhorizontalColor || selectedSummary?.logoGSEhorizontal || summaries.find((item) => item.summary.logoGSEhorizontalColor || item.summary.logoGSEhorizontal)?.summary.logoGSEhorizontalColor || summaries.find((item) => item.summary.logoGSEhorizontal)?.summary.logoGSEhorizontal || "";
+
+  const reloadInternalClient = async (summary) => {
+    if (!summary?.sheetId || !summary?.id) return;
+    const data = await loadSheetDataForSpreadsheetId(summary.sheetId);
+    setLoaded((current) => ({
+      ...current,
+      [summary.id]: { data, error: "" },
+    }));
+  };
+
+  const updateInternalSheetCell = async ({ sheetName, rowNumber, columnName, value }) => {
+    if (!selectedSummary) return;
+    if (!internalWriteUrl) {
+      setInternalActionMessage("Falta configurar VITE_INTERNAL_UPDATE_WEBHOOK_URL para guardar en Google Sheets.");
+      return;
+    }
+    if (!rowNumber) {
+      setInternalActionMessage("No se encontró la fila exacta en el Sheet. Actualiza el maestro e intenta de nuevo.");
+      return;
+    }
+    try {
+      setInternalActionMessage("Guardando cambio...");
+      await postInternalNoteAction(internalWriteUrl, {
+        action: "updateCell",
+        sheetId: selectedSummary.sheetId,
+        sheetName,
+        rowNumber,
+        columnName,
+        value,
+        usuario: "Equipo GSE",
+      });
+      await reloadInternalClient(selectedSummary);
+      setInternalActionMessage("Cambio guardado en Google Sheets.");
+    } catch (error) {
+      console.error(error);
+      setInternalActionMessage(error.message || "No se pudo guardar el cambio en Google Sheets.");
+    }
+  };
+
+  const cycleDeliverableStatus = (item) => {
+    const current = normalizeSystemName(item.status || "");
+    const next = current.includes("finalizado") || current.includes("aprobado") || current.includes("terminado")
+      ? "En desarrollo"
+      : current.includes("desarrollo") || current.includes("progreso")
+        ? "Pendiente"
+        : "Finalizado";
+    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Estado", value: next });
+  };
+
+  const toggleDeliverableOverdue = (item) => {
+    const current = normalizeSystemName(item.overdue || "");
+    const next = current.includes("si") || current.includes("vencido") ? "No" : "Si";
+    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Vencido", value: next });
+  };
+
+  const updateDeliverableLink = (item) => {
+    const next = window.prompt("Pega el link del entregable:", item.link || "");
+    if (next === null) return;
+    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Link", value: next.trim() });
+  };
+
+  const cycleChargeStatus = (charge) => {
+    const current = normalizeSystemName(charge.paymentStatus || charge.cutStatus || "");
+    const next = current.includes("pagado") || current.includes("cobrado") || current.includes("cancelado")
+      ? "Vencido"
+      : current.includes("vencido") || current.includes("mora")
+        ? "Sin estado"
+        : current.includes("pendiente")
+          ? "Pagado"
+          : "Pendiente";
+    updateInternalSheetCell({ sheetName: "Cobros", rowNumber: charge.rowNumber, columnName: "Estado pago", value: next });
+  };
 
   const refreshMaster = () => {
     setLoadingMaster(true);
@@ -8005,7 +8082,7 @@ function InternalProjectsPortal() {
       <aside className="internalNavShell">
         <div className="internalNavBrand">
           <Logo
-            src={import.meta.env.VITE_LOGIN_LOGO_HORIZONTAL_COLOR || import.meta.env.VITE_LOGIN_LOGO_HORIZONTAL || import.meta.env.VITE_LOCAL_LOGIN_LOGO_HORIZONTAL_COLOR || ""}
+            src={getDrivePreviewUrl(internalLogoUrl)}
             fallback="GSE Corporate"
             className="internalBrandLogo"
           />
@@ -8034,7 +8111,7 @@ function InternalProjectsPortal() {
 
       {internalSection === "dashboard" && (
       <section className="internalExecutiveDashboard" id="dashboard" aria-label="Dashboard NIV">
-        <div className="internalDashboardBand">Overview</div>
+        <div className="internalDashboardBand">General</div>
         <div className="internalOverviewCards">
           <article className="internalOverviewCard" data-tip="Promedio del avance general reportado en los RIV de todos los clientes.">
             <span>Avance promedio total</span>
@@ -8085,7 +8162,7 @@ function InternalProjectsPortal() {
 
         <div className="internalDashboardBand">Gestión de proyectos</div>
         <div className="internalExecutiveGrid">
-          <article className="internalExecutivePanel wide">
+          <article className="internalExecutivePanel wide" data-tip="Muestra por cliente cuántos entregables GSE están finalizados, en desarrollo o pendientes. El total al lado derecho es la cantidad de entregables registrados para ese cliente.">
             <div className="internalChartTitle">
               <h2>Entregables por cliente</h2>
               <span>estado operativo</span>
@@ -8117,7 +8194,7 @@ function InternalProjectsPortal() {
           <article className="internalExecutivePanel">
             <div className="internalChartTitle">
               <h2>Entregables subidos</h2>
-              <span>Cargadas {dashboard.clientDeliverablesLoaded} · Pendientes {Math.max(0, dashboard.clientDeliverables - dashboard.clientDeliverablesLoaded)} · Total {dashboard.clientDeliverables}</span>
+              <span>Total {dashboard.clientDeliverables}</span>
             </div>
             <div className="internalStatusBars">
               <article>
@@ -8163,13 +8240,13 @@ function InternalProjectsPortal() {
           </div>
           <div className="internalDashboardTable">
             <div className="internalDashboardTableHead">
-              <span>Cliente</span>
-              <span>Avance</span>
-              <span>Pend. cliente</span>
-              <span>Finalizados</span>
-              <span>En desarrollo</span>
-              <span>Pend. GSE</span>
-              <span>Cobros pend.</span>
+              <span data-tip="Nombre del cliente conectado desde el Google Sheet maestro.">Cliente</span>
+              <span data-tip="Promedio de avance general leído desde el RIV del cliente.">Avance</span>
+              <span data-tip="Pendientes abiertos que dependen del cliente.">Pend. cliente</span>
+              <span data-tip="Entregables GSE marcados como finalizados.">Finalizados</span>
+              <span data-tip="Entregables GSE que están en desarrollo.">En desarrollo</span>
+              <span data-tip="Entregables GSE pendientes por completar.">Pend. GSE</span>
+              <span data-tip="Cobros que no están marcados como pagados.">Cobros pend.</span>
             </div>
             {dashboardRows.map((row) => (
               <div className="internalDashboardTableRow" key={row.id}>
@@ -8324,6 +8401,7 @@ function InternalProjectsPortal() {
                   <div className="internalSectionHead">
                     <h3>Seguimiento de cobro</h3>
                   </div>
+                  {internalActionMessage && <p className="internalActionMessage">{internalActionMessage}</p>}
                   {selectedSummary.charges.length > 0 ? (
                     <div className="internalChargeMatrix">
                       <div className="internalChargeHead">
@@ -8345,7 +8423,7 @@ function InternalProjectsPortal() {
                           return (
                             <article key={`${charge.id || charge.payment}-${index}`}>
                               <strong>{charge.payment || `Pago ${index + 1}`}</strong>
-                              <button type="button" className={`internalTableButton ${chargeClass}`}>{charge.paymentStatus || charge.cutStatus || "Sin estado"}</button>
+                              <button type="button" className={`internalTableButton ${chargeClass}`} onClick={() => cycleChargeStatus(charge)}>{charge.paymentStatus || charge.cutStatus || "Sin estado"}</button>
                               <span>{charge.originalDueDate || "Sin fecha"}</span>
                               <span>{charge.adjustedDueDate || "Sin ajuste"}</span>
                               <span>{charge.daysDue || "Sin cálculo"}</span>
@@ -8374,6 +8452,7 @@ function InternalProjectsPortal() {
                     <h3>Entregables GSE</h3>
                     <button type="button" onClick={() => openClientRiv(selectedSummary)}>Abrir RIV cliente</button>
                   </div>
+                  {internalActionMessage && <p className="internalActionMessage">{internalActionMessage}</p>}
                   {selectedSummary.deliverables.length > 0 ? (
                     <div className="internalDeliverablesMatrix">
                       <div className="internalDeliverablesHead">
@@ -8399,13 +8478,13 @@ function InternalProjectsPortal() {
                                 <strong>{item.deliverable || item.deliverableGSE || "Entregable GSE"}</strong>
                                 <small>{[item.milestone, item.system].filter(Boolean).join(" · ") || "Sin hito asociado"}</small>
                               </div>
-                              <button type="button" className={`internalTableButton ${statusClass}`}>{item.status || "Sin estado"}</button>
+                              <button type="button" className={`internalTableButton ${statusClass}`} onClick={() => cycleDeliverableStatus(item)}>{item.status || "Sin estado"}</button>
                               <span>{item.date || "Sin fecha"}</span>
-                              <button type="button" className={`internalTableButton ${isOverdue ? "late" : "done"}`}>{overdue || "No"}</button>
+                              <button type="button" className={`internalTableButton ${isOverdue ? "late" : "done"}`} onClick={() => toggleDeliverableOverdue(item)}>{overdue || "No"}</button>
                               {safeUrl(item.link) ? (
                                 <a className="internalTableButton link" href={safeUrl(item.link)} target="_blank" rel="noreferrer">Abrir</a>
                               ) : (
-                                <button type="button" className="internalTableButton empty">Cargar link</button>
+                                <button type="button" className="internalTableButton empty" onClick={() => updateDeliverableLink(item)}>Cargar link</button>
                               )}
                             </article>
                           );

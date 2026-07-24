@@ -598,7 +598,8 @@ function mapPending(rows) {
 }
 
 function mapDeliverables(rows) {
-  return rows.map((row) => ({
+  return rows.map((row, index) => ({
+    rowNumber: index + 2,
     system: getRowValue(row, ["Sistema"]),
     milestone: getRowValue(row, ["Hito"]),
     deliverable: getRowValue(row, ["Entregable"]),
@@ -642,6 +643,7 @@ function mapMeetings(rows) {
 
 function mapCharges(rows) {
   return rows.map((row, index) => ({
+    rowNumber: index + 2,
     id: getRowValue(row, ["N°", "NÂ°", "No", "N", "Numero", "Número", "ID", "Id"]) || String(index + 1),
     client: getRowValue(row, ["Cliente"]),
     project: getRowValue(row, ["Proyecto"]),

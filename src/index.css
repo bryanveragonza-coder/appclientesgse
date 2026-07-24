@@ -804,9 +804,9 @@ button.internalGhostLink {
   background:
     radial-gradient(circle at center, #ffffff 0 53%, transparent 54%),
     conic-gradient(
-      #10b981 0 var(--paid-end),
-      #f59e0b var(--paid-end) var(--pending-end),
-      #ef4444 var(--pending-end) 100%
+      #00b8b5 0 var(--paid-end),
+      #aee9e6 var(--paid-end) var(--pending-end),
+      #e8edf2 var(--pending-end) 100%
     );
 }
 
@@ -1584,6 +1584,16 @@ button.internalGhostLink {
 .internalTableButton:hover {
   border-color: rgba(0, 184, 181, 0.45);
   box-shadow: 0 0 0 2px rgba(0, 184, 181, 0.08);
+}
+
+.internalActionMessage {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-left: 3px solid #00b8b5;
+  background: #e6fbfa;
+  color: #007f80;
+  font-size: 0.82rem;
+  font-weight: 500;
 }
 
 .internalDeliverablesPanel article,
