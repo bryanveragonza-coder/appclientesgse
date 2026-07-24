@@ -7457,14 +7457,15 @@ async function postInternalNoteAction(url, payload) {
 function parseInternalDate(value = "") {
   const raw = String(value || "").trim();
   if (!raw) return null;
-  const direct = new Date(raw);
-  if (!Number.isNaN(direct.getTime())) return direct;
   const match = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
-  if (!match) return null;
-  const [, day, month, year] = match;
-  const fullYear = Number(year.length === 2 ? `20${year}` : year);
-  const parsed = new Date(fullYear, Number(month) - 1, Number(day));
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  if (match) {
+    const [, day, month, year] = match;
+    const fullYear = Number(year.length === 2 ? `20${year}` : year);
+    const parsed = new Date(fullYear, Number(month) - 1, Number(day));
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  const direct = new Date(raw);
+  return Number.isNaN(direct.getTime()) ? null : direct;
 }
 
 function isPaidCharge(charge = {}) {
@@ -7475,6 +7476,40 @@ function isPaidCharge(charge = {}) {
 function getChargeDueDate(charge = {}) {
   if (!charge) return "";
   return charge.adjustedDueDate || charge.originalDueDate || "";
+}
+
+function getChargeDaysLabel(charge = {}) {
+  if (!charge) return "Sin cálculo";
+  if (isPaidCharge(charge)) return charge.daysDue || "Pagado";
+  const dueDate = parseInternalDate(getChargeDueDate(charge));
+  if (!dueDate) return charge.daysDue || "Sin cálculo";
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  dueDate.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((dueDate - today) / 86400000);
+  if (diffDays > 0) return `Faltan ${diffDays} días`;
+  if (diffDays < 0) return `Vencido ${Math.abs(diffDays)} días`;
+  return "Vence hoy";
+}
+
+function isOpenDeliverable(item = {}) {
+  const status = normalizeSystemName(item.status || "");
+  return !(status.includes("finalizado") || status.includes("aprobado") || status.includes("terminado"));
+}
+
+function getNextPendingDeliverable(deliverables = []) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const candidates = deliverables
+    .filter(isOpenDeliverable)
+    .map((item, index) => ({ item, index, parsedDate: parseInternalDate(item.date) }))
+    .sort((a, b) => {
+      if (a.parsedDate && b.parsedDate) return a.parsedDate - b.parsedDate;
+      if (a.parsedDate) return -1;
+      if (b.parsedDate) return 1;
+      return a.index - b.index;
+    });
+  return candidates.find((candidate) => candidate.parsedDate && candidate.parsedDate >= today)?.item || candidates[0]?.item || null;
 }
 
 function getNextCharge(charges = []) {
@@ -7781,6 +7816,7 @@ function InternalProjectsPortal() {
   const selectedMilestonePct = selectedSummary?.totalMilestones
     ? Math.round((selectedSummary.completed / selectedSummary.totalMilestones) * 100)
     : 0;
+  const selectedNextPendingDeliverable = getNextPendingDeliverable(selectedSummary?.deliverables || []);
 
   useEffect(() => {
     if (!selectedSummary) return;
@@ -8212,7 +8248,7 @@ function InternalProjectsPortal() {
           <p className="internalHeaderSubtitle">Núcleo Interno Visible para colaboradores</p>
         </div>
         <div className="internalHeaderActions">
-          <button type="button" className="internalGhostLink" onClick={refreshMaster}>Actualizar maestro</button>
+          <button type="button" className="internalGhostLink" onClick={refreshMaster}>Actualizar</button>
           <a href="/" className="internalGhostLink">Volver al RIV</a>
         </div>
       </header>
@@ -8396,7 +8432,7 @@ function InternalProjectsPortal() {
                 <Logo src={summary.logoClient} fallback={(summary.name || "CL").slice(0, 2)} className="internalClientCardLogo" />
                 <span>{summary.name}</span>
                 <strong>{error ? "Revisar conexión" : `${summary.progress}%`}</strong>
-                <small>{summary.manager} · {entry.source === "master" ? "Maestro login" : "Manual"}</small>
+                <small>{summary.manager || "Equipo GSE"}</small>
               </button>
             ))}
             {!allEntries.length && <p className="internalEmpty">No se encontraron clientes en el maestro todavía.</p>}
@@ -8440,7 +8476,7 @@ function InternalProjectsPortal() {
                 <div className="internalClientCharts">
                   <article className="internalClientChart" data-tip="Estado de los entregables GSE del cliente seleccionado.">
                     <div className="internalChartTitle">
-                      <h2>Entregables del cliente</h2>
+                      <h2>Entregables</h2>
                       <span>{selectedDeliverableTotal} total</span>
                     </div>
                     <div className="internalStackedChart client">
@@ -8456,7 +8492,7 @@ function InternalProjectsPortal() {
                   </article>
                   <article className="internalClientChart" data-tip="Estado de pagos del cliente seleccionado.">
                     <div className="internalChartTitle">
-                      <h2>Cobros del cliente</h2>
+                      <h2>Cobros</h2>
                       <span>{selectedSummary.charges.length} registros</span>
                     </div>
                     <div className="internalChartLegend inline">
@@ -8480,9 +8516,9 @@ function InternalProjectsPortal() {
                 </article>
                 <article>
                   <Flag size={19} />
-                  <span>Próximo paso</span>
-                  <strong>{selectedSummary.nextDate}</strong>
-                  <p>{selectedSummary.nextStep}</p>
+                  <span>Próximo entregable pendiente</span>
+                  <strong>{selectedNextPendingDeliverable?.date || "Sin fecha"}</strong>
+                  <p>{selectedNextPendingDeliverable?.deliverable || "Sin entregable pendiente"}</p>
                 </article>
                 <article>
                   <Clock3 size={19} />
@@ -8515,10 +8551,14 @@ function InternalProjectsPortal() {
                       <div className="internalChargeHead">
                         <span>Pago</span>
                         <span>Estado</span>
+                        <span>Vencimiento</span>
                         <span>Fecha pago</span>
-                        <span>Fecha pago actual</span>
-                        <span>Días vencimiento</span>
-                        <span>Recordatorios</span>
+                        <span>Días</span>
+                        <span>5 días</span>
+                        <span>24 h</span>
+                        <span>Vence</span>
+                        <span>+24 h</span>
+                        <span>+72 h</span>
                       </div>
                       <div className="internalChargeBody">
                         {selectedSummary.charges.map((charge, index) => {
@@ -8527,9 +8567,9 @@ function InternalProjectsPortal() {
                             ? "paid"
                             : chargeStatus.includes("vencido") || chargeStatus.includes("mora")
                               ? "late"
-                              : "pending";
+                              : "chargePending";
                           return (
-                            <article key={`${charge.id || charge.payment}-${index}`}>
+                            <article key={`${charge.id || charge.payment}-${index}`} className={chargeClass === "late" ? "isLate" : ""}>
                               <strong>{charge.payment || `Pago ${index + 1}`}</strong>
                               <select
                                 className={`internalTableSelect ${chargeClass}`}
@@ -8541,16 +8581,14 @@ function InternalProjectsPortal() {
                                 <option>Pagado</option>
                                 <option>Vencido</option>
                               </select>
-                              <span>{charge.originalDueDate || "Sin fecha"}</span>
-                              <span>{charge.adjustedDueDate || "Sin ajuste"}</span>
-                              <span>{charge.daysDue || "Sin cálculo"}</span>
-                              <p>
-                                <b>5 días:</b> {charge.reminder5Days || "Sin fecha"}<br />
-                                <b>24 h:</b> {charge.reminder24Hours || "Sin fecha"}<br />
-                                <b>Vence:</b> {charge.dueDayMessage || "Sin fecha"}<br />
-                                <b>+24 h:</b> {charge.after24HoursMessage || "Sin fecha"}<br />
-                                <b>+72 h:</b> {charge.after72HoursMessage || "Sin fecha"}
-                              </p>
+                              <span>{charge.adjustedDueDate || charge.originalDueDate || "Sin fecha"}</span>
+                              <span>{charge.paymentDate || "Sin pago"}</span>
+                              <span>{getChargeDaysLabel(charge)}</span>
+                              <span>{charge.reminder5Days || "Sin fecha"}</span>
+                              <span>{charge.reminder24Hours || "Sin fecha"}</span>
+                              <span>{charge.dueDayMessage || "Sin fecha"}</span>
+                              <span>{charge.after24HoursMessage || "Sin fecha"}</span>
+                              <span>{charge.after72HoursMessage || "Sin fecha"}</span>
                             </article>
                           );
                         })}
@@ -8584,8 +8622,15 @@ function InternalProjectsPortal() {
                       <div className="internalDeliverablesBody">
                         {selectedSummary.deliverables.map((item, index) => {
                           const overdue = String(item.overdue || "").trim();
-                          const isOverdue = normalizeSystemName(overdue).includes("si") || normalizeSystemName(overdue).includes("vencido");
                           const statusKey = normalizeSystemName(item.status || "");
+                          const deliverableDate = parseInternalDate(item.date);
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          if (deliverableDate) deliverableDate.setHours(0, 0, 0, 0);
+                          const isFinished = !isOpenDeliverable(item);
+                          const automaticOverdue = Boolean(!isFinished && deliverableDate && deliverableDate < today);
+                          const effectiveOverdue = isFinished ? "No" : automaticOverdue ? "Si" : overdue;
+                          const isOverdue = normalizeSystemName(effectiveOverdue).includes("si") || normalizeSystemName(effectiveOverdue).includes("vencido");
                           const statusClass = statusKey.includes("finalizado") || statusKey.includes("aprobado") || statusKey.includes("terminado")
                             ? "done"
                             : statusKey.includes("desarrollo") || statusKey.includes("progreso")
@@ -8609,7 +8654,7 @@ function InternalProjectsPortal() {
                               <span>{item.date || "Sin fecha"}</span>
                               <select
                                 className={`internalTableSelect ${isOverdue ? "late" : "done"}`}
-                                value={getOverdueOption(overdue)}
+                                value={getOverdueOption(effectiveOverdue)}
                                 onChange={(event) => updateDeliverableOverdue(item, event.target.value)}
                               >
                                 <option>No</option>
@@ -8632,7 +8677,10 @@ function InternalProjectsPortal() {
                                 {[...new Set([...(item.responsible ? [item.responsible] : []), ...deliverableResponsibleOptions])].map((user) => <option key={user} value={user}>{user}</option>)}
                               </select>
                               {safeUrl(item.link) ? (
-                                <a className="internalTableButton link" href={safeUrl(item.link)} target="_blank" rel="noreferrer">Abrir</a>
+                                <div className="internalLinkActions">
+                                  <a className="internalTableButton link" href={safeUrl(item.link)} target="_blank" rel="noreferrer">Abrir</a>
+                                  <button type="button" className="internalTableButton empty" onClick={() => updateDeliverableLink(item)}>Cambiar</button>
+                                </div>
                               ) : (
                                 <button type="button" className="internalTableButton empty" onClick={() => updateDeliverableLink(item)}>Cargar link</button>
                               )}

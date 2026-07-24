@@ -1034,9 +1034,9 @@ button.internalGhostLink {
 
 .internalProjectList button {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 4px 10px;
+  gap: 7px 14px;
   flex: 0 0 250px;
   width: 250px;
   padding: 12px;
@@ -1076,8 +1076,9 @@ button.internalGhostLink {
   height: 42px;
   border-radius: 8px;
   object-fit: contain;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: transparent;
+  border: 0;
+  padding: 0;
 }
 
 .logoFallback.internalClientCardLogo {
@@ -1218,9 +1219,11 @@ button.internalGhostLink {
 }
 
 .internalProgressDial {
-  display: grid;
-  place-items: center;
-  width: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 136px;
   aspect-ratio: 1;
   border-radius: 50%;
   background:
@@ -1231,11 +1234,12 @@ button.internalGhostLink {
 
 .internalProgressDial strong {
   color: #0f172a;
-  font-size: 1.35rem;
+  font-size: 1.65rem;
+  line-height: 1;
 }
 
 .internalProgressDial span {
-  margin-top: -22px;
+  margin-top: 8px;
   color: #64748b;
   font-size: 0.72rem;
 }
@@ -1309,19 +1313,23 @@ button.internalGhostLink {
 
 .internalChargeHead,
 .internalChargeBody {
-  min-width: 760px;
+  min-width: 1220px;
 }
 
 .internalChargeHead,
 .internalChargeBody article {
   display: grid;
   grid-template-columns:
-    minmax(90px, 0.65fr)
-    minmax(112px, 0.85fr)
-    minmax(112px, 0.85fr)
-    minmax(126px, 0.9fr)
-    minmax(112px, 0.85fr)
-    minmax(210px, 1.35fr);
+    minmax(70px, 0.45fr)
+    minmax(108px, 0.7fr)
+    minmax(116px, 0.75fr)
+    minmax(116px, 0.75fr)
+    minmax(84px, 0.55fr)
+    minmax(96px, 0.62fr)
+    minmax(96px, 0.62fr)
+    minmax(96px, 0.62fr)
+    minmax(96px, 0.62fr)
+    minmax(96px, 0.62fr);
   align-items: stretch;
   gap: 0;
 }
@@ -1347,9 +1355,13 @@ button.internalGhostLink {
   border-bottom: 1px solid #e2e8f0;
 }
 
+.internalChargeBody article.isLate {
+  background: #fff1f2;
+}
+
 .internalChargeBody article > * {
-  min-height: 34px;
-  padding: 7px 9px;
+  min-height: 42px;
+  padding: 10px 9px;
   border-right: 1px solid #e5e7eb;
 }
 
@@ -1450,7 +1462,7 @@ button.internalGhostLink {
 
 .internalDeliverablesHead,
 .internalDeliverablesBody {
-  min-width: 940px;
+  min-width: 1060px;
 }
 
 .internalDeliverablesHead,
@@ -1463,7 +1475,7 @@ button.internalGhostLink {
     minmax(88px, 0.48fr)
     minmax(88px, 0.48fr)
     minmax(140px, 0.8fr)
-    minmax(82px, 0.45fr);
+    minmax(128px, 0.72fr);
   align-items: stretch;
   gap: 0;
 }
@@ -1495,8 +1507,8 @@ button.internalGhostLink {
 }
 
 .internalDeliverablesBody article > * {
-  min-height: 34px;
-  padding: 7px 9px;
+  min-height: 44px;
+  padding: 10px 9px;
   border-right: 1px solid #e5e7eb;
 }
 
@@ -1506,6 +1518,13 @@ button.internalGhostLink {
 
 .internalDeliverablesBody article:last-child {
   border-bottom: 0;
+}
+
+.internalLinkActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .internalDeliverablesBody article.isOverdue {
@@ -1582,11 +1601,16 @@ button.internalGhostLink {
 }
 
 .internalTableSelect.progress {
-  background-color: #fde68a;
-  color: #92400e;
+  background-color: #fde68a !important;
+  color: #92400e !important;
 }
 
 .internalTableSelect.pending {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.internalTableSelect.chargePending {
   background-color: #fde68a;
   color: #92400e;
 }
@@ -1614,10 +1638,14 @@ button.internalGhostLink {
   color: #166534;
 }
 
-.internalTableButton.progress,
-.internalTableButton.pending {
+.internalTableButton.progress {
   background: #fde68a;
   color: #92400e;
+}
+
+.internalTableButton.pending {
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .internalTableButton.late {
@@ -1792,14 +1820,21 @@ button.internalGhostLink {
 .internalReplies {
   display: grid;
   gap: 8px;
-  margin-top: 10px;
-  padding-left: 14px;
-  border-left: 3px solid #b6ecea;
+  margin-top: 12px;
+  margin-left: 18px;
+  padding-left: 18px;
+  border-left: 4px solid #00b8b5;
 }
 
 .internalReplies article {
   padding: 10px;
+  border-color: #b6ecea;
+  background: #f2ffff;
   box-shadow: none;
+}
+
+.internalReplies .internalNoteHeader span {
+  color: #007f80;
 }
 
 .internalRemove {
@@ -1892,23 +1927,29 @@ button.internalGhostLink {
       minmax(106px, 0.72fr)
       minmax(96px, 0.64fr)
       minmax(88px, 0.58fr)
-      minmax(82px, 0.52fr);
+      minmax(88px, 0.58fr)
+      minmax(132px, 0.82fr)
+      minmax(126px, 0.76fr);
   }
 
   .internalChargeHead,
   .internalChargeBody {
-    min-width: 720px;
+    min-width: 1160px;
   }
 
   .internalChargeHead,
   .internalChargeBody article {
     grid-template-columns:
-      minmax(84px, 0.62fr)
-      minmax(104px, 0.82fr)
-      minmax(104px, 0.82fr)
-      minmax(116px, 0.88fr)
-      minmax(104px, 0.82fr)
-      minmax(190px, 1.3fr);
+      minmax(70px, 0.45fr)
+      minmax(104px, 0.7fr)
+      minmax(110px, 0.75fr)
+      minmax(110px, 0.75fr)
+      minmax(82px, 0.55fr)
+      minmax(92px, 0.62fr)
+      minmax(92px, 0.62fr)
+      minmax(92px, 0.62fr)
+      minmax(92px, 0.62fr)
+      minmax(92px, 0.62fr);
   }
 
   .internalMetrics,
