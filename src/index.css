@@ -20,9 +20,117 @@
 /* INTERNAL_PROJECTS_PORTAL_V1 */
 .internalPortal {
   min-height: 100vh;
-  padding: 28px;
-  background: #00b8b5;
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  padding: 0;
+  background: #f5f7fa;
   color: #102026;
+}
+
+.internalNavShell {
+  position: sticky;
+  top: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+  background: #2d3648;
+  color: #dbe3ee;
+  box-shadow: 10px 0 28px rgba(15, 23, 42, 0.08);
+}
+
+.internalNavBrand {
+  display: flex;
+  align-items: center;
+  min-height: 88px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  color: #111827;
+}
+
+.internalBrandLogo.logoImage {
+  width: 150px;
+  max-width: 100%;
+  height: 46px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  object-fit: contain;
+}
+
+.internalBrandLogo.logoFallback {
+  width: 152px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #00b8b5;
+  font-size: 1.28rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.internalNavMenu {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 18px 0;
+}
+
+.internalNavMenu button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-left: 4px solid transparent;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.internalNavMenu button svg {
+  color: currentColor;
+}
+
+.internalNavMenu button.active,
+.internalNavMenu button:hover {
+  border-left-color: #00b8b5;
+  background: #00b8b5;
+  color: #ffffff;
+}
+
+.internalNavFoot {
+  display: grid;
+  gap: 4px;
+  padding: 18px 22px;
+  background: #252d3d;
+  color: #cbd5e1;
+}
+
+.internalNavFoot span {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.internalNavFoot small {
+  color: #94a3b8;
+  font-size: 0.74rem;
+}
+
+.internalMainShell {
+  min-width: 0;
+  padding: 0 26px 34px;
 }
 
 .internalHeader {
@@ -30,8 +138,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  max-width: 1440px;
-  margin: 0 auto 20px;
+  max-width: none;
+  min-height: 82px;
+  margin: 0 -26px 22px;
+  padding: 0 26px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
 }
 
 .internalHeaderActions {
@@ -42,14 +155,12 @@
   flex-wrap: wrap;
 }
 
-.internalHeader span,
-.internalProjectForm h2,
 .internalInfoGrid article span,
 .internalDeliverablesPanel article span,
 .internalNotesList article span {
   color: #64748b;
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -58,18 +169,21 @@
 .internalClientHero h2 {
   margin: 3px 0 0;
   color: #0f172a;
-  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-size: clamp(2.2rem, 3vw, 3.4rem);
   line-height: 1.02;
   letter-spacing: 0;
 }
 
-.internalHeader h1,
-.internalHeader > div > span {
-  color: #ffffff;
+.internalHeader h1 {
+  color: #00b8b5;
+  font-size: 2.2rem;
 }
 
-.internalHeader > div > span {
-  opacity: 0.78;
+.internalHeaderSubtitle {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 0.92rem;
+  font-weight: 400;
 }
 
 .internalGhostLink,
@@ -85,28 +199,65 @@
   border-radius: 8px;
   background: #00b8b5;
   color: #ffffff;
-  font-weight: 800;
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
 }
 
 .internalGhostLink {
   padding: 0 16px;
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  border: 1px solid #d9e3ea;
   background: #ffffff;
   color: #007f80;
-  box-shadow: 0 10px 22px rgba(0, 88, 86, 0.14);
+  box-shadow: none;
+}
+
+.internalGhostLink:hover {
+  border-color: #00b8b5;
+  background: #e6fbfa;
 }
 
 button.internalGhostLink {
   font: inherit;
 }
 
+[data-tip] {
+  position: relative;
+}
+
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 14px;
+  bottom: calc(100% + 10px);
+  z-index: 20;
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #073b4c;
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(7, 59, 76, 0.18);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.25;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(5px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+[data-tip]:hover::after,
+[data-tip]:focus-within::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .internalMetrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  max-width: 1440px;
+  max-width: none;
   margin: 0 auto 16px;
 }
 
@@ -115,13 +266,12 @@ button.internalGhostLink {
 .internalDetail,
 .internalInfoGrid article,
 .internalChargePanel,
-.internalChargeGrid article,
 .internalDeliverablesPanel,
 .internalNotesPanel {
   border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
 }
 
 .internalMetrics article {
@@ -139,21 +289,670 @@ button.internalGhostLink {
 .internalMetrics span {
   color: #64748b;
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .internalMetrics strong {
   color: #0f172a;
   font-size: 1.55rem;
   line-height: 1;
+  font-weight: 700;
+}
+
+.internalDashboard {
+  display: grid;
+  gap: 12px;
+  max-width: none;
+  margin: 0 auto 16px;
+}
+
+.internalExecutiveDashboard {
+  display: grid;
+  gap: 14px;
+  max-width: 1500px;
+  margin: 0 auto 26px;
+}
+
+.internalDashboardBand {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  padding: 0 26px;
+  border-left: 6px solid #00b8b5;
+  background: #344453;
+  color: #ffffff;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.internalOverviewCards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.internalOverviewCard,
+.internalExecutivePanel,
+.internalDashboardTablePanel {
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 2px;
+  background: #ffffff;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
+}
+
+.internalOverviewCard {
+  display: grid;
+  gap: 10px;
+  min-height: 170px;
+  padding: 18px 16px 14px;
+}
+
+.internalOverviewCard > span {
+  color: #263443;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.internalOverviewCard > strong {
+  color: #2f3b47;
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
+  line-height: 1;
+  font-weight: 400;
+  text-align: left;
+}
+
+.internalOverviewTrack {
+  display: flex;
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eef6f6;
+}
+
+.internalOverviewTrack i {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  background: #00b8b5;
+}
+
+.internalOverviewTrack.split i {
+  border-radius: 0;
+}
+
+.internalOverviewTrack.split i:first-child {
+  border-radius: 999px 0 0 999px;
+}
+
+.internalOverviewTrack.split i:last-child {
+  border-radius: 0 999px 999px 0;
+}
+
+.internalOverviewTrack .paid {
+  background: #00b8b5;
+}
+
+.internalOverviewTrack .pending {
+  background: #d6eeee;
+}
+
+.internalOverviewStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.internalOverviewStats.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.internalOverviewStats p {
+  display: grid;
+  gap: 3px;
+  min-height: 54px;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+
+.internalOverviewStats b {
+  color: #0f172a;
+  font-size: 1.2rem;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.internalOverviewStats small {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.internalExecutiveGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.9fr) minmax(220px, 0.65fr);
+  gap: 12px;
+}
+
+.internalExecutivePanel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-height: 230px;
+  padding: 16px;
+}
+
+.internalDashboardTablePanel {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.internalDashboardTable {
+  min-width: 780px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.internalDashboardTableHead,
+.internalDashboardTableRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.3fr) repeat(6, minmax(86px, 0.55fr));
+  align-items: center;
+}
+
+.internalDashboardTableHead {
+  min-height: 38px;
+  background: #2d3648;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.internalDashboardTableHead span,
+.internalDashboardTableRow span,
+.internalDashboardTableRow strong {
+  padding: 9px 11px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.internalDashboardTableHead span {
+  border-right-color: rgba(255, 255, 255, 0.12);
+}
+
+.internalDashboardTableRow {
+  min-height: 38px;
+  border-top: 1px solid #e5e7eb;
+  color: #334155;
+  font-size: 0.86rem;
+}
+
+.internalDashboardTableRow strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.internalDashboardKpis,
+.internalDashboardCharts {
+  display: grid;
+  gap: 12px;
+}
+
+.internalDashboardKpis {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.internalDashboardCharts {
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.9fr) minmax(220px, 0.65fr);
+}
+
+.internalDashboardKpis article,
+.internalChartPanel {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.internalDashboardKpis article {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 6px;
+  min-height: auto;
+  padding: 16px;
+}
+
+.internalDashboardKpis article svg {
+  grid-row: span 3;
+  color: #00a6a4;
+}
+
+.internalDashboardKpis span,
+.internalChartTitle span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.internalDashboardKpis b {
+  color: #0f172a;
+  font-size: 1.55rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.internalDashboardKpis small,
+.internalBarRow small {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+
+.internalChartPanel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-height: 214px;
+  padding: 16px;
+}
+
+.internalChartTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.internalChartTitle h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.internalBarChart {
+  display: grid;
+  gap: 12px;
+}
+
+.internalBarRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 160px) minmax(120px, 1fr) 42px;
+  align-items: center;
+  gap: 10px;
+}
+
+.internalBarRow > span {
+  min-width: 0;
+  overflow: hidden;
+  color: #102026;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.internalBarRow > i {
+  display: block;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e6fbfa;
+}
+
+.internalBarRow > i > em {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #00b8b5, #08d2c9);
+}
+
+.internalBarRow.mix > i {
+  position: relative;
+  display: block;
+  padding: 0;
+  background: #f4f7f8;
+  overflow: visible;
+}
+
+.internalBarRow.mix > i > em {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 0;
+  min-width: 0;
+  outline: 0;
+}
+
+.internalBarRow.mix > i > em:first-child {
+  border-radius: 999px 0 0 999px;
+}
+
+.internalBarRow.mix > i > em:last-child {
+  border-radius: 0 999px 999px 0;
+}
+
+.internalBarRow.mix > i > em.done {
+  background: #00b8b5;
+}
+
+.internalBarRow.mix > i > em.inProgress {
+  background: #aee9e6;
+}
+
+.internalBarRow.mix > i > em.pending {
+  background: #e8edf2;
+}
+
+.internalChartLegend.inline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.internalStatusBars {
+  display: grid;
+  gap: 14px;
+}
+
+.internalStatusBars article {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.65fr) minmax(110px, 1fr) 42px;
+  align-items: center;
+  gap: 10px;
+}
+
+.internalStatusBars div {
+  display: grid;
+  gap: 3px;
+}
+
+.internalStatusBars span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.internalStatusBars strong {
+  color: #0f172a;
+  font-size: 1.25rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.internalStatusBars > article > i {
+  display: block;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eef6f6;
+}
+
+.internalStatusBars em {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.internalStatusBars small {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 400;
+  text-align: right;
+}
+
+.internalStatusBars .done {
+  background: #00b8b5;
+}
+
+.internalStatusBars .progress {
+  background: #aee9e6;
+}
+
+.internalStatusBars .pending {
+  background: #e8edf2;
+}
+
+.internalStackedChart {
+  display: flex;
+  width: 100%;
+  height: 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f4f7f8;
+}
+
+.internalStackedChart i {
+  position: relative;
+  min-width: 0;
+  outline: 0;
+}
+
+.internalChartLegend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.internalChartLegend.compact {
+  grid-template-columns: 1fr;
+}
+
+.internalChartLegend span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #475569;
+  font-size: 0.83rem;
+  font-weight: 400;
+}
+
+.internalChartLegend i {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+}
+
+.internalStackedChart .done,
+.internalChartLegend .done {
+  background: #00b8b5;
+}
+
+.internalStackedChart .inProgress,
+.internalChartLegend .inProgress {
+  background: #aee9e6;
+}
+
+.internalChartLegend i.inProgress,
+.internalStackedChart i.inProgress,
+.internalBarRow.mix > i > em.inProgress,
+.internalStatusBars .progress {
+  background: #aee9e6 !important;
+}
+
+.internalStackedChart .pending,
+.internalChartLegend .pending {
+  background: #e8edf2;
+}
+
+.donutPanel {
+  justify-items: center;
+}
+
+.donutPanel .internalChartTitle,
+.donutPanel .internalChartLegend {
+  width: 100%;
+}
+
+.internalDonutChart {
+  display: grid;
+  place-items: center;
+  width: 132px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #ffffff 0 53%, transparent 54%),
+    conic-gradient(
+      #10b981 0 var(--paid-end),
+      #f59e0b var(--paid-end) var(--pending-end),
+      #ef4444 var(--pending-end) 100%
+    );
+}
+
+.internalDonutChart b,
+.internalDonutChart small {
+  grid-area: 1 / 1;
+}
+
+.internalDonutChart b {
+  margin-top: -12px;
+  color: #0f172a;
+  font-size: 1.55rem;
+  font-weight: 600;
+}
+
+.internalDonutChart small {
+  margin-top: 34px;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 500;
 }
 
 .internalWorkspace {
   display: grid;
-  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   gap: 16px;
-  max-width: 1440px;
+  max-width: none;
   margin: 0 auto;
+}
+
+.internalClientDashboard {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.internalClientTabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 8px;
+  border: 1px solid #d9dee7;
+  border-radius: 4px;
+  background: #f8fafc;
+}
+
+.internalClientTabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #64748b;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.internalClientTabs button svg {
+  color: currentColor;
+}
+
+.internalClientTabs button.active,
+.internalClientTabs button:hover {
+  border-color: #00b8b5;
+  color: #007f80;
+  background: #e6fbfa;
+}
+
+.internalClientKpis,
+.internalClientCharts {
+  display: grid;
+  gap: 12px;
+}
+
+.internalClientKpis {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.internalClientCharts {
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+}
+
+.internalClientKpis article,
+.internalClientChart {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
+}
+
+.internalClientKpis article {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 5px 9px;
+  padding: 13px 14px;
+}
+
+.internalClientKpis svg {
+  grid-row: span 3;
+  color: #00a6a4;
+}
+
+.internalClientKpis span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.internalClientKpis strong {
+  color: #0f172a;
+  font-size: 1.35rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.internalClientKpis small {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 400;
+}
+
+.internalClientChart {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 14px;
+}
+
+.internalStackedChart.client {
+  position: relative;
+  display: block;
+  height: 13px;
+  overflow: visible;
+}
+
+.internalStackedChart.client i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
 }
 
 .internalSidePanel,
@@ -162,9 +961,10 @@ button.internalGhostLink {
 }
 
 .internalSidePanel {
-  align-self: start;
-  position: sticky;
-  top: 18px;
+  display: grid;
+  gap: 12px;
+  align-self: stretch;
+  position: static;
 }
 
 .internalProjectForm {
@@ -207,7 +1007,7 @@ button.internalGhostLink {
   grid-template-columns: 28px 1fr;
   align-items: center;
   height: 42px;
-  margin-bottom: 12px;
+  margin-bottom: 0;
   padding: 0 10px;
   border: 1px solid #dbe4ea;
   border-radius: 8px;
@@ -225,8 +1025,11 @@ button.internalGhostLink {
 }
 
 .internalProjectList {
-  display: grid;
+  display: flex;
   gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-color: #00b8b5 #e6fbfa;
 }
 
 .internalProjectList button {
@@ -234,7 +1037,8 @@ button.internalGhostLink {
   grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
   gap: 4px 10px;
-  width: 100%;
+  flex: 0 0 250px;
+  width: 250px;
   padding: 12px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
@@ -246,12 +1050,12 @@ button.internalGhostLink {
 
 .internalProjectList button.active {
   border-color: #00b8b5;
-  box-shadow: inset 3px 0 0 #00b8b5;
+  box-shadow: inset 0 -3px 0 #00b8b5;
 }
 
 .internalProjectList button span,
 .internalProjectList button strong {
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .internalProjectList button span {
@@ -352,41 +1156,64 @@ button.internalGhostLink {
 
 .internalClientHero span {
   color: #00a6a4;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .internalClientHero p {
   margin: 8px 0 0;
   color: #64748b;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .internalDeliverableSummary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(110px, 150px));
+  gap: 10px;
+  margin-top: 14px;
 }
 
-.internalDeliverableSummary b {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 900;
+.internalDeliverableSummary article {
+  display: grid;
+  gap: 4px;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
 }
 
-.internalDeliverableSummary b.done {
-  background: #dcfce7;
+.internalDeliverableSummary article span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.internalDeliverableSummary article strong {
+  color: #0f172a;
+  font-size: 1.35rem;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.internalDeliverableSummary article.done {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.internalDeliverableSummary article.pending,
+.internalDeliverableSummary article.overdue {
+  border-color: #fecaca;
+  background: #fff1f2;
+}
+
+.internalDeliverableSummary article.done strong {
   color: #166534;
 }
 
-.internalDeliverableSummary b.pending,
-.internalDeliverableSummary b.overdue {
-  background: #fee2e2;
+.internalDeliverableSummary article.pending strong,
+.internalDeliverableSummary article.overdue strong {
   color: #b91c1c;
 }
 
@@ -433,6 +1260,7 @@ button.internalGhostLink {
 .internalInfoGrid strong {
   color: #0f172a;
   font-size: 1rem;
+  font-weight: 650;
 }
 
 .internalInfoGrid p {
@@ -444,12 +1272,12 @@ button.internalGhostLink {
 
 .internalInfoGrid a {
   color: #007f80;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .internalSplit {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -466,48 +1294,90 @@ button.internalGhostLink {
 
 .internalChargePanel .internalSectionHead span {
   color: #007f80;
-  font-weight: 900;
+  font-weight: 700;
 }
 
-.internalChargeGrid {
+.internalChargeMatrix {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid #d9dee7;
+  border-radius: 4px;
+  background: #ffffff;
+  scrollbar-color: #00b8b5 #e6fbfa;
+}
+
+.internalChargeHead,
+.internalChargeBody {
+  min-width: 760px;
+}
+
+.internalChargeHead,
+.internalChargeBody article {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns:
+    minmax(90px, 0.65fr)
+    minmax(112px, 0.85fr)
+    minmax(112px, 0.85fr)
+    minmax(126px, 0.9fr)
+    minmax(112px, 0.85fr)
+    minmax(210px, 1.35fr);
+  align-items: stretch;
+  gap: 0;
 }
 
-.internalChargeGrid article {
-  display: grid;
-  gap: 5px;
-  padding: 12px;
-  box-shadow: none;
+.internalChargeHead {
+  padding: 0;
+  border-bottom: 1px solid #202838;
+  background: #2d3648;
+  color: #ffffff;
 }
 
-.internalChargeGrid article span {
-  color: #64748b;
-  font-size: 0.74rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
+.internalChargeHead span {
+  min-height: 32px;
+  padding: 9px 10px;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.internalChargeGrid article strong {
+.internalChargeBody article {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.internalChargeBody article > * {
+  min-height: 34px;
+  padding: 7px 9px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.internalChargeBody article > *:last-child {
+  border-right: 0;
+}
+
+.internalChargeBody article:last-child {
+  border-bottom: 0;
+}
+
+.internalChargeBody strong,
+.internalChargeBody span {
   color: #0f172a;
-  font-size: 1rem;
+  font-weight: 400;
 }
 
-.internalChargeGrid article p {
-  min-height: 18px;
+.internalChargeBody p {
   margin: 0;
-  color: #64748b;
+  color: #475569;
+  line-height: 1.3;
 }
 
-.internalReminderGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+.internalChargeBody b {
+  color: #0f172a;
+  font-weight: 400;
 }
 
-.internalReminderGrid p,
 .internalNextAction {
   margin: 0;
   padding: 10px 12px;
@@ -517,9 +1387,9 @@ button.internalGhostLink {
   line-height: 1.38;
 }
 
-.internalReminderGrid strong,
 .internalNextAction strong {
   color: #0f172a;
+  font-weight: 600;
 }
 
 .internalNextAction {
@@ -539,6 +1409,14 @@ button.internalGhostLink {
 .internalDeliverablesPanel,
 .internalNotesPanel {
   padding: 16px;
+}
+
+.internalNotesFull {
+  margin-top: 14px;
+}
+
+.internalNotesFull textarea {
+  min-height: 116px;
 }
 
 .internalSectionHead {
@@ -564,36 +1442,44 @@ button.internalGhostLink {
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  border: 1px solid #dbe4ea;
-  border-radius: 8px;
+  border: 1px solid #d9dee7;
+  border-radius: 4px;
   background: #ffffff;
   scrollbar-color: #00b8b5 #e6fbfa;
 }
 
 .internalDeliverablesHead,
 .internalDeliverablesBody {
-  min-width: 780px;
+  min-width: 700px;
 }
 
 .internalDeliverablesHead,
 .internalDeliverablesBody article {
   display: grid;
-  grid-template-columns: minmax(250px, 1fr) 112px 118px 94px 86px;
-  align-items: center;
-  gap: 12px;
+  grid-template-columns:
+    minmax(190px, 1.15fr)
+    minmax(112px, 0.7fr)
+    minmax(104px, 0.65fr)
+    minmax(96px, 0.6fr)
+    minmax(90px, 0.55fr);
+  align-items: stretch;
+  gap: 0;
 }
 
 .internalDeliverablesHead {
-  padding: 10px 12px;
-  border-bottom: 1px solid #b6ecea;
-  background: #e6fbfa;
-  color: #007f80;
+  padding: 0;
+  border-bottom: 1px solid #202838;
+  background: #2d3648;
+  color: #ffffff;
 }
 
 .internalDeliverablesHead span {
-  font-size: 0.74rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
+  min-height: 32px;
+  padding: 9px 10px;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -603,8 +1489,17 @@ button.internalGhostLink {
 }
 
 .internalDeliverablesBody article {
-  padding: 11px 12px;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.internalDeliverablesBody article > * {
+  min-height: 34px;
+  padding: 7px 9px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.internalDeliverablesBody article > *:last-child {
+  border-right: 0;
 }
 
 .internalDeliverablesBody article:last-child {
@@ -618,89 +1513,77 @@ button.internalGhostLink {
 .internalDeliverablesBody strong {
   display: block;
   color: #0f172a;
+  font-size: 0.86rem;
+  font-weight: 400;
   line-height: 1.25;
-}
-
-.internalDeliverablesBody i {
-  align-items: center;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: #fee2e2;
-  color: #b91c1c;
-  font-size: 0.68rem;
-  font-style: normal;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.internalDeliverablesBody i.done {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.internalDeliverablesBody i.progress {
-  background: #fde68a;
-  color: #92400e;
-}
-
-.internalDeliverablesBody i.pending {
-  background: #fee2e2;
-  color: #b91c1c;
+  overflow-wrap: anywhere;
 }
 
 .internalDeliverablesBody small {
   display: block;
-  margin-top: 4px;
+  margin-top: 3px;
   color: #64748b;
+  font-size: 0.72rem;
   line-height: 1.25;
 }
 
 .internalDeliverablesBody span {
   color: #0f172a;
-  font-weight: 800;
+  font-weight: 400;
 }
 
-.internalDeliverablesBody em {
+.internalTableButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 28px;
-  border-radius: 999px;
-  background: #dcfce7;
-  color: #166534;
-  font-style: normal;
-  font-weight: 900;
+  justify-self: start;
+  align-self: center;
+  width: fit-content;
+  min-width: 54px;
+  max-width: 118px;
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
 }
 
-.internalDeliverablesBody article.isOverdue em {
+.internalTableButton.done,
+.internalTableButton.paid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.internalTableButton.progress,
+.internalTableButton.pending {
+  background: #fde68a;
+  color: #92400e;
+}
+
+.internalTableButton.late {
   background: #fee2e2;
   color: #b91c1c;
 }
 
-.internalDeliverablesBody a,
-.internalDeliverablesBody b {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 900;
-  text-decoration: none;
-}
-
-.internalDeliverablesBody a {
+.internalTableButton.link {
   background: #00b8b5;
   color: #ffffff;
 }
 
-.internalDeliverablesBody b {
+.internalTableButton.empty {
   background: #f1f5f9;
   color: #64748b;
+}
+
+.internalTableButton:hover {
+  border-color: rgba(0, 184, 181, 0.45);
+  box-shadow: 0 0 0 2px rgba(0, 184, 181, 0.08);
 }
 
 .internalDeliverablesPanel article,
@@ -769,7 +1652,7 @@ button.internalGhostLink {
   background: #e6fbfa;
   color: #007f80;
   font-size: 0.75rem;
-  font-weight: 900;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -807,7 +1690,43 @@ button.internalGhostLink {
 
 @media (max-width: 980px) {
   .internalPortal {
+    grid-template-columns: 1fr;
+  }
+
+  .internalNavShell {
+    position: relative;
+    min-height: auto;
+  }
+
+  .internalNavBrand {
     padding: 18px;
+  }
+
+  .internalNavMenu {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding: 0;
+  }
+
+  .internalNavMenu button {
+    width: auto;
+    min-width: max-content;
+    border-left: 0;
+    border-bottom: 3px solid transparent;
+  }
+
+  .internalNavMenu button.active,
+  .internalNavMenu button:hover {
+    border-bottom-color: #00b8b5;
+  }
+
+  .internalNavFoot {
+    display: none;
+  }
+
+  .internalMainShell {
+    padding: 0 18px 28px;
   }
 
   .internalHeader,
@@ -817,6 +1736,8 @@ button.internalGhostLink {
 
   .internalHeader {
     flex-direction: column;
+    margin: 0 -18px 18px;
+    padding: 18px;
   }
 
   .internalHeaderActions {
@@ -836,19 +1757,60 @@ button.internalGhostLink {
     grid-column: 1 / -1;
   }
 
+  .internalDeliverableSummary {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .internalDeliverablesHead,
   .internalDeliverablesBody article {
-    grid-template-columns: minmax(220px, 1fr) 104px 96px 80px 78px;
-    gap: 8px;
+    grid-template-columns:
+      minmax(180px, 1.1fr)
+      minmax(106px, 0.72fr)
+      minmax(96px, 0.64fr)
+      minmax(88px, 0.58fr)
+      minmax(82px, 0.52fr);
+  }
+
+  .internalChargeHead,
+  .internalChargeBody {
+    min-width: 720px;
+  }
+
+  .internalChargeHead,
+  .internalChargeBody article {
+    grid-template-columns:
+      minmax(84px, 0.62fr)
+      minmax(104px, 0.82fr)
+      minmax(104px, 0.82fr)
+      minmax(116px, 0.88fr)
+      minmax(104px, 0.82fr)
+      minmax(190px, 1.3fr);
   }
 
   .internalMetrics,
+  .internalOverviewCards,
+  .internalExecutiveGrid,
+  .internalDashboardKpis,
+  .internalDashboardCharts,
+  .internalClientKpis,
+  .internalClientCharts,
   .internalInfoGrid,
-  .internalChargeGrid,
-  .internalReminderGrid,
   .internalWorkspace,
   .internalSplit {
     grid-template-columns: 1fr;
+  }
+
+  .internalDashboardTablePanel {
+    overflow-x: auto;
+  }
+
+  .internalBarRow {
+    grid-template-columns: minmax(96px, 150px) minmax(100px, 1fr) 38px;
+  }
+
+  .internalStatusBars article {
+    grid-template-columns: minmax(105px, 0.7fr) minmax(100px, 1fr) 38px;
   }
 
   .internalSidePanel {

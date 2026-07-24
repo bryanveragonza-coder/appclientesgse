@@ -7496,6 +7496,87 @@ function getNextCharge(charges = []) {
   return withFutureDate[0]?.charge || unpaid[0]?.charge || candidates[0]?.charge || null;
 }
 
+function summarizeInternalCharges(charges = []) {
+  return charges.reduce((acc, charge) => {
+    const status = normalizeSystemName(`${charge.paymentStatus || ""} ${charge.cutStatus || ""}`);
+    if (status.includes("pagado") || status.includes("cobrado") || status.includes("cancelado")) {
+      acc.paid += 1;
+    } else if (status.includes("vencido") || status.includes("mora")) {
+      acc.late += 1;
+    } else {
+      acc.pending += 1;
+    }
+    return acc;
+  }, { paid: 0, pending: 0, late: 0 });
+}
+
+function splitInternalDeliverableTypes(value = "") {
+  return String(value || "")
+    .split(/[,;|\n\r]+/)
+    .map((item) => item.trim())
+    .filter((item) => item && !["-", "n/a", "no aplica", "ninguno", "0"].includes(normalizeSystemName(item)));
+}
+
+function summarizeClientDeliverables(findings = []) {
+  const rows = findings.flatMap((item, findingIndex) => {
+    const types = splitInternalDeliverableTypes(item.deliverableClient || "");
+    return types.map((type, typeIndex) => ({
+      ...item,
+      rowKey: `${item.id || findingIndex}-${normalizeSystemName(type)}-${typeIndex}`,
+      deliverableType: type,
+    }));
+  });
+  const loaded = rows.filter((item) => isCheckedSheetValue(item.policyLoaded) || isCheckedSheetValue(item.procedureLoaded)).length;
+  const policies = rows.filter((item) => normalizeSystemName(item.deliverableType).includes("politica")).length;
+  const policiesLoaded = rows.filter((item) =>
+    normalizeSystemName(item.deliverableType).includes("politica") &&
+    (isCheckedSheetValue(item.policyLoaded) || isCheckedSheetValue(item.procedureLoaded))
+  ).length;
+  return {
+    total: rows.length,
+    loaded,
+    pending: Math.max(0, rows.length - loaded),
+    policies,
+    policiesLoaded,
+    policiesPending: Math.max(0, policies - policiesLoaded),
+  };
+}
+
+function InternalMiniTrend({ values = [], mode = "line" }) {
+  const cleanValues = values.length ? values.map((value) => Number(value) || 0) : [0];
+  const max = Math.max(1, ...cleanValues);
+  const min = Math.min(...cleanValues);
+  const range = Math.max(1, max - min);
+  const points = cleanValues.map((value, index) => {
+    const x = cleanValues.length === 1 ? 50 : (index / (cleanValues.length - 1)) * 100;
+    const y = 86 - ((value - min) / range) * 66;
+    return [x, y];
+  });
+  const line = points.map(([x, y]) => `${x},${y}`).join(" ");
+  const area = `0,90 ${line} 100,90`;
+
+  if (mode === "bars") {
+    const width = 100 / Math.max(1, cleanValues.length);
+    return (
+      <svg className="internalMiniTrend" viewBox="0 0 100 90" preserveAspectRatio="none" aria-hidden="true">
+        {[20, 42, 64].map((y) => <line key={y} x1="0" x2="100" y1={y} y2={y} />)}
+        {cleanValues.map((value, index) => {
+          const height = Math.max(6, (value / max) * 68);
+          return <rect key={`${value}-${index}`} x={index * width + width * 0.18} y={88 - height} width={width * 0.56} height={height} rx="1.5" />;
+        })}
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="internalMiniTrend" viewBox="0 0 100 90" preserveAspectRatio="none" aria-hidden="true">
+      {[20, 42, 64].map((y) => <line key={y} x1="0" x2="100" y1={y} y2={y} />)}
+      <polygon points={area} />
+      <polyline points={line} />
+    </svg>
+  );
+}
+
 function getInternalProjectSummary(entry = {}, data = {}) {
   const project = data.project || {};
   const milestones = data.milestones || [];
@@ -7503,6 +7584,7 @@ function getInternalProjectSummary(entry = {}, data = {}) {
   const meetings = data.meetings || [];
   const pending = data.pending || [];
   const charges = data.charges || [];
+  const findings = data.findings || [];
   const nextCharge = getNextCharge(charges);
   const completed = milestones.filter((item) => isCompletedStatus(item.status)).length;
   const deliverableSummary = deliverables.reduce((acc, item) => {
@@ -7518,6 +7600,7 @@ function getInternalProjectSummary(entry = {}, data = {}) {
   const nextMeeting = meetings[0] || {};
   const activePending = pending.filter(isPendingActive).length;
   const paymentDate = getChargeDueDate(nextCharge) || project.paymentDate || entry.paymentDate || "Por definir";
+  const clientDeliverables = summarizeClientDeliverables(findings);
 
   return {
     id: entry.id,
@@ -7543,6 +7626,7 @@ function getInternalProjectSummary(entry = {}, data = {}) {
     charges,
     deliverables,
     deliverableSummary,
+    clientDeliverables,
     milestones,
     pending,
   };
@@ -7558,7 +7642,9 @@ function InternalProjectsPortal() {
   const [loaded, setLoaded] = useState({});
   const [loading, setLoading] = useState(false);
   const [loadingMaster, setLoadingMaster] = useState(false);
+  const [internalSection, setInternalSection] = useState("dashboard");
   const [selectedId, setSelectedId] = useState("");
+  const [clientTab, setClientTab] = useState("cobros");
   const [query, setQuery] = useState("");
   const [noteDraft, setNoteDraft] = useState("");
   const [editingNoteIndex, setEditingNoteIndex] = useState(null);
@@ -7662,6 +7748,13 @@ function InternalProjectsPortal() {
   const selected = summaries.find((item) => item.entry.id === selectedId) || summaries[0];
   const selectedSummary = selected?.summary;
   const selectedNotes = selectedSummary ? notes[selectedSummary.id] || [] : [];
+  const selectedChargeDashboard = summarizeInternalCharges(selectedSummary?.charges || []);
+  const selectedDeliverableTotal = selectedSummary
+    ? selectedSummary.deliverableSummary.finished + selectedSummary.deliverableSummary.inProgress + selectedSummary.deliverableSummary.pending
+    : 0;
+  const selectedMilestonePct = selectedSummary?.totalMilestones
+    ? Math.round((selectedSummary.completed / selectedSummary.totalMilestones) * 100)
+    : 0;
 
   useEffect(() => {
     if (!selectedSummary) return;
@@ -7704,9 +7797,75 @@ function InternalProjectsPortal() {
     acc.pending += item.summary.activePending;
     acc.deliverables += item.summary.deliverables.length;
     acc.charges += item.summary.charges.length;
+    acc.milestones += item.summary.totalMilestones;
+    acc.completedMilestones += item.summary.completed;
     return acc;
-  }, { projects: 0, progress: 0, pending: 0, deliverables: 0, charges: 0 });
+  }, { projects: 0, progress: 0, pending: 0, deliverables: 0, charges: 0, milestones: 0, completedMilestones: 0 });
   const averageProgress = totals.projects ? Math.round(totals.progress / totals.projects) : 0;
+  const dashboard = summaries.reduce((acc, item) => {
+    const summary = item.summary;
+    acc.finishedDeliverables += summary.deliverableSummary.finished;
+    acc.pendingDeliverables += summary.deliverableSummary.pending;
+    acc.inProgressDeliverables += summary.deliverableSummary.inProgress;
+    acc.overdueDeliverables += summary.deliverableSummary.overdue;
+    const chargeSummary = summarizeInternalCharges(summary.charges);
+    acc.paidCharges += chargeSummary.paid;
+    acc.pendingCharges += chargeSummary.pending;
+    acc.lateCharges += chargeSummary.late;
+    acc.clientDeliverables += summary.clientDeliverables.total;
+    acc.clientDeliverablesLoaded += summary.clientDeliverables.loaded;
+    acc.policies += summary.clientDeliverables.policies;
+    acc.policiesLoaded += summary.clientDeliverables.policiesLoaded;
+    return acc;
+  }, {
+    finishedDeliverables: 0,
+    pendingDeliverables: 0,
+    inProgressDeliverables: 0,
+    overdueDeliverables: 0,
+    paidCharges: 0,
+    pendingCharges: 0,
+    lateCharges: 0,
+    clientDeliverables: 0,
+    clientDeliverablesLoaded: 0,
+    policies: 0,
+    policiesLoaded: 0,
+  });
+  const deliverableTotal = dashboard.finishedDeliverables + dashboard.pendingDeliverables + dashboard.inProgressDeliverables;
+  const chargeTotal = dashboard.paidCharges + dashboard.pendingCharges + dashboard.lateCharges;
+  const finishedPct = deliverableTotal ? Math.round((dashboard.finishedDeliverables / deliverableTotal) * 100) : 0;
+  const pendingPct = deliverableTotal ? Math.round((dashboard.pendingDeliverables / deliverableTotal) * 100) : 0;
+  const progressPct = deliverableTotal ? Math.max(0, 100 - finishedPct - pendingPct) : 0;
+  const paidChargePct = chargeTotal ? Math.round((dashboard.paidCharges / chargeTotal) * 100) : 0;
+  const pendingChargePct = chargeTotal ? Math.round((dashboard.pendingCharges / chargeTotal) * 100) : 0;
+  const clientDeliverablesLoadedPct = dashboard.clientDeliverables ? Math.round((dashboard.clientDeliverablesLoaded / dashboard.clientDeliverables) * 100) : 0;
+  const clientDeliverableMix = summaries
+    .map(({ summary }) => ({
+      id: summary.id,
+      name: summary.name,
+      finished: summary.deliverableSummary.finished,
+      inProgress: summary.deliverableSummary.inProgress,
+      pending: summary.deliverableSummary.pending,
+      total: summary.deliverableSummary.finished + summary.deliverableSummary.inProgress + summary.deliverableSummary.pending,
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
+  const progressTrend = summaries.map(({ summary }) => summary.progress);
+  const pendingTrend = summaries.map(({ summary }) => summary.activePending);
+  const chargeTrend = summaries.map(({ summary }) => summary.charges.length);
+  const uploadedTrend = summaries.map(({ summary }) => summary.clientDeliverables.loaded);
+  const dashboardRows = summaries
+    .map(({ summary }) => ({
+      id: summary.id,
+      name: summary.name,
+      progress: summary.progress,
+      pendingClient: summary.activePending,
+      finished: summary.deliverableSummary.finished,
+      inProgress: summary.deliverableSummary.inProgress,
+      pendingGse: summary.deliverableSummary.pending,
+      chargesPending: summarizeInternalCharges(summary.charges).pending,
+    }))
+    .sort((a, b) => b.pendingClient + b.pendingGse - (a.pendingClient + a.pendingGse))
+    .slice(0, 8);
 
   const refreshMaster = () => {
     setLoadingMaster(true);
@@ -7843,10 +8002,29 @@ function InternalProjectsPortal() {
 
   return (
     <main className="internalPortal">
+      <aside className="internalNavShell">
+        <div className="internalNavBrand">
+          <Logo
+            src={import.meta.env.VITE_LOGIN_LOGO_HORIZONTAL_COLOR || import.meta.env.VITE_LOGIN_LOGO_HORIZONTAL || import.meta.env.VITE_LOCAL_LOGIN_LOGO_HORIZONTAL_COLOR || ""}
+            fallback="GSE Corporate"
+            className="internalBrandLogo"
+          />
+        </div>
+        <nav className="internalNavMenu" aria-label="Navegación NIV">
+          <button type="button" className={internalSection === "dashboard" ? "active" : ""} onClick={() => setInternalSection("dashboard")}><BarChart3 size={16} /> Dashboard</button>
+          <button type="button" className={internalSection === "clientes" ? "active" : ""} onClick={() => setInternalSection("clientes")}><Building2 size={16} /> Clientes</button>
+        </nav>
+        <div className="internalNavFoot">
+          <span>Portal interno GSE</span>
+          <small>Gestión de proyectos</small>
+        </div>
+      </aside>
+
+      <div className="internalMainShell">
       <header className="internalHeader">
         <div>
-          <span>Portal interno GSE</span>
-          <h1>RIV CLIENTES</h1>
+          <h1>NIV</h1>
+          <p className="internalHeaderSubtitle">Núcleo Interno Visible para colaboradores</p>
         </div>
         <div className="internalHeaderActions">
           <button type="button" className="internalGhostLink" onClick={refreshMaster}>Actualizar maestro</button>
@@ -7854,14 +8032,163 @@ function InternalProjectsPortal() {
         </div>
       </header>
 
-      <section className="internalMetrics">
-        <article><BarChart3 size={20} /><span>Avance promedio total</span><strong>{averageProgress}%</strong></article>
-        <article><Building2 size={20} /><span>Clientes activos</span><strong>{totals.projects}</strong></article>
-        <article><AlertTriangle size={20} /><span>Pendientes activos</span><strong>{totals.pending}</strong></article>
-        <article><Clock3 size={20} /><span>Cobros registrados</span><strong>{totals.charges}</strong></article>
-      </section>
+      {internalSection === "dashboard" && (
+      <section className="internalExecutiveDashboard" id="dashboard" aria-label="Dashboard NIV">
+        <div className="internalDashboardBand">Overview</div>
+        <div className="internalOverviewCards">
+          <article className="internalOverviewCard" data-tip="Promedio del avance general reportado en los RIV de todos los clientes.">
+            <span>Avance promedio total</span>
+            <strong>{averageProgress}%</strong>
+            <div className="internalOverviewTrack"><i style={{ width: `${averageProgress}%` }} /></div>
+            <div className="internalOverviewStats">
+              <p><b>{totals.projects}</b><small>clientes activos</small></p>
+              <p><b>{totals.completedMilestones}/{totals.milestones}</b><small>hitos completados</small></p>
+            </div>
+          </article>
+          <article className="internalOverviewCard" data-tip="Entregables GSE marcados como finalizados, en desarrollo o pendientes.">
+            <span>Entregables GSE</span>
+            <strong>{deliverableTotal}</strong>
+            <div className="internalStackedChart">
+              <i className="done" style={{ width: `${finishedPct}%` }} />
+              <i className="inProgress" style={{ width: `${progressPct}%` }} />
+              <i className="pending" style={{ width: `${pendingPct}%` }} />
+            </div>
+            <div className="internalOverviewStats three">
+              <p><b>{dashboard.finishedDeliverables}</b><small>finalizados</small></p>
+              <p><b>{dashboard.inProgressDeliverables}</b><small>en desarrollo</small></p>
+              <p><b>{dashboard.pendingDeliverables}</b><small>pendientes</small></p>
+            </div>
+          </article>
+          <article className="internalOverviewCard" data-tip="Cobros registrados en las pestañas Cobros de los clientes.">
+            <span>Cobros registrados</span>
+            <strong>{chargeTotal}</strong>
+            <div className="internalOverviewStats three">
+              <p><b>{dashboard.paidCharges}</b><small>pagados</small></p>
+              <p><b>{dashboard.pendingCharges}</b><small>pendientes</small></p>
+              <p><b>{dashboard.lateCharges}</b><small>vencidos</small></p>
+            </div>
+            <div className="internalOverviewTrack split">
+              <i className="paid" style={{ width: `${paidChargePct}%` }} />
+              <i className="pending" style={{ width: `${pendingChargePct}%` }} />
+            </div>
+          </article>
+          <article className="internalOverviewCard" data-tip="Entregables solicitados al cliente y marcados como cargados.">
+            <span>Entregables subidos</span>
+            <strong>{clientDeliverablesLoadedPct}%</strong>
+            <div className="internalOverviewTrack"><i style={{ width: `${clientDeliverablesLoadedPct}%` }} /></div>
+            <div className="internalOverviewStats">
+              <p><b>{dashboard.clientDeliverablesLoaded}</b><small>cargadas</small></p>
+              <p><b>{Math.max(0, dashboard.clientDeliverables - dashboard.clientDeliverablesLoaded)}</b><small>pendientes</small></p>
+            </div>
+          </article>
+        </div>
 
-      <section className="internalWorkspace">
+        <div className="internalDashboardBand">Gestión de proyectos</div>
+        <div className="internalExecutiveGrid">
+          <article className="internalExecutivePanel wide">
+            <div className="internalChartTitle">
+              <h2>Entregables por cliente</h2>
+              <span>estado operativo</span>
+            </div>
+            <div className="internalBarChart mix">
+              {clientDeliverableMix.map((item) => {
+                const total = Math.max(1, item.total);
+                return (
+                  <div className="internalBarRow mix" key={item.id}>
+                    <span>{item.name}</span>
+                    <i>
+                      <em tabIndex="0" className="done" data-tip={`${item.finished}`} style={{ left: 0, width: `${(item.finished / total) * 100}%` }} />
+                      <em tabIndex="0" className="inProgress" data-tip={`${item.inProgress}`} style={{ left: `${(item.finished / total) * 100}%`, width: `${(item.inProgress / total) * 100}%` }} />
+                      <em tabIndex="0" className="pending" data-tip={`${item.pending}`} style={{ left: `${((item.finished + item.inProgress) / total) * 100}%`, width: `${(item.pending / total) * 100}%` }} />
+                    </i>
+                    <small>{item.total}</small>
+                  </div>
+                );
+              })}
+              {!clientDeliverableMix.length && <p className="internalEmpty compact">Sin clientes cargados todavía.</p>}
+            </div>
+            <div className="internalChartLegend compact inline">
+              <span><i className="done" /> Finalizados</span>
+              <span><i className="inProgress" /> En desarrollo</span>
+              <span><i className="pending" /> Pendientes</span>
+            </div>
+          </article>
+
+          <article className="internalExecutivePanel">
+            <div className="internalChartTitle">
+              <h2>Entregables subidos</h2>
+              <span>Cargadas {dashboard.clientDeliverablesLoaded} · Pendientes {Math.max(0, dashboard.clientDeliverables - dashboard.clientDeliverablesLoaded)} · Total {dashboard.clientDeliverables}</span>
+            </div>
+            <div className="internalStatusBars">
+              <article>
+                <div><span>Cargadas</span><strong>{dashboard.clientDeliverablesLoaded}</strong></div>
+                <i><em className="done" style={{ width: `${clientDeliverablesLoadedPct}%` }} /></i>
+                <small>{clientDeliverablesLoadedPct}%</small>
+              </article>
+              <article>
+                <div><span>Pendientes</span><strong>{Math.max(0, dashboard.clientDeliverables - dashboard.clientDeliverablesLoaded)}</strong></div>
+                <i><em className="pending" style={{ width: `${dashboard.clientDeliverables ? Math.max(0, 100 - clientDeliverablesLoadedPct) : 0}%` }} /></i>
+                <small>{dashboard.clientDeliverables ? Math.max(0, 100 - clientDeliverablesLoadedPct) : 0}%</small>
+              </article>
+            </div>
+          </article>
+
+          <article className="internalExecutivePanel donutPanel">
+            <div className="internalChartTitle">
+              <h2>Cobros</h2>
+              <span>{chargeTotal} registros</span>
+            </div>
+            <div
+              className="internalDonutChart"
+              style={{
+                "--paid-end": `${paidChargePct}%`,
+                "--pending-end": `${Math.min(100, paidChargePct + pendingChargePct)}%`,
+              }}
+            >
+              <b>{chargeTotal}</b>
+              <small>cobros</small>
+            </div>
+            <div className="internalChartLegend compact">
+              <span><i className="done" /> Pagados {dashboard.paidCharges}</span>
+              <span><i className="inProgress" /> Pendientes {dashboard.pendingCharges}</span>
+              <span><i className="pending" /> Vencidos {dashboard.lateCharges}</span>
+            </div>
+          </article>
+        </div>
+
+        <article className="internalDashboardTablePanel">
+          <div className="internalChartTitle">
+            <h2>Resumen por cliente</h2>
+            <span>{dashboardRows.length} visibles</span>
+          </div>
+          <div className="internalDashboardTable">
+            <div className="internalDashboardTableHead">
+              <span>Cliente</span>
+              <span>Avance</span>
+              <span>Pend. cliente</span>
+              <span>Finalizados</span>
+              <span>En desarrollo</span>
+              <span>Pend. GSE</span>
+              <span>Cobros pend.</span>
+            </div>
+            {dashboardRows.map((row) => (
+              <div className="internalDashboardTableRow" key={row.id}>
+                <span>{row.name}</span>
+                <strong>{row.progress}%</strong>
+                <span>{row.pendingClient}</span>
+                <span>{row.finished}</span>
+                <span>{row.inProgress}</span>
+                <span>{row.pendingGse}</span>
+                <span>{row.chargesPending}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+      )}
+
+      {internalSection === "clientes" && (
+      <section className="internalWorkspace" id="clientes">
         <aside className="internalSidePanel">
           <label className="internalSearch">
             <Search size={17} />
@@ -7911,17 +8238,50 @@ function InternalProjectsPortal() {
                   <span>{selectedSummary.service}</span>
                   <h2>{selectedSummary.name}</h2>
                   <p>{selectedSummary.manager} · {selectedSummary.status}</p>
-                  <div className="internalDeliverableSummary">
-                    <b className="done">Finalizados: {selectedSummary.deliverableSummary.finished}</b>
-                    <b className="pending">Pendientes: {selectedSummary.deliverableSummary.pending}</b>
-                    <b className="overdue">Vencidos: {selectedSummary.deliverableSummary.overdue}</b>
-                  </div>
                 </div>
                 <div className="internalProgressDial" style={{ "--progress": `${selectedSummary.progress}%` }}>
                   <strong>{selectedSummary.progress}%</strong>
                   <span>avance</span>
                 </div>
               </div>
+
+              <section className="internalClientDashboard">
+                <div className="internalClientKpis">
+                  <article data-tip="Avance general de este cliente según su RIV."><BarChart3 size={18} /><span>Avance</span><strong>{selectedSummary.progress}%</strong></article>
+                  <article data-tip="Hitos completados frente al total de hitos de este cliente."><Flag size={18} /><span>Hitos</span><strong>{selectedSummary.completed}/{selectedSummary.totalMilestones || 0}</strong><small>{selectedMilestonePct}% cerrado</small></article>
+                  <article data-tip="Pendientes abiertos que dependen del cliente."><AlertTriangle size={18} /><span>Pendientes cliente</span><strong>{selectedSummary.activePending}</strong></article>
+                  <article data-tip="Cobros de este cliente que no aparecen como pagados."><Clock3 size={18} /><span>Cobros pendientes</span><strong>{selectedChargeDashboard.pending}</strong></article>
+                </div>
+                <div className="internalClientCharts">
+                  <article className="internalClientChart" data-tip="Estado de los entregables GSE del cliente seleccionado.">
+                    <div className="internalChartTitle">
+                      <h2>Entregables del cliente</h2>
+                      <span>{selectedDeliverableTotal} total</span>
+                    </div>
+                    <div className="internalStackedChart client">
+                      <i tabIndex="0" className="done" data-tip={`${selectedSummary.deliverableSummary.finished}`} style={{ left: 0, width: `${selectedDeliverableTotal ? (selectedSummary.deliverableSummary.finished / selectedDeliverableTotal) * 100 : 0}%` }} />
+                      <i tabIndex="0" className="inProgress" data-tip={`${selectedSummary.deliverableSummary.inProgress}`} style={{ left: `${selectedDeliverableTotal ? (selectedSummary.deliverableSummary.finished / selectedDeliverableTotal) * 100 : 0}%`, width: `${selectedDeliverableTotal ? (selectedSummary.deliverableSummary.inProgress / selectedDeliverableTotal) * 100 : 0}%` }} />
+                      <i tabIndex="0" className="pending" data-tip={`${selectedSummary.deliverableSummary.pending}`} style={{ left: `${selectedDeliverableTotal ? ((selectedSummary.deliverableSummary.finished + selectedSummary.deliverableSummary.inProgress) / selectedDeliverableTotal) * 100 : 0}%`, width: `${selectedDeliverableTotal ? (selectedSummary.deliverableSummary.pending / selectedDeliverableTotal) * 100 : 0}%` }} />
+                    </div>
+                    <div className="internalChartLegend inline">
+                      <span><i className="done" /> Finalizados {selectedSummary.deliverableSummary.finished}</span>
+                      <span><i className="inProgress" /> En desarrollo {selectedSummary.deliverableSummary.inProgress}</span>
+                      <span><i className="pending" /> Pendientes {selectedSummary.deliverableSummary.pending}</span>
+                    </div>
+                  </article>
+                  <article className="internalClientChart" data-tip="Estado de pagos del cliente seleccionado.">
+                    <div className="internalChartTitle">
+                      <h2>Cobros del cliente</h2>
+                      <span>{selectedSummary.charges.length} registros</span>
+                    </div>
+                    <div className="internalChartLegend inline">
+                      <span><i className="done" /> Pagados {selectedChargeDashboard.paid}</span>
+                      <span><i className="inProgress" /> Pendientes {selectedChargeDashboard.pending}</span>
+                      <span><i className="pending" /> Vencidos {selectedChargeDashboard.late}</span>
+                    </div>
+                  </article>
+                </div>
+              </section>
 
               {selected?.error && <div className="internalError">{selected.error}</div>}
 
@@ -7953,33 +8313,61 @@ function InternalProjectsPortal() {
                 </article>
               </div>
 
-              {selectedSummary.nextCharge && (
+              <nav className="internalClientTabs" aria-label="Detalle del cliente">
+                <button type="button" className={clientTab === "cobros" ? "active" : ""} onClick={() => setClientTab("cobros")}><Clock3 size={16} /> Cobros</button>
+                <button type="button" className={clientTab === "entregables" ? "active" : ""} onClick={() => setClientTab("entregables")}><FileText size={16} /> Entregables</button>
+                <button type="button" className={clientTab === "observaciones" ? "active" : ""} onClick={() => setClientTab("observaciones")}><MessageCircle size={16} /> Observaciones</button>
+              </nav>
+
+              {clientTab === "cobros" && (
                 <section className="internalChargePanel">
                   <div className="internalSectionHead">
                     <h3>Seguimiento de cobro</h3>
-                    <span>{selectedSummary.nextCharge.payment || "Pago registrado"}</span>
                   </div>
-                  <div className="internalChargeGrid">
-                    <article><span>Vencimiento original</span><strong>{selectedSummary.nextCharge.originalDueDate || "Sin fecha"}</strong><p>{selectedSummary.nextCharge.originalDay || ""}</p></article>
-                    <article><span>Vencimiento ajustado</span><strong>{selectedSummary.nextCharge.adjustedDueDate || "Sin ajuste"}</strong><p>{selectedSummary.nextCharge.adjustedDay || ""}</p></article>
-                    <article><span>Días vencido / por vencer</span><strong>{selectedSummary.nextCharge.daysDue || "Sin cálculo"}</strong><p>{selectedSummary.nextCharge.cutStatus || "Sin estado al corte"}</p></article>
-                    <article><span>Fecha pago</span><strong>{selectedSummary.nextCharge.paymentDate || "Pendiente"}</strong><p>{selectedSummary.nextCharge.callDate ? `Llamada: ${selectedSummary.nextCharge.callDate}` : "Sin llamada registrada"}</p></article>
-                  </div>
-                  <div className="internalReminderGrid">
-                    <p><strong>5 días antes:</strong> {selectedSummary.nextCharge.reminder5Days || "Sin fecha"}</p>
-                    <p><strong>24 horas antes:</strong> {selectedSummary.nextCharge.reminder24Hours || "Sin fecha"}</p>
-                    <p><strong>Día del vencimiento:</strong> {selectedSummary.nextCharge.dueDayMessage || "Sin fecha"}</p>
-                    <p><strong>24 horas después:</strong> {selectedSummary.nextCharge.after24HoursMessage || "Sin fecha"}</p>
-                    <p><strong>72 horas después:</strong> {selectedSummary.nextCharge.after72HoursMessage || "Sin fecha"}</p>
-                  </div>
-                  <div className="internalNextAction">
-                    <strong>Próxima acción sugerida</strong>
-                    <p>{selectedSummary.nextCharge.nextAction || "Sin acción sugerida"}</p>
-                    {selectedSummary.nextCharge.observation && <small>{selectedSummary.nextCharge.observation}</small>}
-                  </div>
+                  {selectedSummary.charges.length > 0 ? (
+                    <div className="internalChargeMatrix">
+                      <div className="internalChargeHead">
+                        <span>Pago</span>
+                        <span>Estado</span>
+                        <span>Fecha pago</span>
+                        <span>Fecha pago actual</span>
+                        <span>Días vencimiento</span>
+                        <span>Recordatorios</span>
+                      </div>
+                      <div className="internalChargeBody">
+                        {selectedSummary.charges.map((charge, index) => {
+                          const chargeStatus = normalizeSystemName(charge.paymentStatus || charge.cutStatus || "");
+                          const chargeClass = chargeStatus.includes("pagado") || chargeStatus.includes("cobrado") || chargeStatus.includes("cancelado")
+                            ? "paid"
+                            : chargeStatus.includes("vencido") || chargeStatus.includes("mora")
+                              ? "late"
+                              : "pending";
+                          return (
+                            <article key={`${charge.id || charge.payment}-${index}`}>
+                              <strong>{charge.payment || `Pago ${index + 1}`}</strong>
+                              <button type="button" className={`internalTableButton ${chargeClass}`}>{charge.paymentStatus || charge.cutStatus || "Sin estado"}</button>
+                              <span>{charge.originalDueDate || "Sin fecha"}</span>
+                              <span>{charge.adjustedDueDate || "Sin ajuste"}</span>
+                              <span>{charge.daysDue || "Sin cálculo"}</span>
+                              <p>
+                                <b>5 días:</b> {charge.reminder5Days || "Sin fecha"}<br />
+                                <b>24 h:</b> {charge.reminder24Hours || "Sin fecha"}<br />
+                                <b>Vence:</b> {charge.dueDayMessage || "Sin fecha"}<br />
+                                <b>+24 h:</b> {charge.after24HoursMessage || "Sin fecha"}<br />
+                                <b>+72 h:</b> {charge.after72HoursMessage || "Sin fecha"}
+                              </p>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="internalEmpty">No hay cobros registrados en el Sheet del cliente.</p>
+                  )}
                 </section>
               )}
 
+              {clientTab === "entregables" && (
               <div className="internalSplit">
                 <section className="internalDeliverablesPanel">
                   <div className="internalSectionHead">
@@ -8011,13 +8399,13 @@ function InternalProjectsPortal() {
                                 <strong>{item.deliverable || item.deliverableGSE || "Entregable GSE"}</strong>
                                 <small>{[item.milestone, item.system].filter(Boolean).join(" · ") || "Sin hito asociado"}</small>
                               </div>
-                              <i className={statusClass}>{item.status || "Sin estado"}</i>
+                              <button type="button" className={`internalTableButton ${statusClass}`}>{item.status || "Sin estado"}</button>
                               <span>{item.date || "Sin fecha"}</span>
-                              <em>{overdue || "No"}</em>
+                              <button type="button" className={`internalTableButton ${isOverdue ? "late" : "done"}`}>{overdue || "No"}</button>
                               {safeUrl(item.link) ? (
-                                <a href={safeUrl(item.link)} target="_blank" rel="noreferrer">Abrir</a>
+                                <a className="internalTableButton link" href={safeUrl(item.link)} target="_blank" rel="noreferrer">Abrir</a>
                               ) : (
-                                <b>Sin link</b>
+                                <button type="button" className="internalTableButton empty">Cargar link</button>
                               )}
                             </article>
                           );
@@ -8028,48 +8416,53 @@ function InternalProjectsPortal() {
                     <p className="internalEmpty">No hay entregables en el Sheet o falta la pestaña Entregables.</p>
                   )}
                 </section>
+              </div>
+              )}
 
-                <section className="internalNotesPanel">
-                  <h3>Observaciones internas</h3>
-                  <textarea value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Añadir observación para el equipo GSE..." />
-                  <button type="button" onClick={addNote} disabled={notesLoading}><MessageCircle size={17} /> Añadir observación</button>
-                  {(notesLoading || noteMessage) && (
-                    <div className={noteMessage.includes("modo local") ? "internalNotice compact" : "internalError compact"}>
-                      {notesLoading ? "Cargando observaciones desde el Sheet del cliente..." : noteMessage}
-                    </div>
-                  )}
-                  <div className="internalNotesList">
-                    {selectedNotes.map((note, index) => (
-                      <article key={`${note.id || note.stamp}-${index}`}>
-                        <div className="internalNoteHeader">
-                          <span>{note.stamp}{note.edited ? " · editado" : ""}</span>
+              {clientTab === "observaciones" && (
+              <section className="internalNotesPanel internalNotesFull">
+                <h3>Observaciones internas</h3>
+                <textarea value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Añadir observación para el equipo GSE..." />
+                <button type="button" onClick={addNote} disabled={notesLoading}><MessageCircle size={17} /> Añadir observación</button>
+                {(notesLoading || noteMessage) && (
+                  <div className={noteMessage.includes("modo local") ? "internalNotice compact" : "internalError compact"}>
+                    {notesLoading ? "Cargando observaciones desde el Sheet del cliente..." : noteMessage}
+                  </div>
+                )}
+                <div className="internalNotesList">
+                  {selectedNotes.map((note, index) => (
+                    <article key={`${note.id || note.stamp}-${index}`}>
+                      <div className="internalNoteHeader">
+                        <span>{note.stamp}{note.edited ? " · editado" : ""}</span>
+                        <div>
+                          <button type="button" onClick={() => startEditNote(index, note.text)}>Editar</button>
+                          <button type="button" onClick={() => deleteNote(index)} aria-label="Eliminar observación"><X size={14} /></button>
+                        </div>
+                      </div>
+                      {editingNoteIndex === index ? (
+                        <div className="internalNoteEditor">
+                          <textarea value={editingNoteText} onChange={(event) => setEditingNoteText(event.target.value)} />
                           <div>
-                            <button type="button" onClick={() => startEditNote(index, note.text)}>Editar</button>
-                            <button type="button" onClick={() => deleteNote(index)} aria-label="Eliminar observación"><X size={14} /></button>
+                            <button type="button" onClick={() => saveEditedNote(index)}>Guardar</button>
+                            <button type="button" onClick={cancelEditNote}>Cancelar</button>
                           </div>
                         </div>
-                        {editingNoteIndex === index ? (
-                          <div className="internalNoteEditor">
-                            <textarea value={editingNoteText} onChange={(event) => setEditingNoteText(event.target.value)} />
-                            <div>
-                              <button type="button" onClick={() => saveEditedNote(index)}>Guardar</button>
-                              <button type="button" onClick={cancelEditNote}>Cancelar</button>
-                            </div>
-                          </div>
-                        ) : (
-                          <p>{note.text}</p>
-                        )}
-                      </article>
-                    ))}
-                    {!selectedNotes.length && <p className="internalEmpty">Sin observaciones todavía.</p>}
-                  </div>
-                </section>
-              </div>
+                      ) : (
+                        <p>{note.text}</p>
+                      )}
+                    </article>
+                  ))}
+                  {!selectedNotes.length && <p className="internalEmpty">Sin observaciones todavía.</p>}
+                </div>
+              </section>
+              )}
 
             </>
           )}
         </section>
       </section>
+      )}
+      </div>
     </main>
   );
 }
