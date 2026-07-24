@@ -7957,7 +7957,7 @@ function InternalProjectsPortal() {
   const updateDeliverableLink = (item) => {
     const next = window.prompt("Pega el link del entregable:", item.link || "");
     if (next === null) return;
-    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Link", value: next.trim() });
+    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "LinkEntregable", value: next.trim() });
   };
 
   const cycleChargeStatus = (charge) => {
