@@ -7468,6 +7468,24 @@ async function postInternalNoteAction(url, payload) {
   return result;
 }
 
+async function postInternalBlindAction(url, payload) {
+  try {
+    await fetch(url, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    throw new Error("No se pudo enviar al Apps Script. Revisa que uses la URL /exec del Web App y que el despliegue tenga acceso para Anyone.");
+  }
+  return { ok: true };
+}
+
+function wait(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
 function parseInternalDate(value = "") {
   const raw = String(value || "").trim();
   if (!raw) return null;
@@ -8105,7 +8123,7 @@ function InternalProjectsPortal() {
     }
     try {
       setInternalActionMessage("Guardando pendiente cliente...");
-      await postInternalNoteAction(internalPendingUrl, {
+      await postInternalBlindAction(internalPendingUrl, {
         action: "updatePendingClient",
         sheetId: selectedSummary.sheetId,
         sheetName: "PendientesCliente",
@@ -8114,6 +8132,7 @@ function InternalProjectsPortal() {
         value,
         usuario: "Equipo GSE",
       });
+      await wait(1200);
       await reloadInternalClient(selectedSummary);
       setInternalActionMessage("Pendiente cliente guardado en Google Sheets.");
     } catch (error) {
@@ -8145,7 +8164,7 @@ function InternalProjectsPortal() {
     }
     try {
       setInternalActionMessage("Guardando pendiente...");
-      await postInternalNoteAction(internalPendingUrl, {
+      await postInternalBlindAction(internalPendingUrl, {
         action: "appendPendingClient",
         sheetId: selectedSummary.sheetId,
         sheetName: "PendientesCliente",
@@ -8169,6 +8188,7 @@ function InternalProjectsPortal() {
         link: "",
         description: "",
       });
+      await wait(1200);
       await reloadInternalClient(selectedSummary);
       setInternalActionMessage("Pendiente guardado en Google Sheets.");
     } catch (error) {
