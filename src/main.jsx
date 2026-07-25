@@ -7442,11 +7442,16 @@ function normalizeInternalNote(note = {}) {
 }
 
 async function postInternalNoteAction(url, payload) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload),
-  });
+  let response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    throw new Error("No se pudo conectar con el Apps Script. Revisa que el Web App esté desplegado con acceso 'Anyone', que uses la URL /exec y que la variable de Vercel apunte al script correcto.");
+  }
   const raw = await response.text();
   let result = {};
   try {
