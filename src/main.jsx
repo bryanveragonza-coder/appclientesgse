@@ -7447,7 +7447,16 @@ async function postInternalNoteAction(url, payload) {
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload),
   });
-  const result = await response.json();
+  const raw = await response.text();
+  let result = {};
+  try {
+    result = raw ? JSON.parse(raw) : {};
+  } catch (error) {
+    throw new Error("El Apps Script no respondió JSON. Revisa que estés usando la URL /exec del despliegue nuevo y que tenga acceso para ejecutar.");
+  }
+  if (!raw) {
+    throw new Error("El Apps Script respondió vacío. Vuelve a desplegar el script como Web app y usa la URL /exec.");
+  }
   if (!response.ok || result.ok === false) {
     throw new Error(result.message || "No se pudo guardar la observación.");
   }
