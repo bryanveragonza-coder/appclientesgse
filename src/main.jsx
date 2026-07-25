@@ -7512,6 +7512,22 @@ function getNextPendingDeliverable(deliverables = []) {
   return candidates.find((candidate) => candidate.parsedDate && candidate.parsedDate >= today)?.item || candidates[0]?.item || null;
 }
 
+function getNextMeeting(meetings = []) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const candidates = meetings
+    .map((meeting, index) => ({ meeting, index, parsedDate: parseInternalDate(meeting.date) }))
+    .filter((item) => item.meeting && (item.meeting.date || item.meeting.title || item.meeting.time || item.meeting.link));
+  const future = candidates
+    .filter((item) => item.parsedDate && item.parsedDate >= today)
+    .sort((a, b) => a.parsedDate - b.parsedDate || a.index - b.index);
+  if (future.length) return future[0].meeting;
+  const past = candidates
+    .filter((item) => item.parsedDate)
+    .sort((a, b) => b.parsedDate - a.parsedDate || a.index - b.index);
+  return past[0]?.meeting || candidates[0]?.meeting || {};
+}
+
 function getNextCharge(charges = []) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -7635,7 +7651,7 @@ function getInternalProjectSummary(entry = {}, data = {}) {
     return acc;
   }, { finished: 0, pending: 0, inProgress: 0, overdue: 0 });
   const progress = Number(project.progress) || (milestones.length ? Math.round((completed / milestones.length) * 100) : 0);
-  const nextMeeting = meetings[0] || {};
+  const nextMeeting = getNextMeeting(meetings);
   const activePending = pending.filter(isPendingActive).length;
   const paymentDate = getChargeDueDate(nextCharge) || project.paymentDate || entry.paymentDate || "Por definir";
   const clientDeliverables = summarizeClientDeliverables(findings);
@@ -7676,6 +7692,7 @@ function getInternalProjectSummary(entry = {}, data = {}) {
 function InternalProjectsPortal() {
   const internalNotesUrl = import.meta.env.VITE_INTERNAL_NOTES_WEBHOOK_URL || "";
   const internalWriteUrl = import.meta.env.VITE_INTERNAL_UPDATE_WEBHOOK_URL || internalNotesUrl;
+  const internalPendingUrl = import.meta.env.VITE_INTERNAL_PENDING_WEBHOOK_URL || "";
   const [masterEntries, setMasterEntries] = useState([]);
   const [masterError, setMasterError] = useState("");
   const [notes, setNotes] = useState(() => readInternalStorage(INTERNAL_NOTES_KEY, {}));
@@ -7692,6 +7709,16 @@ function InternalProjectsPortal() {
   const [noteDraft, setNoteDraft] = useState("");
   const [noteUser, setNoteUser] = useState("Equipo GSE");
   const [noteDeliverable, setNoteDeliverable] = useState("");
+  const [pendingClientDraft, setPendingClientDraft] = useState({
+    request: "",
+    owner: "",
+    dueDate: "",
+    status: "Pendiente",
+    blocks: "",
+    validationClient: "",
+    link: "",
+    description: "",
+  });
   const [replyDrafts, setReplyDrafts] = useState({});
   const [editingNoteIndex, setEditingNoteIndex] = useState(null);
   const [editingNoteText, setEditingNoteText] = useState("");
@@ -7990,6 +8017,14 @@ function InternalProjectsPortal() {
     return "Sin estado";
   };
 
+  const getPendingClientStatusOption = (value) => {
+    const current = normalizeSystemName(value || "");
+    if (current.includes("terminado") || current.includes("finalizado") || current.includes("resuelto")) return "Terminado";
+    if (current.includes("bloqueado") || current.includes("vencido")) return "Bloqueado";
+    if (current.includes("progreso") || current.includes("desarrollo")) return "En desarrollo";
+    return "Pendiente";
+  };
+
   const updateDeliverableStatus = (item, next) => {
     updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Estado", value: next });
   };
@@ -8042,6 +8077,90 @@ function InternalProjectsPortal() {
 
   const updateChargeStatus = (charge, next) => {
     updateInternalSheetCell({ sheetName: "Cobros", rowNumber: charge.rowNumber, columnName: "Estado pago", value: next });
+  };
+
+  const updatePendingClientCell = async ({ rowNumber, columnName, value }) => {
+    if (!selectedSummary) return;
+    if (!internalPendingUrl) {
+      setInternalActionMessage("Falta configurar VITE_INTERNAL_PENDING_WEBHOOK_URL para guardar pendientes cliente.");
+      return;
+    }
+    if (!rowNumber) {
+      setInternalActionMessage("No se encontró la fila exacta del pendiente. Actualiza el maestro e intenta de nuevo.");
+      return;
+    }
+    try {
+      setInternalActionMessage("Guardando pendiente cliente...");
+      await postInternalNoteAction(internalPendingUrl, {
+        action: "updatePendingClient",
+        sheetId: selectedSummary.sheetId,
+        sheetName: "PendientesCliente",
+        rowNumber,
+        columnName,
+        value,
+        usuario: "Equipo GSE",
+      });
+      await reloadInternalClient(selectedSummary);
+      setInternalActionMessage("Pendiente cliente guardado en Google Sheets.");
+    } catch (error) {
+      console.error(error);
+      setInternalActionMessage(error.message || "No se pudo guardar el pendiente cliente.");
+    }
+  };
+
+  const updatePendingClientStatus = (item, next) => {
+    updatePendingClientCell({ rowNumber: item.rowNumber, columnName: "Estado", value: next });
+  };
+
+  const updatePendingClientLink = (item) => {
+    const next = window.prompt("Pega el link del pendiente:", item.link || "");
+    if (next === null) return;
+    updatePendingClientCell({ rowNumber: item.rowNumber, columnName: "Link", value: next.trim() });
+  };
+
+  const addPendingClient = async () => {
+    if (!selectedSummary) return;
+    const request = pendingClientDraft.request.trim();
+    if (!request) {
+      setInternalActionMessage("Escribe el pendiente antes de guardar.");
+      return;
+    }
+    if (!internalPendingUrl) {
+      setInternalActionMessage("Falta configurar VITE_INTERNAL_PENDING_WEBHOOK_URL para guardar pendientes cliente.");
+      return;
+    }
+    try {
+      setInternalActionMessage("Guardando pendiente...");
+      await postInternalNoteAction(internalPendingUrl, {
+        action: "appendPendingClient",
+        sheetId: selectedSummary.sheetId,
+        sheetName: "PendientesCliente",
+        pendiente: request,
+        responsable: pendingClientDraft.owner.trim(),
+        fecha: pendingClientDraft.dueDate.trim(),
+        estado: pendingClientDraft.status,
+        bloquea: pendingClientDraft.blocks.trim(),
+        validacion: pendingClientDraft.validationClient.trim(),
+        link: pendingClientDraft.link.trim(),
+        descripcion: pendingClientDraft.description.trim(),
+        usuario: "Equipo GSE",
+      });
+      setPendingClientDraft({
+        request: "",
+        owner: "",
+        dueDate: "",
+        status: "Pendiente",
+        blocks: "",
+        validationClient: "",
+        link: "",
+        description: "",
+      });
+      await reloadInternalClient(selectedSummary);
+      setInternalActionMessage("Pendiente guardado en Google Sheets.");
+    } catch (error) {
+      console.error(error);
+      setInternalActionMessage(error.message || "No se pudo guardar el pendiente.");
+    }
   };
 
   const refreshMaster = () => {
@@ -8537,6 +8656,7 @@ function InternalProjectsPortal() {
               <nav className="internalClientTabs" aria-label="Detalle del cliente">
                 <button type="button" className={clientTab === "cobros" ? "active" : ""} onClick={() => setClientTab("cobros")}><Clock3 size={16} /> Cobros</button>
                 <button type="button" className={clientTab === "entregables" ? "active" : ""} onClick={() => setClientTab("entregables")}><FileText size={16} /> Entregables</button>
+                <button type="button" className={clientTab === "pendientes" ? "active" : ""} onClick={() => setClientTab("pendientes")}><AlertTriangle size={16} /> Pendientes clientes</button>
                 <button type="button" className={clientTab === "observaciones" ? "active" : ""} onClick={() => setClientTab("observaciones")}><MessageCircle size={16} /> Observaciones</button>
               </nav>
 
@@ -8694,6 +8814,114 @@ function InternalProjectsPortal() {
                   )}
                 </section>
               </div>
+              )}
+
+              {clientTab === "pendientes" && (
+                <section className="internalPendingClientPanel">
+                  <div className="internalSectionHead">
+                    <h3>Pendientes clientes</h3>
+                  </div>
+                  {internalActionMessage && <p className="internalActionMessage">{internalActionMessage}</p>}
+                  <div className="internalPendingClientForm">
+                    <label>
+                      <span>Pendiente</span>
+                      <input value={pendingClientDraft.request} onChange={(event) => setPendingClientDraft((current) => ({ ...current, request: event.target.value }))} placeholder="Nuevo pendiente del cliente" />
+                    </label>
+                    <label>
+                      <span>Responsable</span>
+                      <input value={pendingClientDraft.owner} onChange={(event) => setPendingClientDraft((current) => ({ ...current, owner: event.target.value }))} placeholder="Responsable" />
+                    </label>
+                    <label>
+                      <span>Fecha</span>
+                      <input value={pendingClientDraft.dueDate} onChange={(event) => setPendingClientDraft((current) => ({ ...current, dueDate: event.target.value }))} placeholder="dd/mm/aaaa" />
+                    </label>
+                    <label>
+                      <span>Estado</span>
+                      <select value={pendingClientDraft.status} onChange={(event) => setPendingClientDraft((current) => ({ ...current, status: event.target.value }))}>
+                        <option>Pendiente</option>
+                        <option>En desarrollo</option>
+                        <option>Bloqueado</option>
+                        <option>Terminado</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Bloquea</span>
+                      <input value={pendingClientDraft.blocks} onChange={(event) => setPendingClientDraft((current) => ({ ...current, blocks: event.target.value }))} placeholder="Qué bloquea" />
+                    </label>
+                    <label>
+                      <span>Validación</span>
+                      <input value={pendingClientDraft.validationClient} onChange={(event) => setPendingClientDraft((current) => ({ ...current, validationClient: event.target.value }))} placeholder="Validación" />
+                    </label>
+                    <label>
+                      <span>Link</span>
+                      <input value={pendingClientDraft.link} onChange={(event) => setPendingClientDraft((current) => ({ ...current, link: event.target.value }))} placeholder="https://..." />
+                    </label>
+                    <label className="wide">
+                      <span>Descripción</span>
+                      <input value={pendingClientDraft.description} onChange={(event) => setPendingClientDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Detalle u observación" />
+                    </label>
+                    <button type="button" onClick={addPendingClient}>Añadir pendiente</button>
+                  </div>
+                  {selectedSummary.pending.length > 0 ? (
+                    <div className="internalPendingClientMatrix">
+                      <div className="internalPendingClientHead">
+                        <span>Pendiente</span>
+                        <span>Responsable</span>
+                        <span>Fecha</span>
+                        <span>Estado</span>
+                        <span>Bloquea</span>
+                        <span>Validación</span>
+                        <span>Link</span>
+                      </div>
+                      <div className="internalPendingClientBody">
+                        {selectedSummary.pending.map((item, index) => {
+                          const statusOption = getPendingClientStatusOption(item.status);
+                          const statusKey = normalizeSystemName(statusOption);
+                          const statusClass = statusKey.includes("terminado")
+                            ? "done"
+                            : statusKey.includes("bloqueado")
+                              ? "late"
+                              : statusKey.includes("desarrollo")
+                                ? "progress"
+                              : "chargePending";
+                          const link = safeUrl(item.link || item.technicalSheet || item.imageProcess);
+                          return (
+                            <article key={`${item.request || item.description}-${index}`} className={statusClass === "late" ? "isLate" : ""}>
+                              <div>
+                                <strong>{item.request || "Pendiente cliente"}</strong>
+                                <small>{item.description || "Sin descripción"}</small>
+                              </div>
+                              <span>{item.owner || "Sin responsable"}</span>
+                              <span>{item.dueDate || "Sin fecha"}</span>
+                              <select
+                                className={`internalTableSelect ${statusClass}`}
+                                value={statusOption}
+                                onChange={(event) => updatePendingClientStatus(item, event.target.value)}
+                              >
+                                <option>Pendiente</option>
+                                <option>En desarrollo</option>
+                                <option>Bloqueado</option>
+                                <option>Terminado</option>
+                              </select>
+                              <span>{item.blocks || "Sin bloqueo"}</span>
+                              <span>{item.validationClient || "Sin validar"}</span>
+                              {link ? (
+                                <div className="internalLinkActions">
+                                  <a className="internalTableButton link" href={link} target="_blank" rel="noreferrer">Abrir</a>
+                                  <button type="button" className="internalTableButton empty" onClick={() => updatePendingClientLink(item)}>Cambiar</button>
+                                </div>
+                              ) : (
+                                <button type="button" className="internalTableButton empty" onClick={() => updatePendingClientLink(item)}>Cargar link</button>
+                              )}
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="internalEmpty">No hay pendientes clientes en la pestaña PendientesClientes.</p>
+                  )}
+                </section>
               )}
 
               {clientTab === "observaciones" && (

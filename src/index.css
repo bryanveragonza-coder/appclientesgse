@@ -1311,6 +1311,124 @@ button.internalGhostLink {
   scrollbar-color: #00b8b5 #e6fbfa;
 }
 
+.internalPendingClientMatrix {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid #d9dee7;
+  border-radius: 4px;
+  background: #ffffff;
+  scrollbar-color: #00b8b5 #e6fbfa;
+}
+
+.internalPendingClientHead,
+.internalPendingClientBody {
+  min-width: 1080px;
+}
+
+.internalPendingClientHead,
+.internalPendingClientBody article {
+  display: grid;
+  grid-template-columns:
+    minmax(260px, 1.25fr)
+    minmax(132px, 0.62fr)
+    minmax(110px, 0.52fr)
+    minmax(112px, 0.54fr)
+    minmax(150px, 0.72fr)
+    minmax(120px, 0.58fr)
+    minmax(92px, 0.44fr);
+  align-items: stretch;
+  gap: 0;
+}
+
+.internalPendingClientHead {
+  border-bottom: 1px solid #202838;
+  background: #2d3648;
+  color: #ffffff;
+}
+
+.internalPendingClientHead span {
+  min-height: 32px;
+  padding: 9px 10px;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.internalPendingClientBody article {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.internalPendingClientBody {
+  max-height: 540px;
+  overflow: auto;
+}
+
+.internalPendingClientBody article.isLate {
+  background: #fff1f2;
+}
+
+.internalPendingClientBody article > * {
+  min-height: 44px;
+  padding: 10px 9px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.internalPendingClientBody article > *:last-child {
+  border-right: 0;
+}
+
+.internalPendingClientBody strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.86rem;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.internalPendingClientBody small {
+  display: block;
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.internalPendingClientBody span {
+  color: #0f172a;
+  font-size: 0.82rem;
+}
+
+.internalStatusPill {
+  justify-self: start;
+  align-self: center;
+  min-height: 24px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.internalStatusPill.done {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.internalStatusPill.chargePending {
+  background: #fde68a;
+  color: #92400e;
+}
+
+.internalStatusPill.late {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
 .internalChargeHead,
 .internalChargeBody {
   min-width: 1220px;
@@ -1419,7 +1537,8 @@ button.internalGhostLink {
 }
 
 .internalDeliverablesPanel,
-.internalNotesPanel {
+.internalNotesPanel,
+.internalPendingClientPanel {
   padding: 16px;
 }
 
@@ -1678,6 +1797,57 @@ button.internalGhostLink {
   font-weight: 500;
 }
 
+.internalPendingClientForm {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid #d9dee7;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.internalPendingClientForm label {
+  display: grid;
+  gap: 5px;
+}
+
+.internalPendingClientForm label.wide {
+  grid-column: span 2;
+}
+
+.internalPendingClientForm span {
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.internalPendingClientForm input,
+.internalPendingClientForm select {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #dbe4ea;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+}
+
+.internalPendingClientForm button {
+  align-self: end;
+  min-height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: #00b8b5;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .internalDeliverablesPanel article,
 .internalNotesList article {
   padding: 12px;
@@ -1847,6 +2017,14 @@ button.internalGhostLink {
 }
 
 @media (max-width: 980px) {
+  .internalPendingClientForm {
+    grid-template-columns: 1fr;
+  }
+
+  .internalPendingClientForm label.wide {
+    grid-column: auto;
+  }
+
   .internalPortal {
     grid-template-columns: 1fr;
   }

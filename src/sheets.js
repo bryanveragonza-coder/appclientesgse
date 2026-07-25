@@ -233,7 +233,8 @@ async function fetchCsvSheet(sheetName, required = true, spreadsheetId) {
 async function fetchFirstAvailableSheet(sheetNames = [], spreadsheetId) {
   for (const sheetName of sheetNames) {
     const rows = await fetchCsvSheet(sheetName, false, spreadsheetId);
-    if (rows.length) return rows;
+    const hasContent = rows.some((row) => Object.values(row || {}).some((value) => cleanText(value)));
+    if (hasContent) return rows;
   }
   return [];
 }
@@ -580,13 +581,14 @@ function mapFindings(rows) {
 }
 
 function mapPending(rows) {
-  return rows.map((row) => ({
-    request: getRowValue(row, ["Pendiente", "Solicitud"]),
-    owner: getRowValue(row, ["Responsable", "Responsable cliente", "Responsable Cliente"]),
-    dueDate: getRowValue(row, ["Fecha lÃ­mite", "Fecha limite", "Fecha", "FechaObjetivo", "Fecha Objetivo"]),
-    status: getRowValue(row, ["Estado"]),
-    blocks: getRowValue(row, ["QuÃ© bloquea", "Que bloquea", "Bloquea", "Impacto"]),
-    description: getRowValue(row, ["Descripcion", "DescripciÃ³n", "Detalle", "Explicacion", "ExplicaciÃ³n"]),
+  return rows.map((row, index) => ({
+    rowNumber: index + 2,
+    request: getRowValue(row, ["Pendiente", "Pendientes", "Solicitud", "Actividad", "Tarea", "Requerimiento", "Nombre", "Titulo", "Título"]),
+    owner: getRowValue(row, ["Responsable", "Responsable cliente", "Responsable Cliente", "Owner", "Encargado", "Asignado"]),
+    dueDate: getRowValue(row, ["Fecha lÃ­mite", "Fecha limite", "Fecha límite", "Fecha", "FechaObjetivo", "Fecha Objetivo", "Fecha vencimiento", "Vencimiento"]),
+    status: getRowValue(row, ["Estado", "Status", "Estatus", "Situacion", "Situación"]),
+    blocks: getRowValue(row, ["QuÃ© bloquea", "Que bloquea", "Qué bloquea", "Bloquea", "Impacto", "Bloqueo", "Dependencia"]),
+    description: getRowValue(row, ["Descripcion", "DescripciÃ³n", "Descripción", "Detalle", "Explicacion", "Explicación", "Observacion", "Observación", "Comentarios"]),
     link: getRowValue(row, ["LinkPendiente", "Link Pendiente", "Link", "URL", "Enlace", "LinkDocumento", "Link Documento", "Documento", "Archivo"]),
     imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
     technicalSheet: getRowValue(row, ["Ficha", "FichaTecnica", "Ficha TÃ©cnica", "Ficha Tecnica", "FichaTecnicaProceso", "Ficha Proceso", "LinkFicha", "Link Ficha", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
@@ -594,7 +596,7 @@ function mapPending(rows) {
       "ValidacionDeCliente", "ValidaciÃ³nDeCliente", "Validacion De Cliente", "ValidaciÃ³n De Cliente", "ValidacionCliente", "ValidaciÃ³nCliente", "Validacion Cliente", "ValidaciÃ³n Cliente",
       "Validado", "AprobacionCliente", "AprobaciÃ³nCliente", "Aprobacion Cliente", "AprobaciÃ³n Cliente"
     ]),
-  })).filter((x) => x.request);
+  })).filter((x) => Object.values(x).some((value) => cleanText(value)));
 }
 
 function mapDeliverables(rows) {
@@ -837,7 +839,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchCsvRows("Proyecto", true, spreadsheetId),
     fetchCsvSheet("Hitos", true, spreadsheetId),
     fetchCsvSheet("Hallazgos", true, spreadsheetId),
-    fetchFirstAvailableSheet(["PendientesCliente", "Pendientes del cliente", "Pendientes Cliente", "Pendientes"], spreadsheetId),
+    fetchFirstAvailableSheet(["PendientesCliente", "PendientesClientes", "Pendientes del cliente", "Pendientes Cliente", "Pendientes"], spreadsheetId),
     fetchCsvSheet("Entregables", true, spreadsheetId),
     fetchCsvSheet("Actualizaciones", false, spreadsheetId),
     fetchFirstAvailableSheet(["Educacion", "EducaciÃ³n", "Lo que vas a recibir", "Educacion Cliente"], spreadsheetId),
