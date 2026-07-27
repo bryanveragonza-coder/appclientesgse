@@ -53,6 +53,7 @@ export const demoData = {
   deliverables: [],
   updates: [],
   education: [],
+  tutorials: [],
   meetings: [],
   processesAsIs: [],
   processesToBe: [],
@@ -236,6 +237,26 @@ async function fetchFirstAvailableSheet(sheetNames = [], spreadsheetId) {
     const hasContent = rows.some((row) => Object.values(row || {}).some((value) => cleanText(value)));
     if (hasContent) return rows;
   }
+  return [];
+}
+
+async function fetchFirstAvailableSheetWithHeaders(sheetNames = [], spreadsheetId, possibleHeaders = []) {
+  const expectedHeaders = possibleHeaders.map(normalizeKey);
+
+  for (const sheetName of sheetNames) {
+    const rows = await fetchCsvSheet(sheetName, false, spreadsheetId);
+    if (!rows.length) continue;
+
+    const availableHeaders = new Set(
+      Object.keys(rows[0] || {}).map(normalizeKey)
+    );
+    const matchesExpectedSheet = expectedHeaders.some((header) => availableHeaders.has(header));
+    if (!matchesExpectedSheet) continue;
+
+    const hasContent = rows.some((row) => Object.values(row || {}).some((value) => cleanText(value)));
+    if (hasContent) return rows;
+  }
+
   return [];
 }
 
@@ -810,6 +831,16 @@ function mapEducation(rows) {
   })).filter((x) => x.deliverable || x.whatIs || x.purpose);
 }
 
+function mapTutorials(rows) {
+  return rows.map((row, index) => ({
+    id: getRowValue(row, ["ID", "Id", "N", "N°", "NÂ°", "No"]) || String(index + 1),
+    title: getRowValue(row, ["Titulo", "Título", "Title", "Nombre", "Tutorial"]),
+    description: getRowValue(row, ["Descripcion", "Descripción", "Description", "Detalle", "Resumen"]),
+    link: getRowValue(row, ["Link", "URL", "Url", "Enlace", "Video", "Youtube", "YouTube"]),
+    category: getRowValue(row, ["Categoria", "Categoría", "Category", "Tipo", "Modulo", "Módulo"]),
+  })).filter((x) => x.title || x.description || x.link);
+}
+
 function mapCOERows(rows) {
   return rows.map((row) => ({
     code: getRowValue(row, ["CÃ“DIGO", "CODIGO", "Codigo", "CÃ³digo", "CodigoProceso", "CÃ³digo Proceso", "Code"]),
@@ -835,7 +866,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     throw new Error("Falta iniciar sesiÃ³n o configurar VITE_SPREADSHEET_ID.");
   }
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, meetingRows, chargeRows, documentRows, architectureRows, indicatorRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, tutorialRows, meetingRows, chargeRows, documentRows, architectureRows, indicatorRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
     fetchCsvRows("Proyecto", true, spreadsheetId),
     fetchCsvSheet("Hitos", true, spreadsheetId),
     fetchCsvSheet("Hallazgos", true, spreadsheetId),
@@ -843,6 +874,11 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchCsvSheet("Entregables", true, spreadsheetId),
     fetchCsvSheet("Actualizaciones", false, spreadsheetId),
     fetchFirstAvailableSheet(["Educacion", "EducaciÃ³n", "Lo que vas a recibir", "Educacion Cliente"], spreadsheetId),
+    fetchFirstAvailableSheetWithHeaders(
+      ["Tutoriales", "tutoriales", "TUTORIALES", "Tutorial", "Ayuda", "Videos", "VideosTutoriales", "Videos Tutoriales"],
+      spreadsheetId,
+      ["Titulo", "Título", "Title", "Descripcion", "Descripción", "Description", "Link", "Enlace", "Video", "Youtube", "YouTube"]
+    ),
     fetchFirstAvailableSheet(["Reuniones", "ReunionesCliente", "Reuniones Cliente", "Agenda"], spreadsheetId),
     fetchFirstAvailableSheet(["Cobros", "Pagos", "Cobranzas", "Facturacion", "Facturación"], spreadsheetId),
     fetchFirstAvailableSheet(["Documentos", "CargaDocumentos", "Carga de documentos", "Carga Documentos", "ChecklistDocumentos", "Checklist Documentos", "Checklist"], spreadsheetId),
@@ -863,6 +899,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     deliverables: mapDeliverables(deliverableRows),
     updates: mapUpdates(updateRows),
     education: mapEducation(educationRows),
+    tutorials: mapTutorials(tutorialRows),
     meetings: mapMeetings(meetingRows),
     charges: mapCharges(chargeRows),
     documents: mapDocuments(documentRows),

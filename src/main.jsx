@@ -82,6 +82,27 @@ function getDrivePreviewUrl(url = "") {
   return directMatch?.[1] ? `https://drive.google.com/thumbnail?id=${directMatch[1]}&sz=w2000` : clean;
 }
 
+function getYouTubeVideoId(url = "") {
+  const clean = safeUrl(url);
+  if (!clean) return "";
+  const patterns = [
+    /youtu\.be\/([^?&#/]+)/i,
+    /youtube\.com\/watch\?.*?[?&]?v=([^?&#]+)/i,
+    /youtube\.com\/embed\/([^?&#/]+)/i,
+    /youtube\.com\/shorts\/([^?&#/]+)/i,
+  ];
+  for (const pattern of patterns) {
+    const match = clean.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+  return "";
+}
+
+function getYouTubeThumbnail(url = "") {
+  const videoId = getYouTubeVideoId(url);
+  return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : "";
+}
+
 function isCheckedSheetValue(value = "") {
   const normalized = String(value || "")
     .trim()
@@ -149,7 +170,7 @@ function Logo({ src, fallback, className = "" }) {
 function Sidebar({ view, setView, project }) {
   const [sidebarTooltip, setSidebarTooltip] = useState(null);
   const groups = [
-    { title: "", items: [[Sparkles, "Portal del proyecto", "portal"]] },
+    { title: "", items: [[Sparkles, "Portal del proyecto", "portal"], [Video, "Tutoriales", "tutoriales"]] },
     {
       title: "Seguimiento",
       items: [
@@ -404,6 +425,135 @@ function PortalProject({ project, milestones, pending, setView }) {
         </button>
       </section>
     </div>
+  );
+}
+
+function Tutorials({ tutorials = [], setView, previousView = "portal", pending = [] }) {
+  const [tutorialSearch, setTutorialSearch] = useState("");
+  const activePending = pending.filter(isPendingActive).length;
+  const filteredTutorials = tutorials.filter((item) => {
+    const query = normalizeSystemName(tutorialSearch);
+    const haystack = normalizeSystemName([
+      item.title,
+      item.description,
+      item.category,
+      item.link,
+    ].join(" "));
+    return !query || haystack.includes(query);
+  });
+  const backView = previousView === "portal" ? "portal" : "portal";
+
+  return (
+    <>
+      <section className="mobileTutorialsView">
+        <div className="mobileRouteTopbar">
+          <button type="button" onClick={() => setView?.(backView)}><ChevronLeft size={18} /> Atrás</button>
+          <button type="button" onClick={() => setView?.("portal")}>Inicio <ChevronRight size={18} /></button>
+        </div>
+
+        <header className="mobileProcessHero">
+          <h1>Tutoriales</h1>
+          <label>
+            <Search size={17} />
+            <input
+              value={tutorialSearch}
+              onChange={(event) => setTutorialSearch(event.target.value)}
+              placeholder="Buscar tutorial"
+            />
+          </label>
+        </header>
+
+        <div className="mobileStandaloneTutorialsList">
+          {filteredTutorials.map((item, index) => {
+            const videoUrl = safeUrl(item.link);
+            const thumbnail = getYouTubeThumbnail(videoUrl);
+            return (
+              <a className="mobileTutorialItem" href={videoUrl || "#"} target="_blank" rel="noreferrer" key={`${item.id}-${item.title}-${index}`}>
+                <span>{thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : <Video size={20} />}</span>
+                <div>
+                  <strong>{item.title || "Tutorial sin título"}</strong>
+                  <small>{item.description || item.category || "Video de ayuda"}</small>
+                </div>
+              </a>
+            );
+          })}
+          {!filteredTutorials.length && (
+            <p>{tutorials.length ? "No hay tutoriales que coincidan con la búsqueda." : "No se encontró la pestaña Tutoriales en este Google Sheet. Debe llamarse exactamente Tutoriales y tener columnas Titulo, Descripcion y Link."}</p>
+          )}
+        </div>
+
+        <nav className="mobileBottomNav visible">
+          {[
+            { label: "Inicio", view: "portal", icon: BarChart3 },
+            { label: "Ruta", view: "ruta", icon: MapPin },
+            { label: "COE", view: "coe", icon: Brain },
+            { label: "Hallazgos", view: "hallazgos", icon: Search },
+            { label: "Pendientes", view: "pendientes", icon: AlertTriangle },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <button type="button" key={item.view} onClick={() => setView?.(item.view)}>
+                <Icon size={18} />
+                <span>{item.label}</span>
+                {item.view === "pendientes" && activePending > 0 && <i>{activePending}</i>}
+              </button>
+            );
+          })}
+        </nav>
+      </section>
+
+      <section className="portalTutorialsSection tutorialsPageSection">
+        <div className="portalTutorialsHeader">
+          <div>
+            <span>Ayuda</span>
+            <h3>Tutoriales</h3>
+            <p>Videos rápidos para consultar procesos, entregables y uso del portal cuando lo necesites.</p>
+          </div>
+          <label className="portalTutorialSearch">
+            <Search size={18} />
+            <input
+              value={tutorialSearch}
+              onChange={(event) => setTutorialSearch(event.target.value)}
+              placeholder="Buscar tutorial"
+            />
+          </label>
+        </div>
+
+        <div className="portalTutorialsList">
+          {filteredTutorials.map((item, index) => {
+            const videoUrl = safeUrl(item.link);
+            const thumbnail = getYouTubeThumbnail(videoUrl);
+            return (
+              <article className="portalTutorialCard" key={`${item.id}-${item.title}-${index}`}>
+                <a className="portalTutorialThumb" href={videoUrl || "#"} target="_blank" rel="noreferrer" aria-label={`Abrir tutorial ${item.title || index + 1}`}>
+                  {thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : <Video size={30} />}
+                  <i><Video size={16} /></i>
+                </a>
+                <div className="portalTutorialInfo">
+                  {item.category && <span>{item.category}</span>}
+                  <h4>{item.title || "Tutorial sin título"}</h4>
+                  <p>{item.description || "Agrega una descripción en la pestaña Tutoriales para orientar al cliente."}</p>
+                  {videoUrl && (
+                    <a href={videoUrl} target="_blank" rel="noreferrer">
+                      Ver tutorial
+                      <ExternalLink size={14} />
+                    </a>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        {filteredTutorials.length === 0 && (
+          <div className="portalTutorialsEmpty">
+            {tutorials.length
+              ? "No hay tutoriales que coincidan con la búsqueda."
+              : "No se encontró la pestaña Tutoriales en este Google Sheet. Debe llamarse exactamente Tutoriales y tener columnas Titulo, Descripcion y Link."}
+          </div>
+        )}
+      </section>
+    </>
   );
 }
 
@@ -811,7 +961,7 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
   );
 }
 
-function AppTopbar({ project, pending = [], meetings = [], updates = [], milestones = [], findings = [], deliverables = [], documents = [], education = [], processesAsIs = [], processesToBe = [], setView, setSelectedHito, setSelectedDeliverable, onLogout }) {
+function AppTopbar({ project, pending = [], meetings = [], updates = [], milestones = [], findings = [], deliverables = [], documents = [], education = [], tutorials = [], processesAsIs = [], processesToBe = [], setView, setSelectedHito, setSelectedDeliverable, onLogout }) {
   const [openPanel, setOpenPanel] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const meetUrl = safeUrl(project?.linkMeet);
@@ -880,6 +1030,13 @@ const meetingItems = [
       detail: [item.system, item.status].filter(Boolean).join(" - "),
       view: "educacion",
       haystack: `${item.deliverable} ${item.system} ${item.milestone} ${item.whatIs} ${item.purpose}`,
+    })),
+    ...tutorials.map((item) => ({
+      type: "Tutorial",
+      title: item.title,
+      detail: [item.category, item.description].filter(Boolean).join(" - "),
+      view: "tutoriales",
+      haystack: `${item.title} ${item.description} ${item.category} ${item.link}`,
     })),
     ...processesAsIs.map((item) => ({
       type: "Proceso AS IS",
@@ -6645,7 +6802,7 @@ useEffect(() => {
   );
 }
 
-function MobilePortalHome({ project, milestones = [], pending = [], meetings = [], updates = [], findings = [], deliverables = [], documents = [], education = [], architectureRoles = [], coeAsIs = [], coeToBe = [], setView }) {
+function MobilePortalHome({ project, milestones = [], pending = [], meetings = [], updates = [], findings = [], deliverables = [], documents = [], education = [], tutorials = [], architectureRoles = [], coeAsIs = [], coeToBe = [], setView }) {
   const [mobileSearch, setMobileSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [openMobilePanel, setOpenMobilePanel] = useState("");
@@ -6691,6 +6848,7 @@ const costFor = (item = {}) => {
     { label: "Entregables", view: "entregables", icon: ClipboardCheck, short: "Entregables" },
     { label: "Documentos", view: "documentos", icon: UploadCloud, short: "Documentos" },
     { label: "Recibir", view: "educacion", icon: BookOpen, short: "Recibir" },
+    { label: "Tutoriales", view: "tutoriales", icon: Video, short: "Tutoriales" },
   ];
   const query = normalizeSystemName(mobileSearch);
   const searchResults = query ? [
@@ -6701,6 +6859,7 @@ const costFor = (item = {}) => {
     ...deliverables.map((item) => ({ type: "Entregable", title: item.deliverable, detail: [item.milestone, item.status].filter(Boolean).join(" · "), view: "entregables", haystack: `${item.deliverable} ${item.system} ${item.milestone} ${item.status}` })),
     ...documents.map((item) => ({ type: "Documento", title: item.item || item.title, detail: [item.category, item.status].filter(Boolean).join(" · "), view: "documentos", haystack: `${item.title} ${item.item} ${item.category} ${item.status}` })),
     ...education.map((item) => ({ type: "Info", title: item.deliverable, detail: [item.milestone, item.status].filter(Boolean).join(" · "), view: "educacion", haystack: `${item.deliverable} ${item.system} ${item.milestone} ${item.whatIs}` })),
+    ...tutorials.map((item) => ({ type: "Tutorial", title: item.title, detail: item.category || "Video de ayuda", link: safeUrl(item.link), haystack: `${item.title} ${item.description} ${item.category} ${item.link}` })),
   ].filter((item) => normalizeSystemName(item.haystack).includes(query)).slice(0, 8) : [];
   const routeItems = Array.from({ length: 13 }, (_, index) => {
     const item = milestones[index] || {};
@@ -6733,6 +6892,12 @@ const costFor = (item = {}) => {
   }, []);
 
   const openResult = (item) => {
+    if (item.link) {
+      window.open(item.link, "_blank", "noreferrer");
+      setSearchOpen(false);
+      setMobileSearch("");
+      return;
+    }
     setView(item.view);
     setSearchOpen(false);
     setMobileSearch("");
@@ -6906,6 +7071,7 @@ const costFor = (item = {}) => {
             ))}
           </div>
         </article>
+
       </div>
 
       {searchOpen && (
@@ -9101,7 +9267,7 @@ function App() {
       });
   }, [session?.sheetId]);
 
-  const { project, milestones, findings, pending, deliverables, updates, education, meetings = [], documents = [], architectureRoles = [], indicators = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
+  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], indicators = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
   const completedText = useMemo(() => {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
@@ -9140,6 +9306,7 @@ function App() {
           deliverables={deliverables}
           documents={documents}
           education={education}
+          tutorials={tutorials}
           processesAsIs={processesAsIs}
           processesToBe={processesToBe}
           setView={navigate}
@@ -9164,6 +9331,7 @@ function App() {
               ["indicadores", "Indicadores"],
               ["documentos", "Documentos"],
               ["educacion", "Lo que vas a recibir"],
+              ["tutoriales", "Tutoriales"],
             ].map(([value, label]) => (
               <button key={value} onClick={() => navigate(value)} className={view === value ? "active" : ""}>
                 {label}
@@ -9185,6 +9353,7 @@ function App() {
                 deliverables={deliverables}
                 documents={documents}
                 education={education}
+                tutorials={tutorials}
                 architectureRoles={architectureRoles}
                 coeAsIs={coeAsIs}
                 coeToBe={coeToBe}
@@ -9232,6 +9401,7 @@ function App() {
           {view === "entregables-clientes" && <ClientDeliverables findings={findings} project={project} />}
           {view === "documentos" && <DocumentsUpload documents={documents} project={project} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "educacion" && <Education education={education} setView={navigate} previousView={previousView} pending={pending} />}
+          {view === "tutoriales" && <Tutorials tutorials={tutorials} setView={navigate} previousView={previousView} pending={pending} />}
         </div>
       </main>
     </div>
