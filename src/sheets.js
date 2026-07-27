@@ -17,6 +17,8 @@ export function getActiveSpreadsheetId() {
   return getSheetIdFromSession() || getSheetIdFromUrl() || import.meta.env.VITE_SPREADSHEET_ID || "";
 }
 
+const LOGIN_MASTER_SPREADSHEET_ID = import.meta.env.VITE_LOGIN_MASTER_SHEET_ID || "10cQa_lSzt3hxr5H5n-qYGeeP5lS-Ykk5rrC6ctNM2pY";
+
 export const demoData = {
   project: {
     client: "SIN CONEXIÃ“N - REVISAR GOOGLE SHEET",
@@ -866,7 +868,10 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     throw new Error("Falta iniciar sesiÃ³n o configurar VITE_SPREADSHEET_ID.");
   }
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, tutorialRows, meetingRows, chargeRows, documentRows, architectureRows, indicatorRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
+  const tutorialSheetNames = ["Tutoriales", "tutoriales", "TUTORIALES", "Tutorial", "Ayuda", "Videos", "VideosTutoriales", "Videos Tutoriales"];
+  const tutorialHeaders = ["Titulo", "Título", "Title", "Descripcion", "Descripción", "Description", "Link", "Enlace", "Video", "Youtube", "YouTube"];
+
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, indicatorRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
     fetchCsvRows("Proyecto", true, spreadsheetId),
     fetchCsvSheet("Hitos", true, spreadsheetId),
     fetchCsvSheet("Hallazgos", true, spreadsheetId),
@@ -875,9 +880,14 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchCsvSheet("Actualizaciones", false, spreadsheetId),
     fetchFirstAvailableSheet(["Educacion", "EducaciÃ³n", "Lo que vas a recibir", "Educacion Cliente"], spreadsheetId),
     fetchFirstAvailableSheetWithHeaders(
-      ["Tutoriales", "tutoriales", "TUTORIALES", "Tutorial", "Ayuda", "Videos", "VideosTutoriales", "Videos Tutoriales"],
+      tutorialSheetNames,
+      LOGIN_MASTER_SPREADSHEET_ID,
+      tutorialHeaders
+    ),
+    fetchFirstAvailableSheetWithHeaders(
+      tutorialSheetNames,
       spreadsheetId,
-      ["Titulo", "Título", "Title", "Descripcion", "Descripción", "Description", "Link", "Enlace", "Video", "Youtube", "YouTube"]
+      tutorialHeaders
     ),
     fetchFirstAvailableSheet(["Reuniones", "ReunionesCliente", "Reuniones Cliente", "Agenda"], spreadsheetId),
     fetchFirstAvailableSheet(["Cobros", "Pagos", "Cobranzas", "Facturacion", "Facturación"], spreadsheetId),
@@ -899,7 +909,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     deliverables: mapDeliverables(deliverableRows),
     updates: mapUpdates(updateRows),
     education: mapEducation(educationRows),
-    tutorials: mapTutorials(tutorialRows),
+    tutorials: mapTutorials(masterTutorialRows.length ? masterTutorialRows : clientTutorialRows),
     meetings: mapMeetings(meetingRows),
     charges: mapCharges(chargeRows),
     documents: mapDocuments(documentRows),

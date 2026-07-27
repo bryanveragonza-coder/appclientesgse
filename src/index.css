@@ -18762,9 +18762,12 @@ body {
   display: grid !important;
   place-items: center !important;
   overflow: hidden !important;
+  border: 0 !important;
   background: #e5f4f3 !important;
   color: #00a6a3 !important;
+  cursor: pointer !important;
   text-decoration: none !important;
+  padding: 0 !important;
 }
 
 .portalTutorialThumb img {
@@ -18820,13 +18823,114 @@ body {
   line-height: 1.35 !important;
 }
 
-.portalTutorialInfo a {
+.portalTutorialInfo a,
+.portalTutorialInfo button {
+  width: max-content !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #007f7d !important;
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  padding: 0 !important;
+}
+
+.tutorialModalOverlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000 !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 28px !important;
+  background: rgba(5, 24, 29, 0.68) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.tutorialModalCard {
+  width: min(980px, 100%) !important;
+  max-height: calc(100vh - 56px) !important;
+  display: grid !important;
+  gap: 14px !important;
+  overflow: auto !important;
+  padding: 18px !important;
+  background: #ffffff !important;
+  box-shadow: 0 28px 80px rgba(0, 31, 42, 0.34) !important;
+}
+
+.tutorialModalHeader {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 42px !important;
+  gap: 14px !important;
+  align-items: start !important;
+}
+
+.tutorialModalHeader span {
+  display: block !important;
+  margin-bottom: 4px !important;
+  color: #00a6a3 !important;
+  font-size: 0.74rem !important;
+  font-weight: 800 !important;
+}
+
+.tutorialModalHeader h3 {
+  margin: 0 !important;
+  color: #141b1f !important;
+  font-size: 1.2rem !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+}
+
+.tutorialModalHeader button {
+  width: 42px !important;
+  height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 0 !important;
+  background: #e8f4f3 !important;
+  color: #102e35 !important;
+  cursor: pointer !important;
+}
+
+.tutorialModalPlayer {
+  aspect-ratio: 16 / 9 !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  background: #061d23 !important;
+}
+
+.tutorialModalPlayer iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  display: block !important;
+}
+
+.tutorialModalPlayer > div {
+  height: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+  gap: 10px !important;
+  color: #ffffff !important;
+}
+
+.tutorialModalCard > p {
+  margin: 0 !important;
+  color: #53676b !important;
+  font-size: 0.9rem !important;
+  line-height: 1.45 !important;
+}
+
+.tutorialModalCard > a {
   width: max-content !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 7px !important;
   color: #007f7d !important;
-  font-size: 0.82rem !important;
+  font-size: 0.86rem !important;
   font-weight: 800 !important;
   text-decoration: none !important;
 }
@@ -21916,7 +22020,12 @@ body {
     grid-template-columns: 112px minmax(0, 1fr) !important;
     gap: 10px !important;
     align-items: center !important;
+    width: 100% !important;
+    border: 0 !important;
+    background: transparent !important;
     color: #001f2a !important;
+    text-align: left !important;
+    cursor: pointer !important;
     text-decoration: none !important;
   }
 

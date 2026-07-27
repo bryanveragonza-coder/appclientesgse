@@ -103,6 +103,11 @@ function getYouTubeThumbnail(url = "") {
   return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : "";
 }
 
+function getYouTubeEmbedUrl(url = "") {
+  const videoId = getYouTubeVideoId(url);
+  return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : "";
+}
+
 function isCheckedSheetValue(value = "") {
   const normalized = String(value || "")
     .trim()
@@ -170,7 +175,7 @@ function Logo({ src, fallback, className = "" }) {
 function Sidebar({ view, setView, project }) {
   const [sidebarTooltip, setSidebarTooltip] = useState(null);
   const groups = [
-    { title: "", items: [[Sparkles, "Portal del proyecto", "portal"], [Video, "Tutoriales", "tutoriales"]] },
+    { title: "", items: [[Sparkles, "Portal del proyecto", "portal"], [Video, "¿Necesitas ayuda?", "tutoriales"]] },
     {
       title: "Seguimiento",
       items: [
@@ -430,6 +435,7 @@ function PortalProject({ project, milestones, pending, setView }) {
 
 function Tutorials({ tutorials = [], setView, previousView = "portal", pending = [] }) {
   const [tutorialSearch, setTutorialSearch] = useState("");
+  const [activeTutorial, setActiveTutorial] = useState(null);
   const activePending = pending.filter(isPendingActive).length;
   const filteredTutorials = tutorials.filter((item) => {
     const query = normalizeSystemName(tutorialSearch);
@@ -442,6 +448,13 @@ function Tutorials({ tutorials = [], setView, previousView = "portal", pending =
     return !query || haystack.includes(query);
   });
   const backView = previousView === "portal" ? "portal" : "portal";
+  const closeTutorialModal = () => setActiveTutorial(null);
+  const openTutorialModal = (item) => {
+    if (!safeUrl(item?.link)) return;
+    setActiveTutorial(item);
+  };
+  const activeVideoUrl = safeUrl(activeTutorial?.link);
+  const activeEmbedUrl = getYouTubeEmbedUrl(activeVideoUrl);
 
   return (
     <>
@@ -452,7 +465,7 @@ function Tutorials({ tutorials = [], setView, previousView = "portal", pending =
         </div>
 
         <header className="mobileProcessHero">
-          <h1>Tutoriales</h1>
+          <h1>¿Necesitas ayuda?</h1>
           <label>
             <Search size={17} />
             <input
@@ -468,13 +481,13 @@ function Tutorials({ tutorials = [], setView, previousView = "portal", pending =
             const videoUrl = safeUrl(item.link);
             const thumbnail = getYouTubeThumbnail(videoUrl);
             return (
-              <a className="mobileTutorialItem" href={videoUrl || "#"} target="_blank" rel="noreferrer" key={`${item.id}-${item.title}-${index}`}>
+              <button className="mobileTutorialItem" type="button" onClick={() => openTutorialModal(item)} key={`${item.id}-${item.title}-${index}`}>
                 <span>{thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : <Video size={20} />}</span>
                 <div>
                   <strong>{item.title || "Tutorial sin título"}</strong>
                   <small>{item.description || item.category || "Video de ayuda"}</small>
                 </div>
-              </a>
+              </button>
             );
           })}
           {!filteredTutorials.length && (
@@ -506,8 +519,8 @@ function Tutorials({ tutorials = [], setView, previousView = "portal", pending =
         <div className="portalTutorialsHeader">
           <div>
             <span>Ayuda</span>
-            <h3>Tutoriales</h3>
-            <p>Videos rápidos para consultar procesos, entregables y uso del portal cuando lo necesites.</p>
+            <h3>¿Necesitas ayuda?</h3>
+            <p>Encuentra guías prácticas para usar el RIV, comprender tus entregables y avanzar en cada etapa del proyecto.</p>
           </div>
           <label className="portalTutorialSearch">
             <Search size={18} />
@@ -525,19 +538,19 @@ function Tutorials({ tutorials = [], setView, previousView = "portal", pending =
             const thumbnail = getYouTubeThumbnail(videoUrl);
             return (
               <article className="portalTutorialCard" key={`${item.id}-${item.title}-${index}`}>
-                <a className="portalTutorialThumb" href={videoUrl || "#"} target="_blank" rel="noreferrer" aria-label={`Abrir tutorial ${item.title || index + 1}`}>
+                <button className="portalTutorialThumb" type="button" onClick={() => openTutorialModal(item)} aria-label={`Reproducir tutorial ${item.title || index + 1}`}>
                   {thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : <Video size={30} />}
                   <i><Video size={16} /></i>
-                </a>
+                </button>
                 <div className="portalTutorialInfo">
                   {item.category && <span>{item.category}</span>}
                   <h4>{item.title || "Tutorial sin título"}</h4>
                   <p>{item.description || "Agrega una descripción en la pestaña Tutoriales para orientar al cliente."}</p>
                   {videoUrl && (
-                    <a href={videoUrl} target="_blank" rel="noreferrer">
+                    <button type="button" onClick={() => openTutorialModal(item)}>
                       Ver tutorial
-                      <ExternalLink size={14} />
-                    </a>
+                      <Video size={14} />
+                    </button>
                   )}
                 </div>
               </article>
@@ -553,6 +566,46 @@ function Tutorials({ tutorials = [], setView, previousView = "portal", pending =
           </div>
         )}
       </section>
+
+      {activeTutorial && (
+        <div className="tutorialModalOverlay" role="dialog" aria-modal="true" aria-label={activeTutorial.title || "Tutorial"}>
+          <div className="tutorialModalCard">
+            <div className="tutorialModalHeader">
+              <div>
+                {activeTutorial.category && <span>{activeTutorial.category}</span>}
+                <h3>{activeTutorial.title || "Tutorial"}</h3>
+              </div>
+              <button type="button" onClick={closeTutorialModal} aria-label="Cerrar tutorial">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="tutorialModalPlayer">
+              {activeEmbedUrl ? (
+                <iframe
+                  src={activeEmbedUrl}
+                  title={activeTutorial.title || "Tutorial"}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              ) : (
+                <div>
+                  <Video size={38} />
+                  <span>No se pudo reproducir este enlace dentro del RIV.</span>
+                </div>
+              )}
+            </div>
+
+            {activeTutorial.description && <p>{activeTutorial.description}</p>}
+            {activeVideoUrl && (
+              <a href={activeVideoUrl} target="_blank" rel="noreferrer">
+                Abrir en YouTube
+                <ExternalLink size={15} />
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -6848,7 +6901,7 @@ const costFor = (item = {}) => {
     { label: "Entregables", view: "entregables", icon: ClipboardCheck, short: "Entregables" },
     { label: "Documentos", view: "documentos", icon: UploadCloud, short: "Documentos" },
     { label: "Recibir", view: "educacion", icon: BookOpen, short: "Recibir" },
-    { label: "Tutoriales", view: "tutoriales", icon: Video, short: "Tutoriales" },
+    { label: "¿Necesitas ayuda?", view: "tutoriales", icon: Video, short: "Ayuda" },
   ];
   const query = normalizeSystemName(mobileSearch);
   const searchResults = query ? [
@@ -9331,7 +9384,7 @@ function App() {
               ["indicadores", "Indicadores"],
               ["documentos", "Documentos"],
               ["educacion", "Lo que vas a recibir"],
-              ["tutoriales", "Tutoriales"],
+              ["tutoriales", "¿Necesitas ayuda?"],
             ].map(([value, label]) => (
               <button key={value} onClick={() => navigate(value)} className={view === value ? "active" : ""}>
                 {label}
