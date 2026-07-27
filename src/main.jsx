@@ -3159,6 +3159,8 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
   };
   const asIsValidationStats = getProcessValidationStats(processesAsIs);
   const toBeValidationStats = getProcessValidationStats(processesToBe);
+  const asIsValidationPercent = asIsValidationStats.total ? Math.round((asIsValidationStats.yes / asIsValidationStats.total) * 100) : 0;
+  const toBeValidationPercent = toBeValidationStats.total ? Math.round((toBeValidationStats.yes / toBeValidationStats.total) * 100) : 0;
   const validationAsIsWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_ASIS_WEBHOOK_URL || "");
   const validationToBeWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_TOBE_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
@@ -3483,10 +3485,12 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
             <span>Total procesos AS IS</span>
             <strong>{processesAsIs.length}</strong>
           </div>
-          <i aria-hidden="true"><ClipboardCheck size={58} strokeWidth={1.5} /></i>
         </article>
         <article className="processSummaryCard processDashboardStatusCard">
-          <span>Validado AS IS</span>
+          <div className="processValidationHeader">
+            <span>Validado AS IS</span>
+            <strong>{asIsValidationPercent}%</strong>
+          </div>
           <div className="processDashboardBarRows">
             <div>
               <em>Sí</em>
@@ -3505,10 +3509,12 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
             <span>Total procesos TO BE</span>
             <strong>{processesToBe.length}</strong>
           </div>
-          <i aria-hidden="true"><ClipboardCheck size={58} strokeWidth={1.5} /></i>
         </article>
         <article className="processSummaryCard processDashboardStatusCard">
-          <span>Validado TO BE</span>
+          <div className="processValidationHeader">
+            <span>Validado TO BE</span>
+            <strong>{toBeValidationPercent}%</strong>
+          </div>
           <div className="processDashboardBarRows">
             <div>
               <em>Sí</em>

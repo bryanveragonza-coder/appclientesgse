@@ -25689,9 +25689,9 @@ body {
 
 .processMasterSection .processDashboardTotalCard {
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) 128px !important;
+  grid-template-columns: 1fr !important;
   align-items: center !important;
-  padding-right: 0 !important;
+  padding-right: 30px !important;
 }
 
 .processMasterSection .processDashboardTotalCard > div {
@@ -25702,12 +25702,7 @@ body {
 }
 
 .processMasterSection .processDashboardTotalCard > i {
-  align-self: stretch !important;
-  display: grid !important;
-  place-items: center !important;
-  background: #00b8b5 !important;
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
+  display: none !important;
 }
 
 .processMasterSection .processDashboardTotalCard > i svg {
@@ -25722,7 +25717,35 @@ body {
 .processMasterSection .processDashboardStatusCard {
   display: grid !important;
   align-content: center !important;
-  gap: 28px !important;
+  gap: 20px !important;
+}
+
+.processMasterSection .processValidationHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+.processMasterSection .processValidationHeader > span {
+  color: #11181c !important;
+  -webkit-text-fill-color: #11181c !important;
+  font-size: 1.05rem !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+.processMasterSection .processValidationHeader > strong {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #00a7a4 !important;
+  -webkit-text-fill-color: #00a7a4 !important;
+  font-size: clamp(2rem, 3vw, 3.2rem) !important;
+  line-height: 0.9 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
 }
 
 .processMasterSection .processDashboardBarRows {
