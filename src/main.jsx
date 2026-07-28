@@ -3456,13 +3456,13 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
       <div className="processMapToBeSection">
         <div className="processTableHeader">
           <div>
-            <h3>Mapa de procesos TO BE</h3>
+            <h3>Mapa de procesos</h3>
             <p>Imagen cargada desde la columna ImagenMapadeprocesos en la pestaña Proyecto.</p>
           </div>
         </div>
         <div className="structureHeroImageCard processMapToBeImageCard">
           {processMapToBeImage ? (
-            <img src={processMapToBeImage} alt="Mapa de procesos TO BE" />
+            <img src={processMapToBeImage} alt="Mapa de procesos" />
           ) : (
             <div className="structureEmptyImage">
               <Layers3 size={42} />
