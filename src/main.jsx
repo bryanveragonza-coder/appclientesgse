@@ -7948,7 +7948,7 @@ function getInternalProjectSummary(entry = {}, data = {}) {
 
 function InternalProjectsPortal() {
   const internalNotesUrl = import.meta.env.VITE_INTERNAL_NOTES_WEBHOOK_URL || "";
-  const internalWriteUrl = import.meta.env.VITE_INTERNAL_UPDATE_WEBHOOK_URL || internalNotesUrl;
+  const internalWriteUrl = import.meta.env.VITE_INTERNAL_UPDATE_WEBHOOK_URL || "";
   const internalPendingUrl = import.meta.env.VITE_INTERNAL_PENDING_WEBHOOK_URL || "";
   const [masterEntries, setMasterEntries] = useState([]);
   const [masterError, setMasterError] = useState("");
