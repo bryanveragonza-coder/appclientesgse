@@ -8225,7 +8225,7 @@ function InternalProjectsPortal() {
     }));
   };
 
-  const updateInternalSheetCell = async ({ sheetName, rowNumber, columnName, value }) => {
+  const updateInternalSheetCell = async ({ sheetName, rowNumber, columnName, value, matchColumn, matchValue }) => {
     if (!selectedSummary) return;
     if (!internalWriteUrl) {
       setInternalActionMessage("Falta configurar VITE_INTERNAL_UPDATE_WEBHOOK_URL para guardar en Google Sheets.");
@@ -8244,6 +8244,8 @@ function InternalProjectsPortal() {
         rowNumber,
         columnName,
         value,
+        matchColumn,
+        matchValue,
         usuario: "Equipo GSE",
       });
       await reloadInternalClient(selectedSummary);
@@ -8282,8 +8284,19 @@ function InternalProjectsPortal() {
     return "Pendiente";
   };
 
+  const updateDeliverableCell = (item, columnName, value) => {
+    updateInternalSheetCell({
+      sheetName: "Entregables",
+      rowNumber: item.rowNumber,
+      columnName,
+      value,
+      matchColumn: "Entregable",
+      matchValue: item.deliverable,
+    });
+  };
+
   const updateDeliverableStatus = (item, next) => {
-    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Estado", value: next });
+    updateDeliverableCell(item, "Estado", next);
   };
 
   const cycleDeliverableStatus = (item) => {
@@ -8293,31 +8306,31 @@ function InternalProjectsPortal() {
       : current.includes("desarrollo") || current.includes("progreso")
         ? "Pendiente"
         : "Finalizado";
-    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Estado", value: next });
+    updateDeliverableCell(item, "Estado", next);
   };
 
   const toggleDeliverableOverdue = (item) => {
     const current = normalizeSystemName(item.overdue || "");
     const next = current.includes("si") || current.includes("vencido") ? "No" : "Si";
-    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Vencido", value: next });
+    updateDeliverableCell(item, "Vencido", next);
   };
 
   const updateDeliverableOverdue = (item, next) => {
-    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Vencido", value: next });
+    updateDeliverableCell(item, "Vencido", next);
   };
 
   const updateDeliverableValidated = (item, next) => {
-    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Validado", value: next });
+    updateDeliverableCell(item, "Validado", next);
   };
 
   const updateDeliverableResponsible = (item, next) => {
-    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "Responsable", value: next });
+    updateDeliverableCell(item, "Responsable", next);
   };
 
   const updateDeliverableLink = (item) => {
     const next = window.prompt("Pega el link del entregable:", item.link || "");
     if (next === null) return;
-    updateInternalSheetCell({ sheetName: "Entregables", rowNumber: item.rowNumber, columnName: "LinkEntregable", value: next.trim() });
+    updateDeliverableCell(item, "LinkEntregable", next.trim());
   };
 
   const cycleChargeStatus = (charge) => {
