@@ -889,7 +889,7 @@ button.internalGhostLink {
 }
 
 .internalClientKpis {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
 .internalClientCharts {
@@ -1092,7 +1092,8 @@ button.internalGhostLink {
 
 .internalClientMessageBadge {
   position: absolute;
-  top: 7px;
+  top: auto;
+  bottom: 7px;
   right: 7px;
   min-width: 20px;
   height: 20px;

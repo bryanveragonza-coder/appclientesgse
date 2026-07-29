@@ -9025,6 +9025,7 @@ function InternalProjectsPortal() {
                 <div className="internalClientKpis">
                   <article data-tip="Avance general de este cliente según su RIV."><BarChart3 size={18} /><span>Avance</span><strong>{selectedSummary.progress}%</strong></article>
                   <article data-tip="Hitos completados frente al total de hitos de este cliente."><Flag size={18} /><span>Hitos</span><strong>{selectedSummary.completed}/{selectedSummary.totalMilestones || 0}</strong><small>{selectedMilestonePct}% cerrado</small></article>
+                  <article data-tip="Entregables clientes marcados como cargados desde la columna Cargado o PolíticaCargada."><ClipboardCheck size={18} /><span>Entregables cargados</span><strong>{selectedSummary.clientDeliverables.loaded}/{selectedSummary.clientDeliverables.total || 0}</strong><small>{selectedSummary.clientDeliverables.pending} pendientes</small></article>
                   <article data-tip="Pendientes abiertos que dependen del cliente."><AlertTriangle size={18} /><span>Pendientes cliente</span><strong>{selectedSummary.activePending}</strong></article>
                   <article data-tip="Cobros de este cliente que no aparecen como pagados."><Clock3 size={18} /><span>Cobros pendientes</span><strong>{selectedChargeDashboard.pending}</strong></article>
                 </div>
