@@ -8014,6 +8014,7 @@ function InternalProjectsPortal() {
   });
   const [replyDrafts, setReplyDrafts] = useState({});
   const [replySaving, setReplySaving] = useState({});
+  const [openReplyBoxes, setOpenReplyBoxes] = useState({});
   const [editingNoteIndex, setEditingNoteIndex] = useState(null);
   const [editingNoteText, setEditingNoteText] = useState("");
   const [expandedClientFindings, setExpandedClientFindings] = useState({});
@@ -8162,6 +8163,7 @@ function InternalProjectsPortal() {
     setNoteMessage("");
     setNoteUser((current) => current && noteUserOptions.includes(current) ? current : noteUserOptions[0] || "Equipo GSE");
     setNoteDeliverable("");
+    setOpenReplyBoxes({});
 
     if (!internalNotesUrl) {
       setNoteMessage("Observaciones en modo local: falta configurar VITE_INTERNAL_NOTES_WEBHOOK_URL.");
@@ -8667,6 +8669,7 @@ function InternalProjectsPortal() {
           [selectedSummary.id]: [nextReply, ...(current[selectedSummary.id] || [])],
         }));
         setReplyDrafts((current) => ({ ...current, [parentId]: "" }));
+        setOpenReplyBoxes((current) => ({ ...current, [parentId]: false }));
       } catch (error) {
         console.error(error);
         setNoteMessage(error.message || "No se pudo guardar la respuesta.");
@@ -8683,9 +8686,19 @@ function InternalProjectsPortal() {
         [selectedSummary.id]: [{ ...normalizeInternalNote(replyPayload), id: `local-${Date.now()}` }, ...(current[selectedSummary.id] || [])],
       }));
       setReplyDrafts((current) => ({ ...current, [parentId]: "" }));
+      setOpenReplyBoxes((current) => ({ ...current, [parentId]: false }));
     } finally {
       setReplySaving((current) => ({ ...current, [parentId]: false }));
     }
+  };
+
+  const handleReplyButton = (parentNote, parentKey) => {
+    if (!openReplyBoxes[parentKey]) {
+      setOpenReplyBoxes((current) => ({ ...current, [parentKey]: true }));
+      setNoteMessage("");
+      return;
+    }
+    addReply(parentNote, parentKey);
   };
 
   const startEditNote = (index, text) => {
@@ -9498,6 +9511,7 @@ function InternalProjectsPortal() {
                   {parentNotes.map(({ note, index }) => {
                     const noteKey = getNoteThreadKey(note);
                     const isReplySaving = Boolean(replySaving[noteKey]);
+                    const isReplyOpen = Boolean(openReplyBoxes[noteKey]);
                     return (
                     <article key={`${noteKey}-${index}`}>
                       <div className="internalNoteHeader">
@@ -9516,26 +9530,30 @@ function InternalProjectsPortal() {
                           </div>
                         </div>
                       ) : (
-                        <>
-                          <small>{[note.deliverable, note.user].filter(Boolean).join(" · ")}</small>
-                          <p>{note.text}</p>
-                          <div className="internalReplyBox">
-                            <label className="internalReplyUser">
-                              <span>Usuario</span>
-                              <select value={noteUser} onChange={(event) => setNoteUser(event.target.value)}>
-                                {noteUserOptions.map((user) => <option key={user} value={user}>{user}</option>)}
-                              </select>
-                            </label>
-                            <textarea
-                              value={replyDrafts[noteKey] || ""}
-                              onChange={(event) => setReplyDrafts((current) => ({ ...current, [noteKey]: event.target.value }))}
-                              placeholder="Responder esta observación..."
-                            />
-                            <button type="button" onClick={() => addReply(note, noteKey)} disabled={isReplySaving}>
-                              {isReplySaving && <span className="internalButtonSpinner" aria-hidden="true" />}
-                              {isReplySaving ? "Guardando..." : "Responder"}
-                            </button>
-                          </div>
+                          <>
+                            <small>{[note.deliverable, note.user].filter(Boolean).join(" · ")}</small>
+                            <p>{note.text}</p>
+                            <div className={`internalReplyBox${isReplyOpen ? " open" : " collapsed"}`}>
+                              {isReplyOpen && (
+                                <>
+                                  <label className="internalReplyUser">
+                                    <span>Usuario</span>
+                                    <select value={noteUser} onChange={(event) => setNoteUser(event.target.value)}>
+                                      {noteUserOptions.map((user) => <option key={user} value={user}>{user}</option>)}
+                                    </select>
+                                  </label>
+                                  <textarea
+                                    value={replyDrafts[noteKey] || ""}
+                                    onChange={(event) => setReplyDrafts((current) => ({ ...current, [noteKey]: event.target.value }))}
+                                    placeholder="Responder esta observación..."
+                                  />
+                                </>
+                              )}
+                              <button type="button" onClick={() => handleReplyButton(note, noteKey)} disabled={isReplySaving}>
+                                {isReplySaving && <span className="internalButtonSpinner" aria-hidden="true" />}
+                                {isReplySaving ? "Guardando..." : "Responder"}
+                              </button>
+                            </div>
                           {(notesByParent[noteKey] || []).length > 0 && (
                             <div className="internalReplies">
                               {(notesByParent[noteKey] || []).map(({ note: reply, index: replyIndex }) => (

@@ -2143,6 +2143,10 @@ button.internalGhostLink {
   border-top: 1px solid #e2e8f0;
 }
 
+.internalReplyBox.collapsed {
+  gap: 0;
+}
+
 .internalReplyBox textarea {
   min-height: 64px;
 }
