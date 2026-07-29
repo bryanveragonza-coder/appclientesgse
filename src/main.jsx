@@ -4393,27 +4393,24 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
       .map(({ item }) => item);
   }, [findings, searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
 
-  const getFindingUniqueKey = (item = {}, index = 0) => {
-    const rawId = String(item.id || "").trim();
-    const numericMatch = rawId.match(/(\d+)(?!.*\d)/);
-    if (numericMatch) return `hallazgo-${Number(numericMatch[1])}`;
-    const fallback = normalizeSystemName(item.finding || item.description || item.recommendation || rawId);
-    return fallback || `hallazgo-fila-${index}`;
+  const getVisibleClientDeliverableLabels = (item = {}) => {
+    const labels = getClientDeliverableLabels(item);
+    if (deliverableTypeFilter === "Todos") return labels;
+    const selectedKey = normalizeSystemName(deliverableTypeFilter);
+    return labels.filter((label) => normalizeSystemName(label) === selectedKey);
   };
 
-  const uniqueFilteredFindings = useMemo(() => {
-    const map = new Map();
-    filteredFindings.forEach((item, index) => {
-      const key = getFindingUniqueKey(item, index);
-      if (!map.has(key)) map.set(key, item);
+  const clientDeliverableFindings = useMemo(() => {
+    return filteredFindings.flatMap((item, itemIndex) => {
+      const labels = getVisibleClientDeliverableLabels(item);
+      return labels.map((label, labelIndex) => ({
+        ...item,
+        deliverableClient: label,
+        __clientDeliverableLabel: label,
+        __clientDeliverableKey: `${item.id || "sin-id"}-${itemIndex}-${normalizeSystemName(label)}-${labelIndex}`,
+      }));
     });
-    return [...map.values()];
-  }, [filteredFindings]);
-
-  const clientDeliverableFindings = useMemo(
-    () => uniqueFilteredFindings.filter((item) => getClientDeliverableLabels(item).length > 0),
-    [uniqueFilteredFindings]
-  );
+  }, [filteredFindings, deliverableTypeFilter]);
 
   const uniqueFindingsCount = clientDeliverableFindings.length;
 
@@ -4436,12 +4433,11 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
       });
     };
 
-    return filteredFindings.reduce((acc, item) => {
-      addLabels(acc, splitDeliverableTypes(item.deliverableGSE || ""), "gse");
-      addLabels(acc, splitDeliverableTypes(item.deliverableClient || ""), "client");
+    return clientDeliverableFindings.reduce((acc, item) => {
+      addLabels(acc, [item.__clientDeliverableLabel || item.deliverableClient], "client");
       return acc;
     }, {});
-  }, [filteredFindings]);
+  }, [clientDeliverableFindings]);
 
   const visibleDeliverableTotals = useMemo(() => {
     return Object.values(visibleDeliverableSummary).reduce((acc, item) => {
@@ -4630,7 +4626,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
 
         <div className="mobileFindingsGrid">
           {clientDeliverableFindings.slice(0, mobileFindingsVisible).map((item) => (
-            <MobileFindingCard key={`${item.id || "sin-id"}-${item.finding || item.description || item.recommendation || item.solution || "sin-titulo"}-${clientDeliverableFindings.indexOf(item)}`} item={item} />
+            <MobileFindingCard key={item.__clientDeliverableKey || `${item.id || "sin-id"}-${item.finding || item.description || item.recommendation || item.solution || "sin-titulo"}`} item={item} />
           ))}
         </div>
 
@@ -4749,7 +4745,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
           const recommendation = item.recommendation || item.solution;
           const solutionType = item.solutionType || item.system;
           const link = safeUrl(item.link || item.image);
-          const key = `${item.id || "sin-id"}-${item.finding || item.description || item.recommendation || item.solution || "sin-titulo"}-${clientDeliverableFindings.indexOf(item)}`;
+          const key = item.__clientDeliverableKey || `${item.id || "sin-id"}-${item.finding || item.description || item.recommendation || item.solution || "sin-titulo"}`;
           const isOpen = open === key;
           const status = item.status || "Pendiente";
           const deliveryDate = getFindingField(item, "date");
