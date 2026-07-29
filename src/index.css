@@ -1033,6 +1033,7 @@ button.internalGhostLink {
 }
 
 .internalProjectList button {
+  position: relative;
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
@@ -1087,6 +1088,26 @@ button.internalGhostLink {
   color: #007f80;
   font-size: 0.82rem;
   font-weight: 900;
+}
+
+.internalClientMessageBadge {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
 }
 
 .internalNotice,
@@ -1581,14 +1602,14 @@ button.internalGhostLink {
 
 .internalDeliverablesHead,
 .internalDeliverablesBody {
-  min-width: 1060px;
+  min-width: 1080px;
 }
 
 .internalDeliverablesHead,
 .internalDeliverablesBody article {
   display: grid;
   grid-template-columns:
-    minmax(180px, 1.1fr)
+    minmax(260px, 1.55fr)
     minmax(112px, 0.62fr)
     minmax(96px, 0.55fr)
     minmax(88px, 0.48fr)
@@ -1597,6 +1618,117 @@ button.internalGhostLink {
     minmax(128px, 0.72fr);
   align-items: stretch;
   gap: 0;
+}
+
+.internalClientFindingMatrix .internalDeliverablesHead,
+.internalClientFindingMatrix .internalDeliverablesBody {
+  min-width: 1680px;
+  width: max-content;
+}
+
+.internalClientFindingMatrix {
+  max-height: 560px;
+  overflow-x: scroll;
+  overflow-y: auto;
+  scrollbar-color: #00b8b5 #dceeee;
+  scrollbar-width: thin;
+}
+
+.internalClientFindingMatrix .internalDeliverablesHead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.internalClientFindingMatrix .internalDeliverablesBody {
+  max-height: none;
+  overflow: visible;
+}
+
+.internalClientFindingMatrix::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.internalClientFindingMatrix::-webkit-scrollbar-track {
+  background: #dceeee;
+}
+
+.internalClientFindingMatrix::-webkit-scrollbar-thumb {
+  background: #00b8b5;
+}
+
+.internalClientFindingMatrix .internalDeliverablesHead,
+.internalClientFindingMatrix .internalDeliverablesBody article {
+  grid-template-columns:
+    minmax(250px, 250px)
+    minmax(96px, 96px)
+    minmax(138px, 138px)
+    minmax(138px, 138px)
+    minmax(610px, 610px)
+    minmax(220px, 220px)
+    minmax(150px, 150px);
+}
+
+.internalFindingToggle {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 9px;
+  border: 0;
+  border-right: 1px solid #e5e7eb;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.internalFindingToggle:hover {
+  background: transparent;
+}
+
+.internalFindingToggle.open {
+  background: transparent;
+}
+
+.internalFindingToggle .internalFindingDetails {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.internalFindingToggle .internalFindingDetails small {
+  color: #64748b;
+  font-size: 0.66rem;
+  font-weight: 400;
+  line-height: 1.32;
+  letter-spacing: 0;
+  text-transform: none;
+  user-select: text;
+}
+
+.internalActivityTitleToggle {
+  cursor: pointer;
+}
+
+.internalActivityTitleToggle .internalFindingDetails {
+  display: grid;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.internalActivityTitleToggle .internalFindingDetails small {
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.internalActivityTitleToggle:focus-visible {
+  outline: 2px solid #00b8b5;
+  outline-offset: -2px;
 }
 
 .internalDeliverablesHead {
@@ -1670,6 +1802,37 @@ button.internalGhostLink {
 .internalDeliverablesBody span {
   color: #0f172a;
   font-weight: 400;
+}
+
+.internalClientFindingMatrix .internalDeliverablesBody article > .internalFindingToggle {
+  min-height: 44px;
+  padding: 10px 9px;
+  border: 0;
+  border-right: 1px solid #e5e7eb;
+  background: transparent;
+}
+
+.internalClientFindingMatrix .internalDeliverablesBody article > .internalFindingToggle:hover {
+  background: transparent;
+}
+
+.internalClientFindingMatrix .internalDeliverablesBody article > .internalFindingToggle.open {
+  background: transparent;
+}
+
+.internalButtonSpinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  border-radius: 999px;
+  animation: internalSpin 0.8s linear infinite;
+}
+
+@keyframes internalSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .internalTableButton {
@@ -1981,6 +2144,30 @@ button.internalGhostLink {
 
 .internalReplyBox textarea {
   min-height: 64px;
+}
+
+.internalReplyUser {
+  display: grid;
+  gap: 4px;
+}
+
+.internalReplyUser span {
+  color: #607084;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.internalReplyUser select {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #dbe4ea;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
 }
 
 .internalReplyBox button {
@@ -18000,7 +18187,7 @@ body {
   min-height: 150px !important;
   padding: 34px 34px 30px !important;
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-columns: 1fr !important;
   align-items: start !important;
   gap: 24px !important;
   position: relative !important;
@@ -18022,15 +18209,7 @@ body {
 }
 
 .findingsPremiumSection .findingsSummaryIcon {
-  width: 122px !important;
-  height: 122px !important;
-  margin-right: -34px !important;
-  align-self: center !important;
-  display: grid !important;
-  place-items: center !important;
-  position: relative !important;
-  background: #00b8b5 !important;
-  color: #ffffff !important;
+  display: none !important;
 }
 
 .findingsPremiumSection .findingsSummaryIcon::before {
@@ -18142,7 +18321,7 @@ body {
 
 .findingsPremiumSection .findingsDeliverablesSplitGrid {
   display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-columns: 1fr !important;
   gap: 20px !important;
   margin: 0 0 20px !important;
 }
@@ -18345,6 +18524,30 @@ body {
   -webkit-text-fill-color: #53676b !important;
   font-size: 0.76rem !important;
   font-weight: 400 !important;
+}
+
+.findingClientDeliverables {
+  display: grid !important;
+  gap: 4px !important;
+  margin: 8px 0 12px !important;
+}
+
+.findingClientDeliverables strong {
+  color: #00a6a3 !important;
+  -webkit-text-fill-color: #00a6a3 !important;
+  font-size: 0.68rem !important;
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+
+.findingClientDeliverables span {
+  color: #284b52 !important;
+  -webkit-text-fill-color: #284b52 !important;
+  font-size: 0.82rem !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
 }
 
 .findingsPremiumSection .findingDeliveryDate {

@@ -4254,6 +4254,9 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     });
     return [...map.values()];
   };
+  const getClientDeliverableLabels = (item = {}) => uniqueDeliverableLabels(
+    splitDeliverableTypes(item.deliverableClient || "")
+  );
 
   const getFindingField = (item, field) => {
     if (field === "date") return item.deliveryDate || item.fechaMax || item.fechamax || "";
@@ -4264,10 +4267,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     return "";
   };
 
-  const getDeliverableTypeMatches = (item) => uniqueDeliverableLabels([
-    ...splitDeliverableTypes(item.deliverableGSE || ""),
-    ...splitDeliverableTypes(item.deliverableClient || ""),
-  ]);
+  const getDeliverableTypeMatches = (item) => getClientDeliverableLabels(item);
 
   const matchesCurrentFilters = (item, excludeField = "") => {
     const deliveryDate = getFindingField(item, "date");
@@ -4410,17 +4410,22 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     return [...map.values()];
   }, [filteredFindings]);
 
-  const uniqueFindingsCount = uniqueFilteredFindings.length;
+  const clientDeliverableFindings = useMemo(
+    () => uniqueFilteredFindings.filter((item) => getClientDeliverableLabels(item).length > 0),
+    [uniqueFilteredFindings]
+  );
+
+  const uniqueFindingsCount = clientDeliverableFindings.length;
 
   const statusSummary = useMemo(() => {
-    return uniqueFilteredFindings.reduce((acc, item) => {
+    return clientDeliverableFindings.reduce((acc, item) => {
       const group = getFindingStatusGroup(item.status);
       if (group === "Pendiente") acc.pending += 1;
       if (group === "En proceso") acc.inProcess += 1;
       if (group === "Completado") acc.completed += 1;
       return acc;
     }, { pending: 0, inProcess: 0, completed: 0 });
-  }, [uniqueFilteredFindings]);
+  }, [clientDeliverableFindings]);
 
   const visibleDeliverableSummary = useMemo(() => {
     const addLabels = (acc, labels, side) => {
@@ -4490,6 +4495,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     const recommendation = item.recommendation || item.solution;
     const key = `mobile-${item.id}-${item.finding || item.description}`;
     const isOpen = open === key;
+    const clientDeliverables = getClientDeliverableLabels(item);
     return (
       <article className={`mobileFindingCard ${isOpen ? "open" : ""}`}>
         <i />
@@ -4504,6 +4510,12 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
         <span>ID {item.id}</span>
         <small>{process}</small>
         <h3>{item.finding || "Hallazgo sin título"}</h3>
+        {clientDeliverables.length > 0 && (
+          <div className="findingClientDeliverables">
+            <strong>Entregable cliente</strong>
+            <span>{clientDeliverables.join(", ")}</span>
+          </div>
+        )}
         {deliveryDate && <p>Fecha de entrega: {deliveryDate}</p>}
         {link && (
           <a href={link} target="_blank" rel="noreferrer">
@@ -4568,7 +4580,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
         <article className="mobileFindingsTotalCard">
           <div><Search size={34} /></div>
           <span>Total de<br />Hallazgos</span>
-          <strong><ChevronRight size={26} />{filteredFindings.length}</strong>
+          <strong><ChevronRight size={26} />{clientDeliverableFindings.length}</strong>
         </article>
 
         <h2 className="mobileFindingsSectionTitle">Entregables</h2>
@@ -4617,18 +4629,18 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
         </div>
 
         <div className="mobileFindingsGrid">
-          {filteredFindings.slice(0, mobileFindingsVisible).map((item) => (
-            <MobileFindingCard key={`${item.id || "sin-id"}-${item.finding || item.description || item.recommendation || item.solution || "sin-titulo"}-${filteredFindings.indexOf(item)}`} item={item} />
+          {clientDeliverableFindings.slice(0, mobileFindingsVisible).map((item) => (
+            <MobileFindingCard key={`${item.id || "sin-id"}-${item.finding || item.description || item.recommendation || item.solution || "sin-titulo"}-${clientDeliverableFindings.indexOf(item)}`} item={item} />
           ))}
         </div>
 
-        {mobileFindingsVisible < filteredFindings.length && (
+        {mobileFindingsVisible < clientDeliverableFindings.length && (
           <button className="mobileFindingsLoadMore" type="button" onClick={() => setMobileFindingsVisible((current) => current + 6)}>
             Cargar más <ChevronRight size={24} />
           </button>
         )}
 
-        {!filteredFindings.length && <div className="mobileRouteEmpty">No hay hallazgos con esos filtros.</div>}
+        {!clientDeliverableFindings.length && <div className="mobileRouteEmpty">No hay hallazgos con entregables cliente para esos filtros.</div>}
       </div>
 
       <nav className="mobileBottomNav visible">
@@ -4666,9 +4678,6 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
             <span>Total de Hallazgos</span>
             <strong>{uniqueFindingsCount}</strong>
           </div>
-          <div className="findingsSummaryIcon" aria-hidden="true">
-            <Search size={28} />
-          </div>
           <p>Total visible según los filtros activos.</p>
         </article>
 
@@ -4696,23 +4705,6 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
       </div>
 
       <div className="findingsDeliverablesSplitGrid compactDeliverableCards">
-        <article className="findingsDeliverableDashboardCard">
-          <div className="findingsDeliverableDashboardHeader">
-            <span>Entregables GSE</span>
-            <strong>{visibleDeliverableTotals.gse}</strong>
-          </div>
-          <div className="findingsDeliverableBreakdownRows">
-            {Object.values(visibleDeliverableSummary).filter((item) => item.gse > 0).map((item) => (
-              <div key={`gse-${item.label}`}>
-                <span>{item.label}</span>
-                <div><i style={{ width: `${visibleDeliverableCategoryTotals.gse ? (item.gse / visibleDeliverableCategoryTotals.gse) * 100 : 0}%` }} /></div>
-                <strong>{item.gse}</strong>
-              </div>
-            ))}
-            {!visibleDeliverableTotals.gse && <p className="findingsDeliverableEmpty">Sin entregables GSE para los filtros activos.</p>}
-          </div>
-        </article>
-
         <article className="findingsDeliverableDashboardCard client">
           <div className="findingsDeliverableDashboardHeader">
             <span>Entregables cliente</span>
@@ -4752,15 +4744,16 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
       </div>
 
       <div className="findingsGridWhite">
-        {filteredFindings.map((item) => {
+        {clientDeliverableFindings.map((item) => {
           const process = item.processArea || item.process || item.area || "Proceso no definido";
           const recommendation = item.recommendation || item.solution;
           const solutionType = item.solutionType || item.system;
           const link = safeUrl(item.link || item.image);
-          const key = `${item.id || "sin-id"}-${item.finding || item.description || item.recommendation || item.solution || "sin-titulo"}-${filteredFindings.indexOf(item)}`;
+          const key = `${item.id || "sin-id"}-${item.finding || item.description || item.recommendation || item.solution || "sin-titulo"}-${clientDeliverableFindings.indexOf(item)}`;
           const isOpen = open === key;
           const status = item.status || "Pendiente";
           const deliveryDate = getFindingField(item, "date");
+          const clientDeliverables = getClientDeliverableLabels(item);
 
           return (
             <article key={key} className={`findingWhiteCard ${isOpen ? "selected" : ""}`}>
@@ -4771,6 +4764,12 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
                     <span>{process}</span>
                   </div>
                   <h3>{item.finding || "Hallazgo sin título"}</h3>
+                  {clientDeliverables.length > 0 && (
+                    <div className="findingClientDeliverables">
+                      <strong>Entregable cliente</strong>
+                      <span>{clientDeliverables.join(", ")}</span>
+                    </div>
+                  )}
                   {deliveryDate && <p className="findingDeliveryDate">Fecha de entrega: {deliveryDate}</p>}
                   <div className="badgeRow findingBadgesCompactOnly">
                     {item.priority && <Badge status={item.priority === "Alta" ? "Bloqueado" : "En validación"}>Prioridad: {item.priority}</Badge>}
@@ -4822,8 +4821,8 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
         })}
       </div>
 
-      {filteredFindings.length === 0 && (
-        <div className="emptyState">No hay hallazgos que coincidan con los filtros seleccionados.</div>
+      {clientDeliverableFindings.length === 0 && (
+        <div className="emptyState">No hay hallazgos con entregables cliente que coincidan con los filtros seleccionados.</div>
       )}
     </section>
     </>
@@ -7711,6 +7710,13 @@ function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function formatInternalSheetDate(date = new Date()) {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 function parseInternalDate(value = "") {
   const raw = String(value || "").trim();
   if (!raw) return null;
@@ -7940,6 +7946,7 @@ function getInternalProjectSummary(entry = {}, data = {}) {
     deliverables,
     deliverableSummary,
     clientDeliverables,
+    findings,
     milestones,
     pending,
     users,
@@ -7950,10 +7957,12 @@ function InternalProjectsPortal() {
   const internalNotesUrl = import.meta.env.VITE_INTERNAL_NOTES_WEBHOOK_URL || "";
   const internalWriteUrl = import.meta.env.VITE_INTERNAL_UPDATE_WEBHOOK_URL || "";
   const internalPendingUrl = import.meta.env.VITE_INTERNAL_PENDING_WEBHOOK_URL || "";
+  const internalClientDeliverableUrl = import.meta.env.VITE_INTERNAL_CLIENT_DELIVERABLE_WEBHOOK_URL || "";
   const [masterEntries, setMasterEntries] = useState([]);
   const [masterError, setMasterError] = useState("");
   const [notes, setNotes] = useState(() => readInternalStorage(INTERNAL_NOTES_KEY, {}));
   const [notesLoading, setNotesLoading] = useState(false);
+  const [noteSaving, setNoteSaving] = useState(false);
   const [noteMessage, setNoteMessage] = useState("");
   const [internalActionMessage, setInternalActionMessage] = useState("");
   const [loaded, setLoaded] = useState({});
@@ -7977,8 +7986,11 @@ function InternalProjectsPortal() {
     description: "",
   });
   const [replyDrafts, setReplyDrafts] = useState({});
+  const [replySaving, setReplySaving] = useState({});
   const [editingNoteIndex, setEditingNoteIndex] = useState(null);
   const [editingNoteText, setEditingNoteText] = useState("");
+  const [expandedClientFindings, setExpandedClientFindings] = useState({});
+  const [expandedProjectActivities, setExpandedProjectActivities] = useState({});
 
   useEffect(() => {
     writeInternalStorage(INTERNAL_NOTES_KEY, notes);
@@ -8101,6 +8113,21 @@ function InternalProjectsPortal() {
     ? Math.round((selectedSummary.completed / selectedSummary.totalMilestones) * 100)
     : 0;
   const selectedNextPendingDeliverable = getNextPendingDeliverable(selectedSummary?.deliverables || []);
+  const selectedClientFindingDeliverables = useMemo(() => {
+    if (!selectedSummary?.findings?.length) return [];
+    return selectedSummary.findings.flatMap((item, findingIndex) => {
+      const labels = splitInternalDeliverableTypes(item.deliverableGSE || "");
+      return labels.map((deliverable, labelIndex) => ({
+        ...item,
+        deliverableType: deliverable,
+        rowKey: `${item.rowNumber || item.id || findingIndex}-${normalizeSystemName(deliverable)}-${labelIndex}`,
+      }));
+    });
+  }, [selectedSummary?.findings]);
+  const clientFindingResponsibleOptions = [...new Set([
+    ...selectedClientFindingDeliverables.map((item) => item.responsibleGse).filter(Boolean),
+    ...selectedClientFindingDeliverables.map((item) => item.responsibleColumn).filter(Boolean),
+  ])];
 
   useEffect(() => {
     if (!selectedSummary) return;
@@ -8256,6 +8283,37 @@ function InternalProjectsPortal() {
     }
   };
 
+  const updateInternalSheetCells = async ({ sheetName, rowNumber, updates = [] }) => {
+    if (!selectedSummary) return;
+    if (!internalWriteUrl) {
+      setInternalActionMessage("Falta configurar VITE_INTERNAL_UPDATE_WEBHOOK_URL para guardar en Google Sheets.");
+      return;
+    }
+    if (!rowNumber) {
+      setInternalActionMessage("No se encontró la fila exacta en el Sheet. Actualiza el maestro e intenta de nuevo.");
+      return;
+    }
+    try {
+      setInternalActionMessage("Guardando cambio...");
+      for (const update of updates) {
+        await postInternalNoteAction(internalWriteUrl, {
+          action: "updateCell",
+          sheetId: selectedSummary.sheetId,
+          sheetName,
+          rowNumber,
+          columnName: update.columnName,
+          value: update.value,
+          usuario: "Equipo GSE",
+        });
+      }
+      await reloadInternalClient(selectedSummary);
+      setInternalActionMessage("Cambio guardado en Google Sheets.");
+    } catch (error) {
+      console.error(error);
+      setInternalActionMessage(error.message || "No se pudo guardar el cambio en Google Sheets.");
+    }
+  };
+
   const getDeliverableStatusOption = (value) => {
     const current = normalizeSystemName(value || "");
     if (current.includes("finalizado") || current.includes("aprobado") || current.includes("terminado")) return "Finalizado";
@@ -8333,6 +8391,51 @@ function InternalProjectsPortal() {
     updateDeliverableCell(item, "LinkEntregable", next.trim());
   };
 
+  const updateClientFindingDeliverableCell = async (item, columnName, value) => {
+    if (!selectedSummary) return;
+    if (!internalClientDeliverableUrl) {
+      setInternalActionMessage("Falta configurar VITE_INTERNAL_CLIENT_DELIVERABLE_WEBHOOK_URL para guardar entregable cliente.");
+      return;
+    }
+    if (!item.rowNumber) {
+      setInternalActionMessage("No se encontró la fila exacta en Hallazgos. Actualiza el maestro e intenta de nuevo.");
+      return;
+    }
+    try {
+      setInternalActionMessage("Guardando entregable cliente...");
+      await postInternalBlindAction(internalClientDeliverableUrl, {
+        action: "updateClientDeliverable",
+        sheetId: selectedSummary.sheetId,
+        sheetName: "Hallazgos",
+        rowNumber: item.rowNumber,
+        columnName,
+        value,
+        hallazgo: item.finding || "",
+        usuario: "Equipo GSE",
+      });
+      await wait(1200);
+      await reloadInternalClient(selectedSummary);
+      setInternalActionMessage("Entregable cliente guardado en Google Sheets.");
+    } catch (error) {
+      console.error(error);
+      setInternalActionMessage(error.message || "No se pudo guardar el entregable cliente.");
+    }
+  };
+
+  const updateFindingDeliverableLoaded = (item, next) => {
+    updateClientFindingDeliverableCell(item, "PoliticaCargada", next);
+  };
+
+  const updateFindingDeliverableResponsible = (item, next) => {
+    updateClientFindingDeliverableCell(item, "Responsable de GSE", next);
+  };
+
+  const updateFindingDeliverableLink = (item) => {
+    const next = window.prompt("Pega el link del entregable cliente:", item.link || "");
+    if (next === null) return;
+    updateClientFindingDeliverableCell(item, "LinkEntregable", next.trim());
+  };
+
   const cycleChargeStatus = (charge) => {
     const current = normalizeSystemName(charge.paymentStatus || charge.cutStatus || "");
     const next = current.includes("pagado") || current.includes("cobrado") || current.includes("cancelado")
@@ -8346,6 +8449,18 @@ function InternalProjectsPortal() {
   };
 
   const updateChargeStatus = (charge, next) => {
+    if (getChargeStatusOption(next) === "Pagado") {
+      updateInternalSheetCells({
+        sheetName: "Cobros",
+        rowNumber: charge.rowNumber,
+        updates: [
+          { columnName: "Estado pago", value: next },
+          { columnName: "Fecha pago", value: formatInternalSheetDate() },
+          { columnName: "Días vencido / por vencer", value: "Pagado" },
+        ],
+      });
+      return;
+    }
     updateInternalSheetCell({ sheetName: "Cobros", rowNumber: charge.rowNumber, columnName: "Estado pago", value: next });
   };
 
@@ -8454,6 +8569,7 @@ function InternalProjectsPortal() {
     const clean = noteDraft.trim();
     if (!clean || !selectedSummary) return;
     const stamp = new Date().toLocaleString("es-EC", { dateStyle: "medium", timeStyle: "short" });
+    setNoteSaving(true);
 
     if (internalNotesUrl) {
       try {
@@ -8474,15 +8590,22 @@ function InternalProjectsPortal() {
       } catch (error) {
         console.error(error);
         setNoteMessage(error.message || "No se pudo guardar la observación.");
+      } finally {
+        setNoteSaving(false);
       }
       return;
     }
 
-    setNotes((current) => ({
-      ...current,
-      [selectedSummary.id]: [{ id: `local-${Date.now()}`, text: clean, stamp, user: noteUser || "Equipo GSE", deliverable: noteDeliverable }, ...(current[selectedSummary.id] || [])],
-    }));
-    setNoteDraft("");
+    try {
+      await wait(250);
+      setNotes((current) => ({
+        ...current,
+        [selectedSummary.id]: [{ id: `local-${Date.now()}`, text: clean, stamp, user: noteUser || "Equipo GSE", deliverable: noteDeliverable }, ...(current[selectedSummary.id] || [])],
+      }));
+      setNoteDraft("");
+    } finally {
+      setNoteSaving(false);
+    }
   };
 
   const addReply = async (parentNote, parentKey) => {
@@ -8496,6 +8619,7 @@ function InternalProjectsPortal() {
       fecha: new Date(),
       usuario: noteUser || "Equipo GSE",
     };
+    setReplySaving((current) => ({ ...current, [parentId]: true }));
 
     if (internalNotesUrl) {
       try {
@@ -8517,15 +8641,22 @@ function InternalProjectsPortal() {
       } catch (error) {
         console.error(error);
         setNoteMessage(error.message || "No se pudo guardar la respuesta.");
+      } finally {
+        setReplySaving((current) => ({ ...current, [parentId]: false }));
       }
       return;
     }
 
-    setNotes((current) => ({
-      ...current,
-      [selectedSummary.id]: [{ ...normalizeInternalNote(replyPayload), id: `local-${Date.now()}` }, ...(current[selectedSummary.id] || [])],
-    }));
-    setReplyDrafts((current) => ({ ...current, [parentId]: "" }));
+    try {
+      await wait(250);
+      setNotes((current) => ({
+        ...current,
+        [selectedSummary.id]: [{ ...normalizeInternalNote(replyPayload), id: `local-${Date.now()}` }, ...(current[selectedSummary.id] || [])],
+      }));
+      setReplyDrafts((current) => ({ ...current, [parentId]: "" }));
+    } finally {
+      setReplySaving((current) => ({ ...current, [parentId]: false }));
+    }
   };
 
   const startEditNote = (index, text) => {
@@ -8813,19 +8944,23 @@ function InternalProjectsPortal() {
           )}
 
           <div className="internalProjectList">
-            {filteredSummaries.map(({ entry, summary, error }) => (
-              <button
-                type="button"
-                key={entry.id}
-                className={selectedId === entry.id ? "active" : ""}
-                onClick={() => setSelectedId(entry.id)}
-              >
-                <Logo src={summary.logoClient} fallback={(summary.name || "CL").slice(0, 2)} className="internalClientCardLogo" />
-                <span>{summary.name}</span>
-                <strong>{error ? "Revisar conexión" : `${summary.progress}%`}</strong>
-                <small>{summary.manager || "Equipo GSE"}</small>
-              </button>
-            ))}
+            {filteredSummaries.map(({ entry, summary, error }) => {
+              const noteCount = (notes[summary.id] || []).length;
+              return (
+                <button
+                  type="button"
+                  key={entry.id}
+                  className={selectedId === entry.id ? "active" : ""}
+                  onClick={() => setSelectedId(entry.id)}
+                >
+                  <Logo src={summary.logoClient} fallback={(summary.name || "CL").slice(0, 2)} className="internalClientCardLogo" />
+                  <span>{summary.name}</span>
+                  <strong>{error ? "Revisar conexión" : `${summary.progress}%`}</strong>
+                  <small>{summary.manager || "Equipo GSE"}</small>
+                  {noteCount > 0 && <em className="internalClientMessageBadge" aria-label={`${noteCount} observaciones`}>{noteCount}</em>}
+                </button>
+              );
+            })}
             {!allEntries.length && <p className="internalEmpty">No se encontraron clientes en el maestro todavía.</p>}
             {allEntries.length > 0 && !filteredSummaries.length && <p className="internalEmpty">No hay clientes con ese filtro.</p>}
           </div>
@@ -8927,7 +9062,8 @@ function InternalProjectsPortal() {
 
               <nav className="internalClientTabs" aria-label="Detalle del cliente">
                 <button type="button" className={clientTab === "cobros" ? "active" : ""} onClick={() => setClientTab("cobros")}><Clock3 size={16} /> Cobros</button>
-                <button type="button" className={clientTab === "entregables" ? "active" : ""} onClick={() => setClientTab("entregables")}><FileText size={16} /> Entregables</button>
+                <button type="button" className={clientTab === "entregables" ? "active" : ""} onClick={() => setClientTab("entregables")}><FileText size={16} /> Entregables proyecto</button>
+                <button type="button" className={clientTab === "entregablesCliente" ? "active" : ""} onClick={() => setClientTab("entregablesCliente")}><ClipboardCheck size={16} /> Entregables cliente</button>
                 <button type="button" className={clientTab === "pendientes" ? "active" : ""} onClick={() => setClientTab("pendientes")}><AlertTriangle size={16} /> Pendientes clientes</button>
                 <button type="button" className={clientTab === "observaciones" ? "active" : ""} onClick={() => setClientTab("observaciones")}><MessageCircle size={16} /> Observaciones</button>
               </nav>
@@ -8996,7 +9132,7 @@ function InternalProjectsPortal() {
               <div className="internalSplit">
                 <section className="internalDeliverablesPanel">
                   <div className="internalSectionHead">
-                    <h3>Entregables GSE</h3>
+                    <h3>Entregables proyecto</h3>
                     <button type="button" onClick={() => openClientRiv(selectedSummary)}>Abrir RIV cliente</button>
                   </div>
                   {internalActionMessage && <p className="internalActionMessage">{internalActionMessage}</p>}
@@ -9028,11 +9164,30 @@ function InternalProjectsPortal() {
                             : statusKey.includes("desarrollo") || statusKey.includes("progreso")
                               ? "progress"
                               : "pending";
+                          const activityKey = `${item.rowNumber || item.deliverable}-${index}`;
+                          const isActivityOpen = Boolean(expandedProjectActivities[activityKey]);
+                          const toggleActivity = () => setExpandedProjectActivities((current) => ({ ...current, [activityKey]: !current[activityKey] }));
+                          const toggleActivityWithKeyboard = (event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              toggleActivity();
+                            }
+                          };
                           return (
                             <article key={`${item.deliverable}-${index}`} className={isOverdue ? "isOverdue" : ""}>
-                              <div>
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                className="internalActivityTitleToggle"
+                                onClick={toggleActivity}
+                                onKeyDown={toggleActivityWithKeyboard}
+                              >
                                 <strong>{item.deliverable || item.deliverableGSE || "Entregable GSE"}</strong>
-                                <small>{[item.milestone, item.system].filter(Boolean).join(" · ") || "Sin hito asociado"}</small>
+                                {isActivityOpen && (
+                                  <span className="internalFindingDetails">
+                                    <small>{item.activity || "No hay actividad registrada."}</small>
+                                  </span>
+                                )}
                               </div>
                               <select
                                 className={`internalTableSelect ${statusClass}`}
@@ -9086,6 +9241,91 @@ function InternalProjectsPortal() {
                   )}
                 </section>
               </div>
+              )}
+
+              {clientTab === "entregablesCliente" && (
+                <section className="internalDeliverablesPanel">
+                  <div className="internalSectionHead">
+                    <h3>Entregables clientes</h3>
+                  </div>
+                  {internalActionMessage && <p className="internalActionMessage">{internalActionMessage}</p>}
+                  {selectedClientFindingDeliverables.length > 0 ? (
+                    <div className="internalDeliverablesMatrix internalClientFindingMatrix">
+                      <div className="internalDeliverablesHead">
+                        <span>Entregables</span>
+                        <span>ID</span>
+                        <span>Cargado</span>
+                        <span>Fecha</span>
+                        <span>Hallazgo</span>
+                        <span>Responsable GSE</span>
+                        <span>Link</span>
+                      </div>
+                      <div className="internalDeliverablesBody">
+                        {selectedClientFindingDeliverables.map((item, index) => {
+                          const loaded = isCheckedSheetValue(item.policyLoaded) || isCheckedSheetValue(item.procedureLoaded);
+                          const link = safeUrl(item.link || item.technicalSheet || item.imageProcess);
+                          const isExpanded = Boolean(expandedClientFindings[item.rowKey]);
+                          return (
+                            <article key={`${item.rowKey}-${index}`}>
+                              <div>
+                                <strong>{item.deliverableType || "Entregable GSE"}</strong>
+                                <small>{item.processArea || "Sin proceso impactado"}</small>
+                              </div>
+                              <span>{item.id || index + 1}</span>
+                              <select
+                                className={`internalTableSelect ${loaded ? "done" : "pending"}`}
+                                value={loaded ? "SI" : "NO"}
+                                onChange={(event) => updateFindingDeliverableLoaded(item, event.target.value)}
+                              >
+                                <option value="SI">Cargado</option>
+                                <option value="NO">Pendiente</option>
+                              </select>
+                              <span>{item.deliveryDate || "Sin fecha"}</span>
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                className={`internalFindingToggle ${isExpanded ? "open" : ""}`}
+                                onClick={() => setExpandedClientFindings((current) => ({ ...current, [item.rowKey]: !current[item.rowKey] }))}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    setExpandedClientFindings((current) => ({ ...current, [item.rowKey]: !current[item.rowKey] }));
+                                  }
+                                }}
+                              >
+                                <strong>{item.finding || "Hallazgo sin título"}</strong>
+                                {isExpanded && (
+                                  <span className="internalFindingDetails">
+                                    <small>{item.description || "Sin descripción técnica"}</small>
+                                    <small>{item.recommendation || "Sin recomendación técnica"}</small>
+                                  </span>
+                                )}
+                              </div>
+                              <select
+                                className="internalTableSelect neutral"
+                                value={item.responsibleGse || ""}
+                                onChange={(event) => updateFindingDeliverableResponsible(item, event.target.value)}
+                              >
+                                <option value="">Sin responsable</option>
+                                {[...new Set([...(item.responsibleGse ? [item.responsibleGse] : []), ...clientFindingResponsibleOptions])].map((user) => <option key={user} value={user}>{user}</option>)}
+                              </select>
+                              {link ? (
+                                <div className="internalTableActions">
+                                  <a className="internalTableButton link" href={link} target="_blank" rel="noreferrer">Abrir</a>
+                                  <button type="button" className="internalTableButton empty" onClick={() => updateFindingDeliverableLink(item)}>Cambiar</button>
+                                </div>
+                              ) : (
+                                <button type="button" className="internalTableButton empty" onClick={() => updateFindingDeliverableLink(item)}>Cargar link</button>
+                              )}
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="internalEmpty">No hay entregables GSE en la pestaña Hallazgos.</p>
+                  )}
+                </section>
               )}
 
               {clientTab === "pendientes" && (
@@ -9215,7 +9455,10 @@ function InternalProjectsPortal() {
                   </label>
                 </div>
                 <textarea value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Añadir observación para el equipo GSE..." />
-                <button type="button" onClick={addNote} disabled={notesLoading}><MessageCircle size={17} /> Añadir observación</button>
+                <button type="button" onClick={addNote} disabled={notesLoading || noteSaving}>
+                  {noteSaving ? <span className="internalButtonSpinner" aria-hidden="true" /> : <MessageCircle size={17} />}
+                  {noteSaving ? "Guardando..." : "Añadir observación"}
+                </button>
                 {(notesLoading || noteMessage) && (
                   <div className={noteMessage.includes("modo local") ? "internalNotice compact" : "internalError compact"}>
                     {notesLoading ? "Cargando observaciones desde el Sheet del cliente..." : noteMessage}
@@ -9224,6 +9467,7 @@ function InternalProjectsPortal() {
                 <div className="internalNotesList">
                   {parentNotes.map(({ note, index }) => {
                     const noteKey = getNoteThreadKey(note);
+                    const isReplySaving = Boolean(replySaving[noteKey]);
                     return (
                     <article key={`${noteKey}-${index}`}>
                       <div className="internalNoteHeader">
@@ -9246,12 +9490,21 @@ function InternalProjectsPortal() {
                           <small>{[note.deliverable, note.user].filter(Boolean).join(" · ")}</small>
                           <p>{note.text}</p>
                           <div className="internalReplyBox">
+                            <label className="internalReplyUser">
+                              <span>Usuario</span>
+                              <select value={noteUser} onChange={(event) => setNoteUser(event.target.value)}>
+                                {noteUserOptions.map((user) => <option key={user} value={user}>{user}</option>)}
+                              </select>
+                            </label>
                             <textarea
                               value={replyDrafts[noteKey] || ""}
                               onChange={(event) => setReplyDrafts((current) => ({ ...current, [noteKey]: event.target.value }))}
                               placeholder="Responder esta observación..."
                             />
-                            <button type="button" onClick={() => addReply(note, noteKey)}>Responder</button>
+                            <button type="button" onClick={() => addReply(note, noteKey)} disabled={isReplySaving}>
+                              {isReplySaving && <span className="internalButtonSpinner" aria-hidden="true" />}
+                              {isReplySaving ? "Guardando..." : "Responder"}
+                            </button>
                           </div>
                           {(notesByParent[noteKey] || []).length > 0 && (
                             <div className="internalReplies">

@@ -566,8 +566,13 @@ function mapFindings(rows) {
     const owner = getRowValue(row, [
       "ResponsableSugerido", "Responsable Sugerido", "Responsable", "Responsable sugerido", "Responsable Hallazgo", "ResponsableHallazgo"
     ]);
+    const responsibleColumn = getRowValue(row, ["Responsable"]);
+    const responsibleGse = getRowValue(row, [
+      "ResponsableGSE", "Responsable GSE", "Responsable de GSE", "ResponsableDeGSE", "Responsable Gse", "ResponsableGse"
+    ]);
 
     return {
+      rowNumber: index + 2,
       id: getRowValue(row, ["ID", "Id", "Codigo", "CÃ³digo"]) || String(index + 1),
       management,
       gerencia: management,
@@ -583,6 +588,8 @@ function mapFindings(rows) {
       system: solutionType,
       owner,
       responsible: owner,
+      responsibleColumn,
+      responsibleGse,
       status: getRowValue(row, ["Estado"]),
       deliveryDate: getRowValue(row, ["Fechamax", "FechaMax", "Fecha max", "Fecha mÃ¡xima", "Fecha maxima", "Fecha de entrega", "FechaEntrega", "Fecha Entrega"]),
       deliverableGSE: getRowValue(row, ["EntregableGSE", "Entregable GSE", "EntregablesGSE", "Entregables GSE", "GSE"]),
@@ -628,6 +635,7 @@ function mapDeliverables(rows) {
     system: getRowValue(row, ["Sistema"]),
     milestone: getRowValue(row, ["Hito"]),
     deliverable: getRowValue(row, ["Entregable"]),
+    activity: getRowValue(row, ["Actividad", "ACTIVIDAD", "Activity", "Detalle actividad", "Detalle Actividad"]),
     status: getRowValue(row, ["Estado"]),
     date: getRowValue(row, ["Fecha", "Fecha entrega", "FechaEntrega", "Fecha máxima", "Fecha maxima", "FechaMax", "Fechamax"]),
     overdue: getRowValue(row, ["Vencido", "EstaVencido", "Está vencido", "Estado vencido", "Vencimiento"]),
