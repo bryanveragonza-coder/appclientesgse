@@ -4400,18 +4400,74 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     return labels.filter((label) => normalizeSystemName(label) === selectedKey);
   };
 
-  const clientDeliverableFindings = useMemo(() => {
-    return filteredFindings.flatMap((item, itemIndex) => {
+  const getFindingUniqueKey = (item = {}, index = 0) => {
+    const rawId = String(item.id || "").trim();
+    const numericMatch = rawId.match(/(\d+)(?!.*\d)/);
+    if (numericMatch) return `hallazgo-${Number(numericMatch[1])}`;
+    const fallback = normalizeSystemName(item.finding || item.description || item.recommendation || rawId);
+    return fallback || `hallazgo-fila-${index}`;
+  };
+
+  const clientDeliverableRows = useMemo(() => {
+    return filteredFindings
+      .map((item, itemIndex) => {
       const labels = getVisibleClientDeliverableLabels(item);
-      return labels.map((label, labelIndex) => ({
+      if (!labels.length) return null;
+      return {
         ...item,
-        deliverableClient: label,
-        __clientDeliverableLabel: label,
-        __clientDeliverableKey: `${item.id || "sin-id"}-${itemIndex}-${normalizeSystemName(label)}-${labelIndex}`,
-      }));
-    });
+        __clientDeliverableLabels: labels,
+        __clientDeliverableKey: `${item.id || "sin-id"}-${itemIndex}`,
+      };
+    })
+      .filter(Boolean);
   }, [filteredFindings, deliverableTypeFilter]);
 
+  const clientDeliverableFindings = useMemo(() => {
+    const map = new Map();
+    clientDeliverableRows.forEach((item, index) => {
+      const key = getFindingUniqueKey(item, index);
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, {
+          ...item,
+          __clientDeliverableKey: key,
+          __clientDeliverableLabels: uniqueDeliverableLabels(item.__clientDeliverableLabels || []),
+        });
+        return;
+      }
+      existing.__clientDeliverableLabels = uniqueDeliverableLabels([
+        ...(existing.__clientDeliverableLabels || []),
+        ...(item.__clientDeliverableLabels || []),
+      ]);
+      if (!existing.deliverableClient) existing.deliverableClient = item.deliverableClient;
+    });
+    return [...map.values()];
+  }, [clientDeliverableRows]);
+
+  const visibleDeliverableSummary = useMemo(() => {
+    const addLabels = (acc, labels, side) => {
+      uniqueDeliverableLabels(labels).forEach((label) => {
+        const key = normalizeSystemName(label);
+        if (!acc[key]) acc[key] = { label, gse: 0, client: 0 };
+        acc[key][side] += 1;
+      });
+    };
+
+    return clientDeliverableRows.reduce((acc, item) => {
+      addLabels(acc, item.__clientDeliverableLabels || getVisibleClientDeliverableLabels(item), "client");
+      return acc;
+    }, {});
+  }, [clientDeliverableRows]);
+
+  const visibleDeliverableTotals = useMemo(() => {
+    return Object.values(visibleDeliverableSummary).reduce((acc, item) => {
+      acc.gse += item.gse;
+      acc.client += item.client;
+      return acc;
+    }, { gse: 0, client: 0 });
+  }, [visibleDeliverableSummary]);
+
+  const visibleDeliverableCategoryTotals = visibleDeliverableTotals;
   const uniqueFindingsCount = clientDeliverableFindings.length;
 
   const statusSummary = useMemo(() => {
@@ -4423,31 +4479,6 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
       return acc;
     }, { pending: 0, inProcess: 0, completed: 0 });
   }, [clientDeliverableFindings]);
-
-  const visibleDeliverableSummary = useMemo(() => {
-    const addLabels = (acc, labels, side) => {
-      uniqueDeliverableLabels(labels).forEach((label) => {
-        const key = normalizeSystemName(label);
-        if (!acc[key]) acc[key] = { label, gse: 0, client: 0 };
-        acc[key][side] += 1;
-      });
-    };
-
-    return clientDeliverableFindings.reduce((acc, item) => {
-      addLabels(acc, [item.__clientDeliverableLabel || item.deliverableClient], "client");
-      return acc;
-    }, {});
-  }, [clientDeliverableFindings]);
-
-  const visibleDeliverableTotals = useMemo(() => {
-    return Object.values(visibleDeliverableSummary).reduce((acc, item) => {
-      acc.gse += item.gse;
-      acc.client += item.client;
-      return acc;
-    }, { gse: 0, client: 0 });
-  }, [visibleDeliverableSummary]);
-
-  const visibleDeliverableCategoryTotals = visibleDeliverableTotals;
 
   useEffect(() => {
     setMobileFindingsVisible(6);
@@ -4576,7 +4607,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
         <article className="mobileFindingsTotalCard">
           <div><Search size={34} /></div>
           <span>Total de<br />Hallazgos</span>
-          <strong><ChevronRight size={26} />{clientDeliverableFindings.length}</strong>
+          <strong><ChevronRight size={26} />{uniqueFindingsCount}</strong>
         </article>
 
         <h2 className="mobileFindingsSectionTitle">Entregables</h2>
