@@ -8435,6 +8435,8 @@ function InternalProjectsPortal() {
         sheetId: selectedSummary.sheetId,
         sheetName: "Hallazgos",
         rowNumber: item.rowNumber,
+        id: item.id || "",
+        deliverableType: item.deliverableType || "",
         columnName,
         value,
         hallazgo: item.finding || "",
@@ -8450,11 +8452,11 @@ function InternalProjectsPortal() {
   };
 
   const updateFindingDeliverableLoaded = (item, next) => {
-    updateClientFindingDeliverableCell(item, "PoliticaCargada", next);
+    updateClientFindingDeliverableCell(item, "Cargado", next);
   };
 
   const updateFindingDeliverableResponsible = (item, next) => {
-    updateClientFindingDeliverableCell(item, "Responsable de GSE", next);
+    updateClientFindingDeliverableCell(item, "Responsable GSE", next);
   };
 
   const updateFindingDeliverableLink = (item) => {
@@ -9585,6 +9587,12 @@ function InternalProjectsPortal() {
 function Root() {
   const params = new URLSearchParams(window.location.search);
   const isInternalRoute = window.location.pathname.replace(/\/$/, "") === "/interno" || params.get("interno") === "1";
+
+  useEffect(() => {
+    document.title = isInternalRoute
+      ? "NIV · Núcleo Interno Visible | GSE"
+      : "RIV · Ruta de Implementación Visible | GSE";
+  }, [isInternalRoute]);
 
   if (isInternalRoute) {
     return <InternalProjectsPortal />;
