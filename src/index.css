@@ -26728,6 +26728,46 @@ body {
   text-decoration: none !important;
 }
 
+.qualityMemberActions .primaryAction,
+.qualityMemberActions .qualityUploadButton {
+  border: 1px solid #00b8b5 !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.qualityMemberActions .primaryAction svg,
+.qualityMemberActions .qualityUploadButton svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.qualityMemberActions .secondaryAction {
+  border: 1px solid #00b8b5 !important;
+  background: #ffffff !important;
+  color: #00a7a4 !important;
+  -webkit-text-fill-color: #00a7a4 !important;
+}
+
+.qualityMemberActions .secondaryAction svg {
+  color: #00a7a4 !important;
+  stroke: #00a7a4 !important;
+}
+
+.qualityMemberActions .primaryAction:disabled,
+.qualityMemberActions .secondaryAction:disabled {
+  border-color: #cddddd !important;
+  background: #eef5f5 !important;
+  color: #8aa0a4 !important;
+  -webkit-text-fill-color: #8aa0a4 !important;
+}
+
+.qualityMemberActions .primaryAction:disabled svg,
+.qualityMemberActions .secondaryAction:disabled svg {
+  color: #8aa0a4 !important;
+  stroke: #8aa0a4 !important;
+}
+
 @media (max-width: 980px) {
   .qualityCommitteeSummaryGrid,
   .qualityMemberMeta,

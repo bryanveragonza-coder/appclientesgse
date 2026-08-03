@@ -796,6 +796,33 @@ function mapQualityCommittee(rows) {
     return "Pendiente";
   };
 
+  const findUploadLink = (row) => {
+    const direct = getRowValue(row, [
+      "LinkCargaVideo", "Link Carga Video", "Link de carga de video", "Link carga del video",
+      "LinkCarga", "Link Carga", "Link Video", "LinkVideo", "Link OneDrive", "OneDrive",
+      "EnlaceCargaVideo", "Enlace Carga Video", "Enlace de carga", "Enlace video",
+      "UrlCargaVideo", "URLCargaVideo", "URL Carga Video", "CargaVideo", "Carga Video"
+    ]);
+    if (direct) return direct;
+
+    const urlPattern = /https?:\/\/\S+/i;
+    const preferredEntry = Object.entries(row || {}).find(([key, value]) => {
+      const normalizedKey = normalizeKey(key);
+      const text = cleanText(value);
+      const looksLikeUploadColumn =
+        normalizedKey.includes("link") ||
+        normalizedKey.includes("url") ||
+        normalizedKey.includes("enlace") ||
+        normalizedKey.includes("onedrive") ||
+        (normalizedKey.includes("carga") && normalizedKey.includes("video"));
+      return looksLikeUploadColumn && urlPattern.test(text);
+    });
+    if (preferredEntry) return cleanText(preferredEntry[1]);
+
+    const anyUrlEntry = Object.entries(row || {}).find(([, value]) => urlPattern.test(cleanText(value)));
+    return anyUrlEntry ? cleanText(anyUrlEntry[1]) : "";
+  };
+
   return rows.map((row, index) => ({
     id: getRowValue(row, ["ID", "Id", "N", "N°", "NÂ°", "No", "Numero", "Número"]) || String(index + 1),
     name: getRowValue(row, ["Nombre", "NombreCompleto", "Nombre Completo", "Miembro", "Colaborador"]),
@@ -806,7 +833,7 @@ function mapQualityCommittee(rows) {
     phone: getRowValue(row, ["Celular", "WhatsApp", "Whatsapp", "Telefono", "Teléfono", "TelefonoWhatsapp", "CelularWhatsapp"]),
     videoStatus: normalizeVideoStatus(getRowValue(row, ["EstadoVideo", "Estado Video", "Estado del video", "StatusVideo", "Status Video"])),
     observation: getRowValue(row, ["Observacion", "Observación", "Observaciones", "Comentario", "Comentarios"]),
-    uploadLink: getRowValue(row, ["LinkCargaVideo", "Link Carga Video", "LinkCarga", "Link Carga", "Link OneDrive", "OneDrive", "EnlaceCargaVideo"]),
+    uploadLink: findUploadLink(row),
     uploadDate: getRowValue(row, ["FechaCarga", "Fecha Carga", "Fecha de carga"]),
   })).filter((x) => x.id || x.name || x.position || x.area || x.role || x.email || x.phone || x.uploadLink);
 }

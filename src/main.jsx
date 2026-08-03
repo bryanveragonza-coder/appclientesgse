@@ -3332,8 +3332,8 @@ function QualityCommittee({ committee = [] }) {
                     <UploadCloud size={16} /> {uploadLabel}
                   </a>
                 ) : (
-                  <button className="primaryAction qualityUploadButton" type="button" disabled>
-                    <UploadCloud size={16} /> Sin enlace
+                  <button className="primaryAction qualityUploadButton" type="button" disabled title="Falta LinkCargaVideo en la pestaña ComiteCalidad">
+                    <UploadCloud size={16} /> Falta enlace
                   </button>
                 )}
                 <button
