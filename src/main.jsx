@@ -2852,32 +2852,46 @@ function ImplementationIndicators({ indicators = [] }) {
   );
 }
 
-function StructureView({ project = {}, architectureRoles = [] }) {
+function StructureView({ project = {}, architectureRoles = [], architectureRolesToBe = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [gerenciaFilter, setGerenciaFilter] = useState("Todos");
   const [areaFilter, setAreaFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [localValidation, setLocalValidation] = useState({});
   const [savingValidation, setSavingValidation] = useState({});
+  const [structureViewMode, setStructureViewMode] = useState("asis");
+  const [architectureMatrixMode, setArchitectureMatrixMode] = useState("asis");
 
   const validationWebhookUrl = safeUrl(import.meta.env.VITE_STRUCTURE_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_ARCHITECTURE_VALIDATION_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
-  const structureImage = getDrivePreviewUrl(project.structureImage || project.imagenEstructura || "");
+  const activeArchitectureRows = architectureMatrixMode === "tobe" ? architectureRolesToBe : architectureRoles;
+  const activeArchitectureSheetName = architectureMatrixMode === "tobe" ? "ArquitecturaCargosTOBE" : "ArquitecturaCargos";
+  const activeArchitectureLabel = architectureMatrixMode === "tobe" ? "Arquitectura de cargos y perfiles TO BE" : "Arquitectura de cargos y perfiles AS IS";
+  const structureAsIsImage = getDrivePreviewUrl(project.structureImage || project.imagenEstructura || "");
+  const structureToBeImage = getDrivePreviewUrl(project.structureToBeImage || project.imagenEstructuraTOBE || "");
+  const activeStructureImage = structureViewMode === "tobe" ? structureToBeImage : structureAsIsImage;
+  const activeStructureLabel = structureViewMode === "tobe" ? "Estructura TO BE" : "Estructura AS IS";
 
-  const getValidationKey = (item) => [item.id || "sin-id", item.gerencia || "sin-gerencia", item.area || "sin-area", item.cargo || "sin-cargo"].join("|");
+  useEffect(() => {
+    setGerenciaFilter("Todos");
+    setAreaFilter("Todos");
+    setStatusFilter("Todos");
+  }, [architectureMatrixMode]);
+
+  const getValidationKey = (item) => [architectureMatrixMode, item.id || "sin-id", item.gerencia || "sin-gerencia", item.area || "sin-area", item.cargo || "sin-cargo"].join("|");
   const getValidated = (item) => {
     const key = getValidationKey(item);
     if (Object.prototype.hasOwnProperty.call(localValidation, key)) return localValidation[key];
     return isCheckedSheetValue(item.validated);
   };
 
-  const gerenciaOptions = useMemo(() => architectureRoles.map((item) => item.gerencia).filter(Boolean), [architectureRoles]);
-  const areaOptions = useMemo(() => architectureRoles.map((item) => item.area).filter(Boolean), [architectureRoles]);
-  const statusOptions = useMemo(() => architectureRoles.map((item) => item.status).filter(Boolean), [architectureRoles]);
+  const gerenciaOptions = useMemo(() => activeArchitectureRows.map((item) => item.gerencia).filter(Boolean), [activeArchitectureRows]);
+  const areaOptions = useMemo(() => activeArchitectureRows.map((item) => item.area).filter(Boolean), [activeArchitectureRows]);
+  const statusOptions = useMemo(() => activeArchitectureRows.map((item) => item.status).filter(Boolean), [activeArchitectureRows]);
 
   const filteredRows = useMemo(() => {
     const query = normalizeSystemName(searchTerm);
-    return architectureRoles.filter((item) => {
+    return activeArchitectureRows.filter((item) => {
       const matchesGerencia = gerenciaFilter === "Todos" || item.gerencia === gerenciaFilter;
       const matchesArea = areaFilter === "Todos" || item.area === areaFilter;
       const matchesStatus = statusFilter === "Todos" || item.status === statusFilter;
@@ -2893,15 +2907,15 @@ function StructureView({ project = {}, architectureRoles = [] }) {
       ].join(" "));
       return matchesGerencia && matchesArea && matchesStatus && (!query || searchable.includes(query));
     });
-  }, [architectureRoles, searchTerm, gerenciaFilter, areaFilter, statusFilter]);
+  }, [activeArchitectureRows, searchTerm, gerenciaFilter, areaFilter, statusFilter]);
 
   const validationStats = useMemo(() => {
-    const yes = architectureRoles.filter(getValidated).length;
-    return { yes, no: Math.max(0, architectureRoles.length - yes), total: architectureRoles.length };
-  }, [architectureRoles, localValidation]);
+    const yes = activeArchitectureRows.filter(getValidated).length;
+    return { yes, no: Math.max(0, activeArchitectureRows.length - yes), total: activeArchitectureRows.length };
+  }, [activeArchitectureRows, localValidation]);
 
-  const distinctGerencias = useMemo(() => new Set(architectureRoles.map((item) => String(item.gerencia || "").trim()).filter(Boolean)).size, [architectureRoles]);
-  const distinctAreas = useMemo(() => new Set(architectureRoles.map((item) => String(item.area || "").trim()).filter(Boolean)).size, [architectureRoles]);
+  const distinctGerencias = useMemo(() => new Set(activeArchitectureRows.map((item) => String(item.gerencia || "").trim()).filter(Boolean)).size, [activeArchitectureRows]);
+  const distinctAreas = useMemo(() => new Set(activeArchitectureRows.map((item) => String(item.area || "").trim()).filter(Boolean)).size, [activeArchitectureRows]);
 
   const handleValidate = async (item, nextChecked) => {
     if (!nextChecked) return;
@@ -2928,7 +2942,7 @@ function StructureView({ project = {}, architectureRoles = [] }) {
         body: JSON.stringify({
           action: "updateArchitectureValidation",
           spreadsheetId,
-          sheetName: "ArquitecturaCargos",
+          sheetName: activeArchitectureSheetName,
           field: "Validado",
           value: "SI",
           id: item.id,
@@ -2974,7 +2988,7 @@ function StructureView({ project = {}, architectureRoles = [] }) {
         <article className="processSummaryCard processDashboardTotalCard">
           <div>
             <span>Total cargos</span>
-            <strong>{architectureRoles.length}</strong>
+            <strong>{activeArchitectureRows.length}</strong>
           </div>
           <i aria-hidden="true"><Users size={58} strokeWidth={1.5} /></i>
         </article>
@@ -3011,12 +3025,22 @@ function StructureView({ project = {}, architectureRoles = [] }) {
       </div>
 
       <div className="structureHeroImageCard">
-        {structureImage ? (
-          <img src={structureImage} alt="Estructura organizacional" />
+        <div className="imageToggleHeader">
+          <div>
+            <h3>{activeStructureLabel}</h3>
+            <p>{structureViewMode === "tobe" ? "Imagen cargada desde ImagenEstructuraTOBE." : "Imagen cargada desde ImagenEstructura."}</p>
+          </div>
+          <div className="imageToggleButtons">
+            <button type="button" className={structureViewMode === "asis" ? "active" : ""} onClick={() => setStructureViewMode("asis")}>Estructura AS IS</button>
+            <button type="button" className={structureViewMode === "tobe" ? "active" : ""} onClick={() => setStructureViewMode("tobe")}>Estructura TO BE</button>
+          </div>
+        </div>
+        {activeStructureImage ? (
+          <img src={activeStructureImage} alt={activeStructureLabel} />
         ) : (
           <div className="structureEmptyImage">
             <Building2 size={42} />
-            <span>Agrega ImagenEstructura en la pestaña Proyecto para mostrar la estructura.</span>
+            <span>{structureViewMode === "tobe" ? "Agrega ImagenEstructuraTOBE en la pestaña Proyecto para mostrar la estructura TO BE." : "Agrega ImagenEstructura en la pestaña Proyecto para mostrar la estructura AS IS."}</span>
           </div>
         )}
       </div>
@@ -3041,8 +3065,12 @@ function StructureView({ project = {}, architectureRoles = [] }) {
       <div className="processTableCard structureTableCard">
         <div className="processTableHeader">
           <div>
-            <h3>Arquitectura de cargos y perfiles</h3>
-            <p>Matriz cargada desde la pestaña ArquitecturaCargos.</p>
+            <h3>{activeArchitectureLabel}</h3>
+            <p>Matriz cargada desde la pestaña {activeArchitectureSheetName}.</p>
+          </div>
+          <div className="imageToggleButtons">
+            <button type="button" className={architectureMatrixMode === "asis" ? "active" : ""} onClick={() => setArchitectureMatrixMode("asis")}>Arquitectura de cargos y perfiles AS IS</button>
+            <button type="button" className={architectureMatrixMode === "tobe" ? "active" : ""} onClick={() => setArchitectureMatrixMode("tobe")}>Arquitectura de cargos y perfiles TO BE</button>
           </div>
           <Badge status="En validación">{filteredRows.length} visibles</Badge>
         </div>
@@ -3363,6 +3391,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
   const [macroFilter, setMacroFilter] = useState("Todos");
   const [areaFilter, setAreaFilter] = useState("Todos");
   const [responsibleFilter, setResponsibleFilter] = useState("Todos");
+  const [processMapMode, setProcessMapMode] = useState("asis");
 
   const allProcesses = [...processesAsIs, ...processesToBe];
   const typeOptions = useMemo(() => allProcesses.map((item) => item.type).filter(Boolean), [allProcesses]);
@@ -3416,7 +3445,10 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
   const validationAsIsWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_ASIS_WEBHOOK_URL || "");
   const validationToBeWebhookUrl = safeUrl(import.meta.env.VITE_PROCESS_TOBE_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
-  const processMapToBeImage = getDrivePreviewUrl(project.processMapToBeImage || project.imagenMapadeprocesos || project.imagenMapaProcesos || "");
+  const processMapAsIsImage = getDrivePreviewUrl(project.processMapAsIsImage || project.imagenMapadeprocesos || project.imagenMapaProcesos || "");
+  const processMapToBeImage = getDrivePreviewUrl(project.processMapToBeImage || project.imagenMapadeprocesosTOBE || project.imagenMapaProcesosTOBE || "");
+  const activeProcessMapImage = processMapMode === "tobe" ? processMapToBeImage : processMapAsIsImage;
+  const activeProcessMapLabel = processMapMode === "tobe" ? "Mapa de procesos TO BE" : "Mapa de procesos AS IS";
   const [processValidation, setProcessValidation] = useState({});
   const [savingProcessValidation, setSavingProcessValidation] = useState({});
 
@@ -3708,17 +3740,21 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
       <div className="processMapToBeSection">
         <div className="processTableHeader">
           <div>
-            <h3>Mapa de procesos</h3>
-            <p>Imagen cargada desde la columna ImagenMapadeprocesos en la pestaña Proyecto.</p>
+            <h3>{activeProcessMapLabel}</h3>
+            <p>{processMapMode === "tobe" ? "Imagen cargada desde ImagenMapadeprocesosTOBE en la pestaña Proyecto." : "Imagen cargada desde ImagenMapadeprocesos en la pestaña Proyecto."}</p>
+          </div>
+          <div className="imageToggleButtons">
+            <button type="button" className={processMapMode === "asis" ? "active" : ""} onClick={() => setProcessMapMode("asis")}>Mapa de procesos AS IS</button>
+            <button type="button" className={processMapMode === "tobe" ? "active" : ""} onClick={() => setProcessMapMode("tobe")}>Mapa de procesos TO BE</button>
           </div>
         </div>
         <div className="structureHeroImageCard processMapToBeImageCard">
-          {processMapToBeImage ? (
-            <img src={processMapToBeImage} alt="Mapa de procesos" />
+          {activeProcessMapImage ? (
+            <img src={activeProcessMapImage} alt={activeProcessMapLabel} />
           ) : (
             <div className="structureEmptyImage">
               <Layers3 size={42} />
-              <span>Agrega ImagenMapadeprocesos en la pestaña Proyecto para mostrar el mapa.</span>
+              <span>{processMapMode === "tobe" ? "Agrega ImagenMapadeprocesosTOBE en la pestaña Proyecto para mostrar el mapa TO BE." : "Agrega ImagenMapadeprocesos en la pestaña Proyecto para mostrar el mapa AS IS."}</span>
             </div>
           )}
         </div>
@@ -9898,7 +9934,7 @@ function App() {
       });
   }, [session?.sheetId]);
 
-  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], indicators = [], qualityCommittee = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
+  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], architectureRolesToBe = [], indicators = [], qualityCommittee = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
   const completedText = useMemo(() => {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
@@ -10024,7 +10060,7 @@ function App() {
             </>
           )}
           {view === "procesos" && <ProcessesMasterList project={project} processesAsIs={processesAsIs} processesToBe={processesToBe} pending={pending} setView={navigate} previousView={previousView} />}
-          {view === "estructura" && <StructureView project={project} architectureRoles={architectureRoles} />}
+          {view === "estructura" && <StructureView project={project} architectureRoles={architectureRoles} architectureRolesToBe={architectureRolesToBe} />}
           {view === "indicadores" && <ImplementationIndicators indicators={indicators} />}
           {view === "comite-calidad" && <QualityCommittee committee={qualityCommittee} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}

@@ -43,6 +43,8 @@ export const demoData = {
     whatsappMessage: "Hola, equipo ðŸ‘‹ Ya actualizamos la Ruta de Avance Visibleâ„¢.",
     documentUploadLink: "",
     structureImage: "",
+    structureToBeImage: "",
+    processMapAsIsImage: "",
     processMapToBeImage: "",
     iaKzenPoliciesUrl: "",
     policyTemplateUrl: "",
@@ -62,6 +64,7 @@ export const demoData = {
   coeAsIs: [],
   coeToBe: [],
   architectureRoles: [],
+  architectureRolesToBe: [],
   indicators: [],
   qualityCommittee: [],
   documents: [
@@ -421,6 +424,7 @@ function projectFromRawRows(rows) {
     "linkonedrive",
     "onedrive",
     "imagenestructura",
+    "imagenestructuratobe",
     "estructuraimagen",
     "linkestructura",
     "enlaceestructura",
@@ -516,7 +520,9 @@ function projectFromRawRows(rows) {
     whatsappMessage: map.mensajewhatsapp || map.whatsapp || demoData.project.whatsappMessage,
     documentUploadLink: map.linkcargadocumentos || map.enlacecargadocumentos || map.linkdocumentos || map.enlacedocumentos || map.linkonedrive || map.onedrive || demoData.project.documentUploadLink,
     structureImage: map.imagenestructura || map.estructuraimagen || map.linkestructura || map.enlaceestructura || demoData.project.structureImage,
-    processMapToBeImage: map.imagenmapadeprocesos || map.imagenmapaprocesos || map.imagenmapaprocesostobe || map.mapaprocesostobe || map.linkmapaprocesos || map.enlacemapaprocesos || findProjectFieldValue(cleanRows, ["ImagenMapadeprocesos", "Imagen Mapa de procesos", "Imagen Mapa de Procesos", "ImagenMapaProcesos", "ImagenMapaProcesosTOBE", "Mapa procesos TO BE", "Mapa de procesos TO BE"]) || demoData.project.processMapToBeImage,
+    structureToBeImage: map.imagenestructuratobe || findProjectFieldValue(cleanRows, ["ImagenEstructuraTOBE", "Imagen Estructura TO BE", "Estructura TO BE"]) || demoData.project.structureToBeImage,
+    processMapAsIsImage: map.imagenmapadeprocesos || map.imagenmapaprocesos || map.linkmapaprocesos || map.enlacemapaprocesos || findProjectFieldValue(cleanRows, ["ImagenMapadeprocesos", "Imagen Mapa de procesos", "Imagen Mapa de Procesos", "ImagenMapaProcesos"]) || demoData.project.processMapAsIsImage,
+    processMapToBeImage: map.imagenmapaprocesostobe || map.mapaprocesostobe || findProjectFieldValue(cleanRows, ["ImagenMapadeprocesosTOBE", "Imagen Mapa de procesos TO BE", "ImagenMapaProcesosTOBE", "Mapa procesos TO BE", "Mapa de procesos TO BE"]) || demoData.project.processMapToBeImage,
     iaKzenPoliciesUrl: map.iakzenpoliticas || findProjectFieldValue(cleanRows, ["IAKZENPoliticas", "IA K&ZEN Politicas", "IA K&ZEN Políticas", "Link IA Políticas"]) || "",
     policyTemplateUrl: map.formatopoliticas || findProjectFieldValue(cleanRows, ["FormatoPoliticas", "Formato Políticas", "Formato Politicas", "Link Formato Políticas"]) || "",
     iaKzenProceduresUrl: map.iakzenprocedimientos || findProjectFieldValue(cleanRows, ["IAKZENProcedimientos", "IA K&ZEN Procedimientos", "Link IA Procedimientos"]) || "",
@@ -933,7 +939,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
   const tutorialSheetNames = ["Tutoriales", "tutoriales", "TUTORIALES", "Tutorial", "Ayuda", "Videos", "VideosTutoriales", "Videos Tutoriales"];
   const tutorialHeaders = ["Titulo", "Título", "Title", "Descripcion", "Descripción", "Description", "Link", "Enlace", "Video", "Youtube", "YouTube"];
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, indicatorRows, qualityCommitteeRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, architectureToBeRows, indicatorRows, qualityCommitteeRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
     fetchCsvRows("Proyecto", true, spreadsheetId),
     fetchCsvSheet("Hitos", true, spreadsheetId),
     fetchCsvSheet("Hallazgos", true, spreadsheetId),
@@ -955,6 +961,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchFirstAvailableSheet(["Cobros", "Pagos", "Cobranzas", "Facturacion", "Facturación"], spreadsheetId),
     fetchFirstAvailableSheet(["Documentos", "CargaDocumentos", "Carga de documentos", "Carga Documentos", "ChecklistDocumentos", "Checklist Documentos", "Checklist"], spreadsheetId),
     fetchFirstAvailableSheet(["ArquitecturaCargos", "Arquitectura Cargos", "Estructura", "EstructuraCargos", "Arquitectura"], spreadsheetId),
+    fetchFirstAvailableSheet(["ArquitecturaCargosTOBE", "Arquitectura Cargos TO BE", "ArquitecturaCargos To Be", "Arquitectura Cargos To Be", "EstructuraTOBE", "Estructura TO BE"], spreadsheetId),
     fetchFirstAvailableSheet(["Indicadores", "ImplementacionIndicadores", "Implementación Indicadores", "Implementacion Indicadores", "IndicadoresImplementacion", "Indicadores Implementacion"], spreadsheetId),
     fetchFirstAvailableSheet(["ComiteCalidad", "ComitéCalidad", "Comite Calidad", "Comité Calidad", "Comite de Calidad", "Comité de Calidad"], spreadsheetId),
     fetchFirstAvailableSheet(["ProcesosASIS", "Procesos AS IS", "Procesos As Is", "Procesos AS-IS", "Procesos AS_IS", "ListaASIS", "Lista AS IS", "Lista AS-IS", "ASIS", "AS IS"], spreadsheetId),
@@ -977,6 +984,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     charges: mapCharges(chargeRows),
     documents: mapDocuments(documentRows),
     architectureRoles: mapArchitectureRoles(architectureRows),
+    architectureRolesToBe: mapArchitectureRoles(architectureToBeRows),
     indicators: mapIndicators(indicatorRows),
     qualityCommittee: mapQualityCommittee(qualityCommitteeRows),
     processesAsIs: mapProcessesAsIs(processesAsIsRows),

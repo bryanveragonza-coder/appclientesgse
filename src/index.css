@@ -26169,6 +26169,62 @@ body {
   background: #ffffff !important;
 }
 
+.imageToggleHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  margin: 0 0 18px !important;
+}
+
+.imageToggleHeader h3 {
+  margin: 0 0 4px !important;
+  color: #102e35 !important;
+  -webkit-text-fill-color: #102e35 !important;
+  font-size: 1.1rem !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.imageToggleHeader p {
+  margin: 0 !important;
+  color: #53676b !important;
+  -webkit-text-fill-color: #53676b !important;
+  font-size: 0.9rem !important;
+}
+
+.imageToggleButtons {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.imageToggleButtons button {
+  min-height: 36px !important;
+  border: 1px solid #bfe5e4 !important;
+  background: #ffffff !important;
+  color: #087d78 !important;
+  -webkit-text-fill-color: #087d78 !important;
+  padding: 0 14px !important;
+  font-size: 0.82rem !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+
+.imageToggleButtons button.active {
+  border-color: #00b8b5 !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.processTableHeader .imageToggleButtons {
+  margin-left: auto !important;
+}
+
 /* Implementación de indicadores */
 .indicatorsSection {
   display: grid !important;
