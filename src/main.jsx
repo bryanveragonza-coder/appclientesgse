@@ -6201,7 +6201,6 @@ useEffect(() => {
               <div className="itemTitle">{item.deliverable}</div>
               <div className="badgeRow"><Badge status={item.status}>{item.status}</Badge></div>
               {item.milestone && <div className="muted">Hito: {item.milestone}</div>}
-              {item.responsible && <div className="muted"><strong>Responsable:</strong> {item.responsible}</div>}
               <ProgressBar value={item.progress} status={item.status} />
               <div className="muted">{item.progress}% de avance</div>
               {!compact && item.observation && isOpen && (
