@@ -188,7 +188,7 @@ function Sidebar({ view, setView, project }) {
       ],
     },
     { title: "Procesos", items: [[ClipboardCheck, "Mapa y lista maestra de procesos", "procesos"], [Building2, "Estructura y perfil", "estructura"]] },
-    { title: "Implementación", items: [[Target, "Indicadores", "indicadores"]] },
+    { title: "Implementación", items: [[Target, "Indicadores", "indicadores"], [Users, "Comité de Calidad", "comite-calidad"]] },
     {
       title: "Documentacion",
       items: [
@@ -3101,6 +3101,258 @@ function StructureView({ project = {}, architectureRoles = [] }) {
         </div>
         {filteredRows.length === 0 && <div className="emptyState">No hay cargos que coincidan con los filtros seleccionados.</div>}
       </div>
+    </section>
+  );
+}
+
+function QualityCommittee({ committee = [] }) {
+  const [members, setMembers] = useState(committee);
+  const [openInstructions, setOpenInstructions] = useState(true);
+  const [savingMembers, setSavingMembers] = useState({});
+
+  useEffect(() => {
+    setMembers(committee);
+  }, [committee]);
+
+  const spreadsheetId = getActiveSpreadsheetId();
+  const webhookUrl = safeUrl(import.meta.env.VITE_QUALITY_COMMITTEE_WEBHOOK_URL || "");
+  const videoStatuses = ["Pendiente", "En revisión", "Validado", "Requiere cambios"];
+  const totalMembers = members.length;
+  const uploadedVideos = members.filter((item) => item.videoStatus === "En revisión" || item.videoStatus === "Validado" || item.videoStatus === "Requiere cambios").length;
+  const pendingVideos = members.filter((item) => item.videoStatus === "Pendiente" || !item.videoStatus).length;
+  const validatedVideos = members.filter((item) => item.videoStatus === "Validado").length;
+  const progress = totalMembers ? Math.round((uploadedVideos / totalMembers) * 100) : 0;
+  const instructions = [
+    "Grabar en posición horizontal.",
+    "Ubicarse en un lugar iluminado y sin ruido.",
+    "Mantener la cámara a la altura de los ojos.",
+    "Indicar nombre, cargo y rol dentro del comité.",
+    "Explicar su compromiso con la mejora continua.",
+    "Duración máxima recomendada: 2 minutos.",
+    "Subir el video mediante el enlace de OneDrive.",
+  ];
+
+  const updateLocalMember = (id, updates) => {
+    setMembers((current) => current.map((item) => (
+      item.id === id ? { ...item, ...updates } : item
+    )));
+  };
+
+  const postCommitteeUpdate = async (payload) => {
+    if (!webhookUrl) {
+      throw new Error("Falta configurar VITE_QUALITY_COMMITTEE_WEBHOOK_URL para guardar en Google Sheets.");
+    }
+
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        spreadsheetId,
+        sheetName: "ComiteCalidad",
+        ...payload,
+      }),
+    });
+
+    const text = await response.text();
+    let result = {};
+    try {
+      result = JSON.parse(text);
+    } catch {
+      result = { ok: response.ok, message: text };
+    }
+
+    if (!response.ok || result.ok === false) {
+      throw new Error(result.message || "No se pudo guardar en Google Sheets.");
+    }
+
+    return result;
+  };
+
+  const saveContact = async (member, field, value) => {
+    const cleanValue = String(value || "").trim();
+    const previous = member[field] || "";
+    if (cleanValue === previous) return;
+    const key = `${member.id}-${field}`;
+    updateLocalMember(member.id, { [field]: cleanValue });
+    setSavingMembers((current) => ({ ...current, [key]: true }));
+
+    try {
+      await postCommitteeUpdate({
+        action: "saveQualityCommitteeContact",
+        id: member.id,
+        field,
+        value: cleanValue,
+      });
+    } catch (error) {
+      console.error(error);
+      updateLocalMember(member.id, { [field]: previous });
+      window.alert(error.message || "No se pudo guardar el contacto.");
+    } finally {
+      setSavingMembers((current) => ({ ...current, [key]: false }));
+    }
+  };
+
+  const confirmUpload = async (member) => {
+    const previous = {
+      videoStatus: member.videoStatus,
+      uploadDate: member.uploadDate,
+    };
+    const uploadDate = new Date().toLocaleString("es-EC", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const key = `${member.id}-confirm`;
+    updateLocalMember(member.id, { videoStatus: "En revisión", uploadDate });
+    setSavingMembers((current) => ({ ...current, [key]: true }));
+
+    try {
+      await postCommitteeUpdate({
+        action: "confirmQualityCommitteeUpload",
+        id: member.id,
+        estadoVideo: "En revisión",
+        fechaCarga: uploadDate,
+      });
+    } catch (error) {
+      console.error(error);
+      updateLocalMember(member.id, previous);
+      window.alert(error.message || "No se pudo confirmar la carga.");
+    } finally {
+      setSavingMembers((current) => ({ ...current, [key]: false }));
+    }
+  };
+
+  const summaryCards = [
+    { label: "Miembros del comité", value: totalMembers, icon: Users },
+    { label: "Videos subidos", value: uploadedVideos, icon: Video },
+    { label: "Pendientes", value: pendingVideos, icon: Hourglass },
+    { label: "Validados", value: validatedVideos, icon: CheckCircle2 },
+  ];
+
+  return (
+    <section className="card premiumSectionCard qualityCommitteeSection">
+      <div className="sectionHeader indicatorsHeader">
+        <div>
+          <h2>Comité de Calidad</h2>
+          <p>Registro de miembros, datos de contacto y carga de videos del comité.</p>
+        </div>
+      </div>
+
+      <div className="processSummaryGrid processDashboardSummaryGrid qualityCommitteeSummaryGrid">
+        {summaryCards.map((card) => (
+          <article className="processSummaryCard processDashboardTotalCard qualityCommitteeKpiCard" key={card.label}>
+            <div>
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <article className="qualityProgressCard">
+        <div>
+          <span>Avance de videos</span>
+          <strong>{uploadedVideos} / {totalMembers}</strong>
+        </div>
+        <div className="qualityProgressTrack"><i style={{ width: `${progress}%` }} /></div>
+        <p>{progress}% de miembros con video subido.</p>
+      </article>
+
+      <article className={`qualityInstructionsCard ${openInstructions ? "open" : ""}`}>
+        <button type="button" onClick={() => setOpenInstructions((current) => !current)}>
+          <span>Instrucciones para grabar el video</span>
+          <ChevronDown size={18} />
+        </button>
+        {openInstructions && (
+          <ul>
+            {instructions.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        )}
+      </article>
+
+      <div className="qualityCommitteeGrid">
+        {members.map((member, index) => {
+          const uploadUrl = safeUrl(member.uploadLink);
+          const confirmKey = `${member.id}-confirm`;
+          const emailKey = `${member.id}-email`;
+          const phoneKey = `${member.id}-phone`;
+          const status = videoStatuses.includes(member.videoStatus) ? member.videoStatus : "Pendiente";
+          const isChangeRequired = status === "Requiere cambios";
+          const uploadLabel = isChangeRequired ? "Volver a subir video" : "Subir video";
+
+          return (
+            <article className="qualityMemberCard" key={`${member.id}-${member.name}-${index}`}>
+              <div className="qualityMemberTop">
+                <div>
+                  <span className="qualityMemberRole">{member.role || "Miembro del comité"}</span>
+                  <h3>{member.name || "Miembro sin nombre"}</h3>
+                </div>
+                <span className={`qualityStatusTag ${normalizeSystemName(status)}`}>{status}</span>
+              </div>
+
+              <dl className="qualityMemberMeta">
+                <div><dt>Cargo</dt><dd>{member.position || "Sin cargo"}</dd></div>
+                <div><dt>Área</dt><dd>{member.area || "Sin área"}</dd></div>
+              </dl>
+
+              <div className="qualityContactFields">
+                <label>
+                  <span>Correo</span>
+                  <input
+                    type="email"
+                    defaultValue={member.email || ""}
+                    onBlur={(event) => saveContact(member, "email", event.target.value)}
+                    placeholder="correo@empresa.com"
+                    disabled={Boolean(savingMembers[emailKey])}
+                  />
+                </label>
+                <label>
+                  <span>WhatsApp</span>
+                  <input
+                    type="tel"
+                    defaultValue={member.phone || ""}
+                    onBlur={(event) => saveContact(member, "phone", event.target.value)}
+                    placeholder="+593..."
+                    disabled={Boolean(savingMembers[phoneKey])}
+                  />
+                </label>
+              </div>
+
+              <div className="qualityObservation">
+                <strong>Observación</strong>
+                <p>{member.observation || "Sin observación registrada."}</p>
+                {member.uploadDate && <small>Fecha de carga: {member.uploadDate}</small>}
+              </div>
+
+              <div className="qualityMemberActions">
+                {uploadUrl ? (
+                  <a className="primaryAction qualityUploadButton" href={uploadUrl} target="_blank" rel="noreferrer">
+                    <UploadCloud size={16} /> {uploadLabel}
+                  </a>
+                ) : (
+                  <button className="primaryAction qualityUploadButton" type="button" disabled>
+                    <UploadCloud size={16} /> Sin enlace
+                  </button>
+                )}
+                <button
+                  className="secondaryAction"
+                  type="button"
+                  onClick={() => confirmUpload(member)}
+                  disabled={Boolean(savingMembers[confirmKey]) || !uploadUrl}
+                >
+                  <CheckCircle2 size={16} /> {savingMembers[confirmKey] ? "Confirmando..." : "Confirmar carga"}
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {members.length === 0 && (
+        <div className="emptyState">Agrega miembros en la pestaña ComiteCalidad para mostrar el comité.</div>
+      )}
     </section>
   );
 }
@@ -9646,7 +9898,7 @@ function App() {
       });
   }, [session?.sheetId]);
 
-  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], indicators = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
+  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], indicators = [], qualityCommittee = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
   const completedText = useMemo(() => {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
@@ -9708,6 +9960,7 @@ function App() {
               ["entregables", "Entregables"],
               ["entregables-clientes", "Entregables clientes"],
               ["indicadores", "Indicadores"],
+              ["comite-calidad", "Comité de Calidad"],
               ["documentos", "Documentos"],
               ["educacion", "Lo que vas a recibir"],
               ["tutoriales", "¿Necesitas ayuda?"],
@@ -9773,6 +10026,7 @@ function App() {
           {view === "procesos" && <ProcessesMasterList project={project} processesAsIs={processesAsIs} processesToBe={processesToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "estructura" && <StructureView project={project} architectureRoles={architectureRoles} />}
           {view === "indicadores" && <ImplementationIndicators indicators={indicators} />}
+          {view === "comite-calidad" && <QualityCommittee committee={qualityCommittee} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "hallazgos" && <Findings findings={findings} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} />}

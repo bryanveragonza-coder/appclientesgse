@@ -63,6 +63,7 @@ export const demoData = {
   coeToBe: [],
   architectureRoles: [],
   indicators: [],
+  qualityCommittee: [],
   documents: [
     {
       id: "1",
@@ -211,7 +212,8 @@ function rowsToObjects(rows) {
 
 async function fetchCsvRows(sheetName, required = true, spreadsheetId) {
   const url = csvUrl(sheetName, spreadsheetId);
-  const response = await fetch(url, { cache: "no-store" });
+  const separator = url.includes("?") ? "&" : "?";
+  const response = await fetch(`${url}${separator}_=${Date.now()}`, { cache: "no-store" });
 
   if (!response.ok) {
     if (!required) return [];
@@ -594,10 +596,10 @@ function mapFindings(rows) {
       deliveryDate: getRowValue(row, ["Fechamax", "FechaMax", "Fecha max", "Fecha mÃ¡xima", "Fecha maxima", "Fecha de entrega", "FechaEntrega", "Fecha Entrega"]),
       deliverableGSE: getRowValue(row, ["EntregableGSE", "Entregable GSE", "EntregablesGSE", "Entregables GSE", "GSE"]),
       deliverableClient: getRowValue(row, ["EntregableCliente", "Entregable Cliente", "EntregablesCliente", "Entregables Cliente", "Cliente"]),
-      link: getRowValue(row, ["Link", "URL", "Enlace", "Documento", "Archivo", "Carpeta", "LinkHallazgo"]),
+      link: getRowValue(row, ["LinkEntregable", "Link Entregable", "Link entregable", "Link", "URL", "Enlace", "Documento", "Archivo", "Carpeta", "LinkHallazgo"]),
       imageProcess: getRowValue(row, ["ImagenProceso", "Imagen Proceso", "Imagen del Proceso", "LinkImagen", "Link Imagen", "Imagen", "Link"]),
       technicalSheet: getRowValue(row, ["FichaTecnica", "Ficha TÃ©cnica", "FichaTecnicaProceso", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
-      policyLoaded: getRowValue(row, ["PoliticaCargada", "PolíticaCargada", "Politica Cargada", "Política Cargada", "Politica", "Política"]),
+      policyLoaded: getRowValue(row, ["Cargado", "Cargada", "PoliticaCargada", "PolíticaCargada", "Politica Cargada", "Política Cargada", "Politica", "Política"]),
       procedureLoaded: getRowValue(row, ["ProcedimientoCargado", "Procedimiento Cargado", "Procedimiento"]),
       impact: getRowValue(row, ["Impacto"]),
       image: getRowValue(row, ["Imagen", "ImagenPreview", "Imagen previa", "URLImagen"]),
@@ -784,6 +786,31 @@ function mapIndicators(rows) {
   })).filter((x) => x.process || x.name || x.formula || x.goal || x.baseline || x.month1 || x.month2 || x.month3);
 }
 
+function mapQualityCommittee(rows) {
+  const normalizeVideoStatus = (value = "") => {
+    const clean = cleanText(value) || "Pendiente";
+    const normalized = normalizeKey(clean);
+    if (normalized.includes("validado")) return "Validado";
+    if (normalized.includes("revision") || normalized.includes("revisar")) return "En revisión";
+    if (normalized.includes("requiere") || normalized.includes("cambio")) return "Requiere cambios";
+    return "Pendiente";
+  };
+
+  return rows.map((row, index) => ({
+    id: getRowValue(row, ["ID", "Id", "N", "N°", "NÂ°", "No", "Numero", "Número"]) || String(index + 1),
+    name: getRowValue(row, ["Nombre", "NombreCompleto", "Nombre Completo", "Miembro", "Colaborador"]),
+    position: getRowValue(row, ["Cargo", "Puesto", "Posicion", "Posición"]),
+    area: getRowValue(row, ["Area", "Área", "Departamento", "Gerencia"]),
+    role: getRowValue(row, ["Rol", "RolComite", "Rol Comité", "Rol dentro del comité", "Rol dentro del comite"]),
+    email: getRowValue(row, ["Correo", "Email", "E-mail", "Mail"]),
+    phone: getRowValue(row, ["Celular", "WhatsApp", "Whatsapp", "Telefono", "Teléfono", "TelefonoWhatsapp", "CelularWhatsapp"]),
+    videoStatus: normalizeVideoStatus(getRowValue(row, ["EstadoVideo", "Estado Video", "Estado del video", "StatusVideo", "Status Video"])),
+    observation: getRowValue(row, ["Observacion", "Observación", "Observaciones", "Comentario", "Comentarios"]),
+    uploadLink: getRowValue(row, ["LinkCargaVideo", "Link Carga Video", "LinkCarga", "Link Carga", "Link OneDrive", "OneDrive", "EnlaceCargaVideo"]),
+    uploadDate: getRowValue(row, ["FechaCarga", "Fecha Carga", "Fecha de carga"]),
+  })).filter((x) => x.id || x.name || x.position || x.area || x.role || x.email || x.phone || x.uploadLink);
+}
+
 function mapProcessesAsIs(rows) {
   return rows.map((row, index) => ({
     id: getRowValue(row, ["NÂ°", "N", "No", "Numero", "NÃºmero", "ID", "Id"]) || String(index + 1),
@@ -879,7 +906,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
   const tutorialSheetNames = ["Tutoriales", "tutoriales", "TUTORIALES", "Tutorial", "Ayuda", "Videos", "VideosTutoriales", "Videos Tutoriales"];
   const tutorialHeaders = ["Titulo", "Título", "Title", "Descripcion", "Descripción", "Description", "Link", "Enlace", "Video", "Youtube", "YouTube"];
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, indicatorRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, indicatorRows, qualityCommitteeRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
     fetchCsvRows("Proyecto", true, spreadsheetId),
     fetchCsvSheet("Hitos", true, spreadsheetId),
     fetchCsvSheet("Hallazgos", true, spreadsheetId),
@@ -902,6 +929,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchFirstAvailableSheet(["Documentos", "CargaDocumentos", "Carga de documentos", "Carga Documentos", "ChecklistDocumentos", "Checklist Documentos", "Checklist"], spreadsheetId),
     fetchFirstAvailableSheet(["ArquitecturaCargos", "Arquitectura Cargos", "Estructura", "EstructuraCargos", "Arquitectura"], spreadsheetId),
     fetchFirstAvailableSheet(["Indicadores", "ImplementacionIndicadores", "Implementación Indicadores", "Implementacion Indicadores", "IndicadoresImplementacion", "Indicadores Implementacion"], spreadsheetId),
+    fetchFirstAvailableSheet(["ComiteCalidad", "ComitéCalidad", "Comite Calidad", "Comité Calidad", "Comite de Calidad", "Comité de Calidad"], spreadsheetId),
     fetchFirstAvailableSheet(["ProcesosASIS", "Procesos AS IS", "Procesos As Is", "Procesos AS-IS", "Procesos AS_IS", "ListaASIS", "Lista AS IS", "Lista AS-IS", "ASIS", "AS IS"], spreadsheetId),
     fetchFirstAvailableSheet(["ProcesosTOBE", "Procesos TO BE", "Procesos To Be", "Procesos TO-BE", "Procesos TO_BE", "ListaTOBE", "Lista TO BE", "Lista TO-BE", "TOBE", "TO BE"], spreadsheetId),
     fetchFirstAvailableSheet(["COEASIS", "COE AS IS", "COE As Is", "COE AS-IS", "COE AS_IS", "COE Actual", "COEActual"], spreadsheetId),
@@ -923,6 +951,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     documents: mapDocuments(documentRows),
     architectureRoles: mapArchitectureRoles(architectureRows),
     indicators: mapIndicators(indicatorRows),
+    qualityCommittee: mapQualityCommittee(qualityCommitteeRows),
     processesAsIs: mapProcessesAsIs(processesAsIsRows),
     processesToBe: mapProcessesToBe(processesToBeRows),
     coeAsIs: mapCOERows(coeAsIsRows),
