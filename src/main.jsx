@@ -2486,8 +2486,8 @@ function ImplementationIndicators({ indicators = [] }) {
 
   const statusOptions = statusBuckets.map((bucket) => bucket.label);
   const getStatusLabel = (status = "") => statusBuckets.find((bucket) => bucket.key === getStatusBucket(status))?.label || "Pendiente";
-  const areaOptions = useMemo(() => localIndicators.map((item) => item.area).filter(Boolean), [localIndicators]);
-  const processOptions = useMemo(() => localIndicators.map((item) => item.process).filter(Boolean), [localIndicators]);
+  const areaOptions = useMemo(() => [...new Set(localIndicators.map((item) => item.area).filter(Boolean))], [localIndicators]);
+  const processOptions = useMemo(() => [...new Set(localIndicators.map((item) => item.process).filter(Boolean))], [localIndicators]);
 
   const getSeries = (item) => [
     parseNumericValue(item.baseline),
@@ -2524,7 +2524,7 @@ function ImplementationIndicators({ indicators = [] }) {
     const unitText = String(item.unit || "").trim();
     const normalizedUnit = normalizeSystemName(unitText);
     const isPercentage = normalizedUnit.includes("porcentaje") || unitText.includes("%");
-    const unitLabel = isPercentage ? "Porcentaje" : unitText || "Unidades";
+    const unitLabel = unitText || (isPercentage ? "Porcentaje" : "Unidades");
     const formatChartValue = (raw, numericValue) => {
       const clean = String(raw || "").trim();
       if (clean) return clean.replace(/%/g, "").trim();
@@ -2544,45 +2544,21 @@ function ImplementationIndicators({ indicators = [] }) {
     const scaleMax = Math.max(scaleStep, Math.ceil(rawMax / scaleStep) * scaleStep);
     const plotHeight = 142;
     const toHeight = (value) => Math.max(3, Math.min(plotHeight, (Math.max(0, value) / scaleMax) * plotHeight));
-    const positiveMonths = months.map((month) => Math.max(0, month.value));
-    const pieTotal = positiveMonths.reduce((sum, value) => sum + value, 0);
-    const pieColors = ["#00b8b5", "#63b8b4", "#087d78"];
-    let startPercent = 0;
-    const polarPoint = (percent) => {
-      const angle = (percent / 100) * 360 - 90;
-      const radians = (angle * Math.PI) / 180;
-      const radius = 42;
-      return {
-        x: 50 + radius * Math.cos(radians),
-        y: 50 + radius * Math.sin(radians),
-      };
-    };
-    const makePiePath = (start, end) => {
-      const slice = Math.max(0, end - start);
-      if (!slice) return "";
-      const safeEnd = slice >= 99.999 ? start + 99.999 : end;
-      const from = polarPoint(start);
-      const to = polarPoint(safeEnd);
-      const largeArc = slice > 50 ? 1 : 0;
-      return `M 50 50 L ${from.x.toFixed(3)} ${from.y.toFixed(3)} A 42 42 0 ${largeArc} 1 ${to.x.toFixed(3)} ${to.y.toFixed(3)} Z`;
-    };
-    const pieSegments = months.map((month, index) => {
-      const percent = pieTotal ? (Math.max(0, month.value) / pieTotal) * 100 : 0;
-      const segment = {
-        ...month,
-        displayValue: withUnitSuffix(formatChartValue(month.raw, month.value)),
-        percent,
-        color: pieColors[index],
-        path: makePiePath(startPercent, startPercent + percent),
-      };
-      startPercent += percent;
-      return segment;
-    });
     const ticks = [scaleMax, scaleMax * 0.75, scaleMax * 0.5, scaleMax * 0.25].map((value) => ({
       value,
       label: Number.isInteger(value) ? String(value) : value.toFixed(1).replace(".", ","),
       height: toHeight(value),
     }));
+    const monthBars = months.map((month) => ({
+      ...month,
+      displayValue: formatChartValue(month.raw, month.value),
+      height: toHeight(month.value),
+    }));
+    const trendPoints = monthBars.map((month, index) => {
+      const x = [32, 150, 268][index];
+      const y = Math.max(4, Math.min(plotHeight - 4, plotHeight - month.height));
+      return `${x},${y}`;
+    }).join(" ");
     return {
       baseline,
       goal,
@@ -2593,12 +2569,8 @@ function ImplementationIndicators({ indicators = [] }) {
       baselineHeight: toHeight(baseline),
       goalHeight: toHeight(goal),
       ticks,
-      pieSegments,
-      months: months.map((month) => ({
-        ...month,
-        displayValue: formatChartValue(month.raw, month.value),
-        height: toHeight(month.value),
-      })),
+      trendPoints,
+      months: monthBars,
     };
   };
   const summary = useMemo(() => {
@@ -2742,9 +2714,17 @@ function ImplementationIndicators({ indicators = [] }) {
             />
           </div>
         </label>
-        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
         <FilterSelect label="Proceso" value={processFilter} onChange={setProcessFilter} options={processOptions} />
         <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
+      </div>
+
+      <div className="indicatorAreaSubmenu" aria-label="Filtrar indicadores por área">
+        <button type="button" className={areaFilter === "Todos" ? "active" : ""} onClick={() => setAreaFilter("Todos")}>Todas</button>
+        {areaOptions.map((area) => (
+          <button type="button" key={area} className={areaFilter === area ? "active" : ""} onClick={() => setAreaFilter(area)}>
+            {area}
+          </button>
+        ))}
       </div>
 
       <div className="indicatorsWorkGrid">
@@ -2758,55 +2738,39 @@ function ImplementationIndicators({ indicators = [] }) {
                   <Badge status={item.status || getStatusLabel(item.status)}>{item.status || getStatusLabel(item.status)}</Badge>
                 </div>
                 <div className="indicatorWorkChart">
-                  {chart.isPercentage ? (
-                    <div className="indicatorPieChart">
-                      <svg className="indicatorPieVisual" viewBox="0 0 100 100" role="img" aria-label="Distribución mensual del indicador">
-                        <circle cx="50" cy="50" r="42" className="indicatorPieEmpty" />
-                        {chart.pieSegments.map((segment) => segment.path ? (
-                          <path key={`${item.id}-${segment.label}`} d={segment.path} fill={segment.color} />
-                        ) : null)}
-                      </svg>
-                      <div className="indicatorPieLegend">
-                        {chart.pieSegments.map((segment) => (
-                          <span key={`${item.id}-${segment.label}`}>
-                            <i style={{ background: segment.color }} />
-                            <b>{segment.label}</b>
-                            <em>{segment.displayValue}</em>
-                          </span>
-                        ))}
-                      </div>
-                      <div className="indicatorPieTargets">
-                        <span>Meta: <b>{chart.goalLabel}</b></span>
-                        <span>Línea base: <b>{chart.baselineLabel}</b></span>
-                      </div>
+                  <div className="indicatorBarChart">
+                    <span className="indicatorChartUnit">{chart.unitLabel}</span>
+                    <div className="indicatorBarGrid" aria-hidden="true">
+                      {chart.ticks.map((tick) => <span key={`${item.id}-tick-${tick.label}`} style={{ "--tick-height": `${tick.height}px` }} />)}
                     </div>
-                  ) : (
-                    <div className="indicatorBarChart">
-                      <span className="indicatorChartUnit">{chart.unitLabel}</span>
-                      <div className="indicatorBarGrid" aria-hidden="true">
-                        {chart.ticks.map((tick) => <span key={`${item.id}-tick-${tick.label}`} style={{ "--tick-height": `${tick.height}px` }} />)}
-                      </div>
-                      <div className="indicatorBarTicks" aria-hidden="true">
-                        {chart.ticks.map((tick) => <span key={`${item.id}-tick-label-${tick.label}`} style={{ "--tick-height": `${tick.height}px` }}>{tick.label}</span>)}
-                      </div>
-                      <span className="indicatorBarAxis indicatorBarAxisY" />
-                      <span className="indicatorBarAxis indicatorBarAxisX"><em>tiempo</em></span>
-                      <span className="indicatorReferenceLine indicatorReferenceGoal" style={{ "--ref-height": `${chart.goalHeight}px` }}><em>{chart.goalLabel}</em></span>
-                      <span className="indicatorReferenceLine indicatorReferenceBase" style={{ "--ref-height": `${chart.baselineHeight}px` }}><em>{chart.baselineLabel}</em></span>
-                      <div className="indicatorBars">
-                        {chart.months.map((month, monthIndex) => (
-                          <div className={`indicatorBarSlot indicatorBarSlot${monthIndex + 1}`} key={`${item.id}-${month.label}`}>
-                            <i style={{ "--bar-height": `${month.height}px` }}><strong>{month.displayValue}</strong></i>
-                            <span>{month.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="indicatorBarLegend">
-                        <span><i className="indicatorLegendGoal" /> Meta</span>
-                        <span><i className="indicatorLegendBase" /> Línea Base</span>
-                      </div>
+                    <div className="indicatorBarTicks" aria-hidden="true">
+                      {chart.ticks.map((tick) => <span key={`${item.id}-tick-label-${tick.label}`} style={{ "--tick-height": `${tick.height}px` }}>{tick.label}</span>)}
                     </div>
-                  )}
+                    <span className="indicatorBarAxis indicatorBarAxisY" />
+                    <span className="indicatorBarAxis indicatorBarAxisX"><em>tiempo</em></span>
+                    <span className="indicatorReferenceLine indicatorReferenceGoal" style={{ "--ref-height": `${chart.goalHeight}px` }}><em>{chart.goalLabel}</em></span>
+                    <span className="indicatorReferenceLine indicatorReferenceBase" style={{ "--ref-height": `${chart.baselineHeight}px` }}><em>{chart.baselineLabel}</em></span>
+                    <svg className="indicatorTrendLine" viewBox="0 0 300 142" preserveAspectRatio="none" aria-hidden="true">
+                      <polyline points={chart.trendPoints} />
+                      {chart.trendPoints.split(" ").map((point, pointIndex) => {
+                        const [cx, cy] = point.split(",");
+                        return <circle key={`${item.id}-trend-${pointIndex}`} cx={cx} cy={cy} r="3" />;
+                      })}
+                    </svg>
+                    <div className="indicatorBars">
+                      {chart.months.map((month, monthIndex) => (
+                        <div className={`indicatorBarSlot indicatorBarSlot${monthIndex + 1}`} key={`${item.id}-${month.label}`}>
+                          <i style={{ "--bar-height": `${month.height}px` }}><strong>{month.displayValue}</strong></i>
+                          <span>{month.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="indicatorBarLegend">
+                      <span><i className="indicatorLegendGoal" /> Meta</span>
+                      <span><i className="indicatorLegendBase" /> Línea Base</span>
+                      <span><i className="indicatorLegendTrend" /> Tendencia</span>
+                    </div>
+                  </div>
                 </div>
                 <p className="indicatorDataPrompt">Escribe los datos aquí:</p>
                 <div className="indicatorClientFields">

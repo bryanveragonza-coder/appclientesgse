@@ -26357,8 +26357,36 @@ body {
 }
 
 .indicatorsFilters {
-  grid-template-columns: minmax(300px, 1.35fr) repeat(3, minmax(150px, 0.55fr)) !important;
+  grid-template-columns: minmax(300px, 1.35fr) repeat(2, minmax(150px, 0.55fr)) !important;
   align-items: end !important;
+}
+
+.indicatorAreaSubmenu {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  align-items: center !important;
+  margin-top: -10px !important;
+}
+
+.indicatorAreaSubmenu button {
+  min-height: 34px !important;
+  border: 1px solid #bfe5e4 !important;
+  background: #ffffff !important;
+  color: #087d78 !important;
+  -webkit-text-fill-color: #087d78 !important;
+  padding: 0 13px !important;
+  font-size: 0.8rem !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+
+.indicatorAreaSubmenu button.active {
+  border-color: #00b8b5 !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
 .indicatorsWorkGrid {
@@ -26477,6 +26505,16 @@ body {
   min-width: 0 !important;
   min-height: 30px !important;
   background: #edf6f6 !important;
+}
+
+.indicatorClientFields label:nth-child(1) .indicatorValueInput {
+  background: #eef2f3 !important;
+  border-color: rgba(83, 103, 107, 0.28) !important;
+}
+
+.indicatorClientFields label:nth-child(2) .indicatorValueInput {
+  background: #fff3bf !important;
+  border-color: rgba(244, 197, 66, 0.72) !important;
 }
 
 .indicatorWorkChart {
@@ -28926,7 +28964,7 @@ body {
 
 /* INDICADORES_REFERENCIAS_LEYENDA_V3 */
 .indicatorReferenceGoal {
-  background: #00b8b5 !important;
+  background: #f4c542 !important;
   height: 2px !important;
 }
 
@@ -28945,8 +28983,8 @@ body {
 }
 
 .indicatorReferenceGoal em {
-  color: #00a7a4 !important;
-  -webkit-text-fill-color: #00a7a4 !important;
+  color: #9a7200 !important;
+  -webkit-text-fill-color: #9a7200 !important;
 }
 
 .indicatorReferenceBase em {
@@ -28956,14 +28994,48 @@ body {
 
 .indicatorLegendGoal {
   height: 2px !important;
-  background: #00b8b5 !important;
+  background: #f4c542 !important;
+}
+
+.indicatorTrendLine {
+  position: absolute !important;
+  left: 78px !important;
+  right: 46px !important;
+  bottom: 54px !important;
+  width: calc(100% - 124px) !important;
+  height: 142px !important;
+  overflow: visible !important;
+  z-index: 7 !important;
+  pointer-events: none !important;
+}
+
+.indicatorTrendLine polyline {
+  fill: none !important;
+  stroke: #102e35 !important;
+  stroke-width: 2.5 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  vector-effect: non-scaling-stroke !important;
+}
+
+.indicatorTrendLine circle {
+  fill: #ffffff !important;
+  stroke: #102e35 !important;
+  stroke-width: 2 !important;
+  vector-effect: non-scaling-stroke !important;
+}
+
+.indicatorLegendTrend {
+  position: relative !important;
+  height: 2px !important;
+  background: #102e35 !important;
 }
 
 /* INDICADORES_FILTROS_RESUMEN_AJUSTE_V4 */
 .indicatorsFilters.processFilters,
 .premiumFilters.processFilters.indicatorsFilters {
   display: grid !important;
-  grid-template-columns: minmax(280px, 1.55fr) minmax(130px, 0.55fr) minmax(150px, 0.7fr) minmax(130px, 0.55fr) !important;
+  grid-template-columns: minmax(280px, 1.55fr) minmax(150px, 0.7fr) minmax(130px, 0.55fr) !important;
   gap: 14px !important;
   align-items: end !important;
 }
@@ -29006,7 +29078,7 @@ body {
 @media (max-width: 1180px) {
   .indicatorsFilters.processFilters,
   .premiumFilters.processFilters.indicatorsFilters {
-    grid-template-columns: minmax(220px, 1.35fr) minmax(118px, 0.55fr) minmax(130px, 0.65fr) minmax(118px, 0.55fr) !important;
+    grid-template-columns: minmax(220px, 1.35fr) minmax(130px, 0.65fr) minmax(118px, 0.55fr) !important;
     gap: 10px !important;
   }
 }
