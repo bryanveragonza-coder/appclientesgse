@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
+  Download,
   Eye,
   EyeOff,
   ExternalLink,
@@ -3033,6 +3034,11 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
           <div className="imageToggleButtons">
             <button type="button" className={structureViewMode === "asis" ? "active" : ""} onClick={() => setStructureViewMode("asis")}>Estructura AS IS</button>
             <button type="button" className={structureViewMode === "tobe" ? "active" : ""} onClick={() => setStructureViewMode("tobe")}>Estructura TO BE</button>
+            {activeStructureImage && (
+              <a className="imageDownloadButton" href={activeStructureImage} download target="_blank" rel="noreferrer" aria-label={`Descargar ${activeStructureLabel}`} title="Descargar imagen">
+                <Download size={16} />
+              </a>
+            )}
           </div>
         </div>
         {activeStructureImage ? (
@@ -3587,7 +3593,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
               {variant === "asis" ? <th>Descripción</th> : <th>Cambios / Observaciones</th>}
               {variant === "tobe" && <th>Status</th>}
               <th>Imagen</th>
-              <th>Ficha</th>
+              {variant === "tobe" && <th>Ficha</th>}
             </tr>
           </thead>
           <tbody>
@@ -3605,9 +3611,11 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
                 <td className="imageProcessCell">
                   <ProcessAssetCell item={item} variant={variant} field="image" url={safeUrl(item.imageProcess || item.link)} />
                 </td>
-                <td className="techSheetCell">
-                  <ProcessAssetCell item={item} variant={variant} field="sheet" url={safeUrl(item.technicalSheet || item.ficha || item.fichaTecnica || item.linkFicha)} />
-                </td>
+                {variant === "tobe" && (
+                  <td className="techSheetCell">
+                    <ProcessAssetCell item={item} variant={variant} field="sheet" url={safeUrl(item.technicalSheet || item.ficha || item.fichaTecnica || item.linkFicha)} />
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -3637,7 +3645,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
               <th>Responsable</th>
               <th>{variant === "asis" ? "Descripción" : "Cambios"}</th>
               <th>Imagen</th>
-              <th>Ficha</th>
+              {variant === "tobe" && <th>Ficha</th>}
             </tr>
           </thead>
           <tbody>
@@ -3651,7 +3659,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
                   <td>{item.responsible || "Por definir"}</td>
                   <td>{variant === "asis" ? item.description : item.changes}</td>
                   <td><ProcessAssetCell item={item} variant={variant} field="image" url={imageUrl} /></td>
-                  <td><ProcessAssetCell item={item} variant={variant} field="sheet" url={sheetUrl} /></td>
+                  {variant === "tobe" && <td><ProcessAssetCell item={item} variant={variant} field="sheet" url={sheetUrl} /></td>}
                 </tr>
               );
             })}
@@ -3746,6 +3754,11 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
           <div className="imageToggleButtons">
             <button type="button" className={processMapMode === "asis" ? "active" : ""} onClick={() => setProcessMapMode("asis")}>Mapa de procesos AS IS</button>
             <button type="button" className={processMapMode === "tobe" ? "active" : ""} onClick={() => setProcessMapMode("tobe")}>Mapa de procesos TO BE</button>
+            {activeProcessMapImage && (
+              <a className="imageDownloadButton" href={activeProcessMapImage} download target="_blank" rel="noreferrer" aria-label={`Descargar ${activeProcessMapLabel}`} title="Descargar imagen">
+                <Download size={16} />
+              </a>
+            )}
           </div>
         </div>
         <div className="structureHeroImageCard processMapToBeImageCard">
@@ -4402,7 +4415,7 @@ const coeBackView = previousView === "ruta" ? "ruta" : "portal";
   );
 }
 
-function Findings({ findings = [], pending = [], setView, previousView = "portal" }) {
+function Findings({ findings = [], project = {}, pending = [], setView, previousView = "portal" }) {
   const [open, setOpen] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("Todos");
@@ -4418,6 +4431,7 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
   const [savingFindingUpload, setSavingFindingUpload] = useState({});
   const findingUploadWebhookUrl = safeUrl(import.meta.env.VITE_FINDING_UPLOAD_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
+  const businessModelImage = getDrivePreviewUrl(project.businessModelImage || project.modeloDeNegocio || project.modelodenegocio || "");
 
   const getFindingUploadKey = (item, field) => [field, item.id || "sin-id", item.finding || item.description || "sin-hallazgo"].join("|");
 
@@ -4979,6 +4993,28 @@ function Findings({ findings = [], pending = [], setView, previousView = "portal
     </section>
 
     <section className="card premiumSectionCard findingsPremiumSection">
+      <div className="structureHeroImageCard findingsBusinessModelCard">
+        <div className="imageToggleHeader">
+          <div>
+            <h3>Modelo de negocio</h3>
+            <p>Comparación del modelo actual y propuesto</p>
+          </div>
+          {businessModelImage && (
+            <a className="imageDownloadButton" href={businessModelImage} download target="_blank" rel="noreferrer" aria-label="Descargar modelo de negocio" title="Descargar imagen">
+              <Download size={16} />
+            </a>
+          )}
+        </div>
+        {businessModelImage ? (
+          <img src={businessModelImage} alt="Modelo de negocio" />
+        ) : (
+          <div className="structureEmptyImage">
+            <Layers3 size={42} />
+            <span>Agrega Modelodenegocio en la pestaña Proyecto para mostrar el modelo de negocio.</span>
+          </div>
+        )}
+      </div>
+
       <div className="sectionHeader">
         <div>
           <h2>Hallazgos encontrados</h2>
@@ -10063,7 +10099,7 @@ function App() {
           {view === "indicadores" && <ImplementationIndicators indicators={indicators} />}
           {view === "comite-calidad" && <QualityCommittee committee={qualityCommittee} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
-          {view === "hallazgos" && <Findings findings={findings} pending={pending} setView={navigate} previousView={previousView} />}
+          {view === "hallazgos" && <Findings findings={findings} project={project} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} />}
           {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "entregables-clientes" && <ClientDeliverables findings={findings} project={project} />}
