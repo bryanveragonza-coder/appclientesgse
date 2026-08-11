@@ -3840,20 +3840,20 @@ function ClientExperience({ milestones = [], experience = [], project = {} }) {
   );
 }
 
-function ClientExperiencePrompt({ periods = [], onShare, onLater, spreadsheetId = "" }) {
+function ClientExperiencePrompt({ periods = [], onShare, onLater, spreadsheetId = "", disabled = false }) {
   const pendingPeriod = periods.find((item) => item.status === "Pendiente");
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!pendingPeriod) {
+    if (disabled || !pendingPeriod) {
       setVisible(false);
       return;
     }
     const key = `rivExperiencePromptDismissed:${spreadsheetId || "local"}:${pendingPeriod.id}`;
     setVisible(window.localStorage.getItem(key) !== "1");
-  }, [pendingPeriod?.id, spreadsheetId]);
+  }, [disabled, pendingPeriod?.id, spreadsheetId]);
 
-  if (!visible || !pendingPeriod) return null;
+  if (disabled || !visible || !pendingPeriod) return null;
 
   const closeForNow = () => {
     const key = `rivExperiencePromptDismissed:${spreadsheetId || "local"}:${pendingPeriod.id}`;
@@ -10568,6 +10568,7 @@ function App() {
       <ClientExperiencePrompt
         periods={experiencePeriods}
         spreadsheetId={session.sheetId}
+        disabled={loadingData || introVisible}
         onShare={() => navigate("experiencia")}
       />
 
