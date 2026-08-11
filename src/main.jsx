@@ -199,6 +199,7 @@ function Sidebar({ view, setView, project }) {
       ],
     },
     { title: "Informacion", items: [[BookOpen, "Lo que vas a recibir", "educacion"]] },
+    { title: "Experiencia clientes", items: [[MessageCircle, "Tu experiencia", "experiencia"]] },
   ];
 
   const company = project.companyClient || project.client;
@@ -3352,6 +3353,537 @@ function QualityCommittee({ committee = [] }) {
         <div className="emptyState">Agrega miembros en la pestaña ComiteCalidad para mostrar el comité.</div>
       )}
     </section>
+  );
+}
+
+const CLIENT_EXPERIENCE_PERIODS = [
+  { id: "EXP-M1", month: "Mes 1", requiredMilestones: [0, 1, 2, 3, 4], title: "Primera experiencia" },
+  { id: "EXP-M2", month: "Mes 2", requiredMilestones: [5, 6, 7, 8], title: "Seguimiento de experiencia" },
+  { id: "EXP-M3", month: "Mes 3", requiredMilestones: [9, 10, 11, 12], title: "Experiencia final" },
+];
+
+const RIVI_IMAGES = {
+  celebration: "/rivi-celebracion.png",
+  greeting: "/rivi-se%C3%B1alando.png",
+};
+
+const EXPERIENCE_FEEDBACK_OPTIONS = [
+  "Calidad de los entregables",
+  "Claridad de la información",
+  "Acompañamiento del equipo",
+  "Comunicación",
+  "Cumplimiento de compromisos",
+  "Avance alcanzado",
+  "Utilidad para la empresa",
+];
+
+const EXPERIENCE_STEPS = [
+  { id: 1, label: "Satisfacción" },
+  { id: 2, label: "Feedback" },
+  { id: 3, label: "NPS" },
+  { id: 4, label: "Comentario" },
+];
+
+function getMilestoneNumber(item = {}, index = 0) {
+  const candidates = [item.id, item.title, item.hito].filter(Boolean);
+  for (const value of candidates) {
+    const match = String(value).match(/\d+/);
+    if (match) return Number(match[0]);
+  }
+  return index;
+}
+
+function isExperienceCompleted(row = {}) {
+  const status = normalizeSystemName(row.status || "");
+  return status.includes("completado") || Boolean(row.responseDate || row.nps || row.satisfaction);
+}
+
+function buildClientExperiencePeriods(milestones = [], responses = []) {
+  const milestoneMap = new Map();
+  milestones.forEach((item, index) => {
+    milestoneMap.set(getMilestoneNumber(item, index), item);
+  });
+
+  const responseMap = new Map();
+  responses.forEach((item) => {
+    const keys = [item.id, item.month].map(normalizeSystemName).filter(Boolean);
+    keys.forEach((key) => responseMap.set(key, item));
+  });
+
+  return CLIENT_EXPERIENCE_PERIODS.map((period) => {
+    const response = responseMap.get(normalizeSystemName(period.id)) || responseMap.get(normalizeSystemName(period.month)) || {};
+    const completedMilestones = period.requiredMilestones.filter((number) => {
+      const milestone = milestoneMap.get(number);
+      return milestone && isCompletedStatus(milestone.status);
+    });
+    const unlocked = completedMilestones.length === period.requiredMilestones.length;
+    const answered = isExperienceCompleted(response);
+    const status = answered ? "Completado" : unlocked ? "Pendiente" : "Bloqueado";
+
+    return {
+      ...period,
+      response,
+      status,
+      unlocked,
+      answered,
+      completedMilestones: completedMilestones.length,
+      totalMilestones: period.requiredMilestones.length,
+      progress: Math.round((completedMilestones.length / period.requiredMilestones.length) * 100),
+    };
+  });
+}
+
+function ClientExperience({ milestones = [], experience = [], project = {} }) {
+  const [responses, setResponses] = useState(experience);
+  const [activePeriodId, setActivePeriodId] = useState("");
+  const [formState, setFormState] = useState({});
+  const [stepByPeriod, setStepByPeriod] = useState({});
+  const [saving, setSaving] = useState("");
+
+  useEffect(() => {
+    setResponses(experience);
+  }, [experience]);
+
+  const spreadsheetId = getActiveSpreadsheetId();
+  const webhookUrl = safeUrl(import.meta.env.VITE_EXPERIENCIA_SCRIPT_URL || "");
+  const periods = useMemo(() => buildClientExperiencePeriods(milestones, responses), [milestones, responses]);
+  const activePeriod = periods.find((item) => item.id === activePeriodId) || periods.find((item) => item.status === "Pendiente") || periods[0];
+  const completedCount = periods.filter((item) => item.status === "Completado").length;
+  const pendingCount = periods.filter((item) => item.status === "Pendiente").length;
+  const unlockedCount = periods.filter((item) => item.status !== "Bloqueado").length;
+
+  useEffect(() => {
+    if (!activePeriodId && activePeriod?.id) setActivePeriodId(activePeriod.id);
+  }, [activePeriod?.id, activePeriodId]);
+
+  const getDraft = (period) => {
+    const existing = formState[period.id] || {};
+    const response = period.response || {};
+    return {
+      satisfaction: existing.satisfaction ?? response.satisfaction ?? "",
+      valued: existing.valued ?? response.valued ?? "",
+      improve: existing.improve ?? response.improve ?? "",
+      nps: existing.nps ?? response.nps ?? "",
+      comment: existing.comment ?? response.comment ?? "",
+      requestContact: existing.requestContact ?? isCheckedSheetValue(response.requestContact),
+    };
+  };
+
+  const updateDraft = (periodId, updates) => {
+    setFormState((current) => ({
+      ...current,
+      [periodId]: {
+        ...(current[periodId] || {}),
+        ...updates,
+      },
+    }));
+  };
+
+  const saveExperience = async (period) => {
+    if (!period || period.status === "Bloqueado") return;
+    if (!webhookUrl) {
+      window.alert("Falta configurar VITE_EXPERIENCIA_SCRIPT_URL en Vercel.");
+      return;
+    }
+
+    const draft = getDraft(period);
+    if (!draft.satisfaction || draft.nps === "") {
+      window.alert("Completa la satisfacción general y el NPS para guardar tu experiencia.");
+      return;
+    }
+
+    setSaving(period.id);
+    try {
+      const payload = {
+        action: "saveClientExperience",
+        spreadsheetId,
+        id: period.id,
+        mes: period.month,
+        satisfaccion: draft.satisfaction,
+        valorado: draft.valued,
+        mejorar: draft.improve,
+        nps: draft.nps,
+        comentario: draft.comment,
+        solicitaContacto: draft.requestContact,
+        usuario: project.contactName || project.generalManager || getClientSession().nombre || "",
+      };
+
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload),
+      });
+      const text = await response.text();
+      let result = {};
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = { ok: response.ok, message: text };
+      }
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.message || "No se pudo guardar tu experiencia.");
+      }
+
+      const savedResponse = {
+        ...period.response,
+        id: period.id,
+        month: period.month,
+        requiredMilestones: period.requiredMilestones.join(","),
+        status: "Completado",
+        satisfaction: draft.satisfaction,
+        valued: draft.valued,
+        improve: draft.improve,
+        nps: draft.nps,
+        comment: draft.comment,
+        requestContact: draft.requestContact ? "Si" : "No",
+        responseDate: result.FechaRespuesta || new Date().toLocaleString("es-EC"),
+        user: payload.usuario,
+      };
+
+      setResponses((current) => {
+        const exists = current.some((item) => normalizeSystemName(item.id) === normalizeSystemName(period.id));
+        if (exists) {
+          return current.map((item) => normalizeSystemName(item.id) === normalizeSystemName(period.id) ? savedResponse : item);
+        }
+        return [...current, savedResponse];
+      });
+    } catch (error) {
+      console.error(error);
+      window.alert(error.message || "No se pudo guardar tu experiencia.");
+    } finally {
+      setSaving("");
+    }
+  };
+
+  const draft = activePeriod ? getDraft(activePeriod) : {};
+  const activeStep = activePeriod ? (stepByPeriod[activePeriod.id] || 1) : 1;
+  const selectedValued = String(draft.valued || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const setActiveStep = (step) => {
+    if (!activePeriod) return;
+    setStepByPeriod((current) => ({ ...current, [activePeriod.id]: Math.max(1, Math.min(step, 4)) }));
+  };
+  const toggleValuedOption = (option) => {
+    if (!activePeriod || activePeriod.status === "Completado") return;
+    const next = selectedValued.includes(option)
+      ? selectedValued.filter((item) => item !== option)
+      : [...selectedValued, option];
+    updateDraft(activePeriod.id, { valued: next.join(", ") });
+  };
+
+  const renderStepContent = () => {
+    if (!activePeriod || activePeriod.status === "Bloqueado") return null;
+    if (activePeriod.status === "Completado") {
+      return (
+        <div className="clientExperienceSuccess">
+          <img src={RIVI_IMAGES.celebration} alt="RIVI celebrando" />
+          <div>
+            <span>Experiencia registrada</span>
+            <h3>Gracias por compartir tu experiencia</h3>
+            <p>Tu comentario será revisado por el equipo para mejorar el acompañamiento en el proyecto.</p>
+            {activePeriod.response?.responseDate && <small>Respondido el {activePeriod.response.responseDate}</small>}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeStep === 1) {
+      return (
+        <div className="clientExperienceQuestion clientExperienceStepPane">
+          <span>Paso 1 de 4</span>
+          <h3>¿Cómo fue tu experiencia durante este mes?</h3>
+          <div className="clientExperienceMoodRow">
+            {[
+              ["5", "Excelente", "😍"],
+              ["4", "Buena", "🙂"],
+              ["3", "Regular", "😐"],
+              ["2", "Puede mejorar", "😟"],
+              ["1", "No fue lo esperado", "😢"],
+            ].map(([value, label, icon]) => (
+              <button
+                type="button"
+                key={value}
+                className={String(draft.satisfaction) === value ? "active" : ""}
+                onClick={() => updateDraft(activePeriod.id, { satisfaction: value })}
+              >
+                <strong>{icon}</strong>
+                <small>{label}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeStep === 2) {
+      return (
+        <div className="clientExperienceQuestion clientExperienceStepPane">
+          <span>Paso 2 de 4</span>
+          <h3>¿Qué fue lo que más valoraste este mes?</h3>
+          <p>Puedes seleccionar varias opciones.</p>
+          <div className="clientExperienceOptionList">
+            {EXPERIENCE_FEEDBACK_OPTIONS.map((option) => (
+              <button
+                type="button"
+                key={option}
+                className={selectedValued.includes(option) ? "active" : ""}
+                onClick={() => toggleValuedOption(option)}
+              >
+                <span>{selectedValued.includes(option) ? "✓" : ""}</span>
+                {option}
+              </button>
+            ))}
+          </div>
+          <label className="clientExperienceComment compact">
+            <span>¿Qué deberíamos mejorar?</span>
+            <textarea
+              value={draft.improve}
+              onChange={(event) => updateDraft(activePeriod.id, { improve: event.target.value })}
+              placeholder="Cuéntanos una mejora concreta"
+            />
+          </label>
+        </div>
+      );
+    }
+
+    if (activeStep === 3) {
+      return (
+        <div className="clientExperienceQuestion clientExperienceStepPane">
+          <span>Paso 3 de 4</span>
+          <h3>¿Qué tan probable es que recomiendes a GSE&CO?</h3>
+          <div className="clientExperienceNps">
+            {Array.from({ length: 11 }, (_, value) => (
+              <button
+                type="button"
+                key={value}
+                className={Number(draft.nps) === value ? "active" : ""}
+                onClick={() => updateDraft(activePeriod.id, { nps: value })}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+          <div className="clientExperienceNpsScale">
+            <span>Nada probable</span>
+            <span>Totalmente probable</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="clientExperienceQuestion clientExperienceStepPane">
+        <span>Paso 4 de 4</span>
+        <h3>¿Hay algo más que quieras contarnos?</h3>
+        <label className="clientExperienceComment">
+          <textarea
+            value={draft.comment}
+            onChange={(event) => updateDraft(activePeriod.id, { comment: event.target.value })}
+            placeholder="Escribe aquí tu comentario..."
+          />
+        </label>
+
+        <label className="clientExperienceContact">
+          <input
+            type="checkbox"
+            checked={Boolean(draft.requestContact)}
+            onChange={(event) => updateDraft(activePeriod.id, { requestContact: event.target.checked })}
+          />
+          <span>Quiero que el equipo de GSE se comunique conmigo.</span>
+        </label>
+      </div>
+    );
+  };
+
+  return (
+    <section className="card premiumSectionCard clientExperienceSection">
+      <div className="sectionHeader clientExperienceHeader">
+        <div>
+          <span>Experiencia clientes</span>
+          <h2><MessageCircle size={30} /> Tu experiencia</h2>
+          <p>Cuéntanos cómo se siente el avance del proyecto. Es una medición corta para mejorar contigo en cada etapa.</p>
+        </div>
+      </div>
+
+      <div className="clientExperienceSummary">
+        <article>
+          <span>Mediciones abiertas</span>
+          <strong>{unlockedCount}/3</strong>
+        </article>
+        <article>
+          <span>Pendientes</span>
+          <strong>{pendingCount}</strong>
+        </article>
+        <article>
+          <span>Completadas</span>
+          <strong>{completedCount}</strong>
+        </article>
+      </div>
+
+      <div className="clientExperienceCards">
+        {periods.map((period) => (
+          <button
+            type="button"
+            key={period.id}
+            className={`clientExperienceCard ${activePeriod?.id === period.id ? "active" : ""} ${normalizeSystemName(period.status)}`}
+            onClick={() => setActivePeriodId(period.id)}
+          >
+            <div>
+              <span>{period.month}</span>
+              <Badge status={period.status}>{period.status}</Badge>
+            </div>
+            <div className="clientExperienceCardIcon">
+              {period.status === "Completado" ? <CheckCircle2 size={34} /> : period.status === "Pendiente" ? <Clock3 size={34} /> : <Lock size={34} />}
+            </div>
+            <h3>{period.title}</h3>
+            <p>{period.status === "Completado" ? "Gracias por compartir tu experiencia." : period.status === "Pendiente" ? "Queremos conocer cómo te fue en este periodo." : "Se habilitará cuando completes los hitos."}</p>
+            <ProgressBar value={period.progress} status={period.status} />
+            <small>{period.status === "Completado" && period.response?.responseDate ? period.response.responseDate : `${period.completedMilestones}/${period.totalMilestones} hitos completados`}</small>
+            <img className="clientExperienceCardRivi" src={period.status === "Completado" ? RIVI_IMAGES.celebration : RIVI_IMAGES.greeting} alt="" />
+          </button>
+        ))}
+      </div>
+
+      {periods.some((item) => item.status === "Pendiente") && (
+        <article className="clientExperiencePendingNotice">
+          <MessageCircle size={20} />
+          <div>
+            <strong>Tienes una experiencia pendiente</strong>
+            <p>Responderla nos ayuda a mejorar tus entregables y el acompañamiento del proyecto.</p>
+          </div>
+          <button type="button" onClick={() => setActivePeriodId(periods.find((item) => item.status === "Pendiente")?.id || activePeriod?.id)}>
+            Responder ahora
+          </button>
+        </article>
+      )}
+
+      {activePeriod && (
+        <article className={`clientExperiencePanel ${normalizeSystemName(activePeriod.status)}`}>
+          <div className="clientExperiencePanelIntro">
+            <div>
+              <span>{activePeriod.month}</span>
+              <h3>{activePeriod.status === "Completado" ? "Gracias por compartir tu experiencia" : "Queremos escucharte"}</h3>
+              <p>
+                {activePeriod.status === "Bloqueado"
+                  ? "Esta medición se activará automáticamente cuando completes los hitos de este periodo."
+                  : activePeriod.status === "Completado"
+                    ? "Tu respuesta quedó registrada. La usaremos para acompañarte mejor en el proyecto."
+                    : "Responde en menos de un minuto. No es una encuesta larga: es una señal clara para mejorar la experiencia."}
+              </p>
+            </div>
+            <Badge status={activePeriod.status}>{activePeriod.status}</Badge>
+          </div>
+
+          {activePeriod.status === "Bloqueado" ? (
+            <div className="clientExperienceLocked">
+              <img src={RIVI_IMAGES.greeting} alt="RIVI esperando" />
+              <div>
+                <Lock size={28} />
+                <strong>Faltan hitos por completar</strong>
+                <p>Avance actual: {activePeriod.completedMilestones} de {activePeriod.totalMilestones} hitos.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="clientExperienceWizard">
+              <aside className="clientExperienceCoach">
+                <img src={activePeriod.status === "Completado" ? RIVI_IMAGES.celebration : RIVI_IMAGES.greeting} alt="RIVI" />
+                <div>
+                  <strong>{activePeriod.status === "Completado" ? "Respuesta enviada" : "RIVI te acompaña"}</strong>
+                  <p>{activePeriod.status === "Completado" ? "Gracias por ayudarnos a mejorar." : "Son 4 pasos cortos. Puedes responderlo en menos de un minuto."}</p>
+                </div>
+              </aside>
+
+              <div className="clientExperienceWizardMain">
+                {activePeriod.status !== "Completado" && (
+                  <div className="clientExperienceStepper">
+                    {EXPERIENCE_STEPS.map((step) => (
+                      <button
+                        type="button"
+                        key={step.id}
+                        className={activeStep === step.id ? "active" : activeStep > step.id ? "done" : ""}
+                        onClick={() => setActiveStep(step.id)}
+                      >
+                        <span>{step.id}</span>
+                        {step.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {renderStepContent()}
+
+                {activePeriod.status !== "Completado" && (
+                  <div className="clientExperienceNavActions">
+                    <button className="secondaryAction" type="button" onClick={() => setActiveStep(activeStep - 1)} disabled={activeStep === 1}>
+                      Atrás
+                    </button>
+                    {activeStep < 4 ? (
+                      <button className="primaryAction" type="button" onClick={() => setActiveStep(activeStep + 1)}>
+                        Siguiente <ChevronRight size={18} />
+                      </button>
+                    ) : (
+                      <button className="primaryAction clientExperienceSubmit" type="button" onClick={() => saveExperience(activePeriod)} disabled={saving === activePeriod.id}>
+                        <Sparkles size={18} /> {saving === activePeriod.id ? "Guardando..." : "Enviar mi experiencia"}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </article>
+      )}
+    </section>
+  );
+}
+
+function ClientExperiencePrompt({ periods = [], onShare, onLater, spreadsheetId = "" }) {
+  const pendingPeriod = periods.find((item) => item.status === "Pendiente");
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!pendingPeriod) {
+      setVisible(false);
+      return;
+    }
+    const key = `rivExperiencePromptDismissed:${spreadsheetId || "local"}:${pendingPeriod.id}`;
+    setVisible(window.localStorage.getItem(key) !== "1");
+  }, [pendingPeriod?.id, spreadsheetId]);
+
+  if (!visible || !pendingPeriod) return null;
+
+  const closeForNow = () => {
+    const key = `rivExperiencePromptDismissed:${spreadsheetId || "local"}:${pendingPeriod.id}`;
+    window.localStorage.setItem(key, "1");
+    setVisible(false);
+    onLater?.();
+  };
+
+  return (
+    <div className="clientExperienceModalOverlay" role="dialog" aria-modal="true" aria-labelledby="experiencePromptTitle">
+      <article className="clientExperienceModal">
+        <button className="clientExperienceModalClose" type="button" onClick={closeForNow} aria-label="Cerrar">
+          <X size={18} />
+        </button>
+        <div className="clientExperienceModalIcon">🎉</div>
+        <h2 id="experiencePromptTitle">¡Completaste el {pendingPeriod.month}!</h2>
+        <p>Has finalizado los hitos programados para este periodo. Queremos conocer cómo ha sido tu experiencia durante este mes.</p>
+        <img className="clientExperienceModalRivi" src={RIVI_IMAGES.celebration} alt="RIVI celebrando" />
+        <div className="clientExperienceModalActions">
+        <button type="button" className="primaryAction" onClick={() => {
+          setVisible(false);
+          onShare?.();
+        }}>
+            Compartir mi experiencia <ChevronRight size={18} />
+          </button>
+          <button type="button" className="secondaryAction" onClick={closeForNow}>
+            Responder más tarde
+          </button>
+        </div>
+      </article>
+    </div>
   );
 }
 
@@ -9933,12 +10465,14 @@ function App() {
       });
   }, [session?.sheetId]);
 
-  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], architectureRolesToBe = [], indicators = [], qualityCommittee = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
+  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], architectureRolesToBe = [], indicators = [], qualityCommittee = [], clientExperience = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
   const completedText = useMemo(() => {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
     return `${completed} hitos completados de ${milestones.length}`;
   }, [milestones]);
+
+  const experiencePeriods = useMemo(() => buildClientExperiencePeriods(milestones, clientExperience), [milestones, clientExperience]);
 
   const handleLogout = () => {
     window.localStorage.removeItem("gseClientSession");
@@ -9960,6 +10494,11 @@ function App() {
   return (
     <div className="app">
       <Sidebar view={view} setView={navigate} project={project} />
+      <ClientExperiencePrompt
+        periods={experiencePeriods}
+        spreadsheetId={session.sheetId}
+        onShare={() => navigate("experiencia")}
+      />
 
       <main className="main">
         <AppTopbar
@@ -9999,6 +10538,7 @@ function App() {
               ["documentos", "Documentos"],
               ["educacion", "Lo que vas a recibir"],
               ["tutoriales", "¿Necesitas ayuda?"],
+              ["experiencia", "Tu experiencia"],
             ].map(([value, label]) => (
               <button key={value} onClick={() => navigate(value)} className={view === value ? "active" : ""}>
                 {label}
@@ -10070,6 +10610,7 @@ function App() {
           {view === "documentos" && <DocumentsUpload documents={documents} project={project} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "educacion" && <Education education={education} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "tutoriales" && <Tutorials tutorials={tutorials} setView={navigate} previousView={previousView} pending={pending} />}
+          {view === "experiencia" && <ClientExperience milestones={milestones} experience={clientExperience} project={project} />}
         </div>
       </main>
     </div>

@@ -68,6 +68,7 @@ export const demoData = {
   architectureRolesToBe: [],
   indicators: [],
   qualityCommittee: [],
+  clientExperience: [],
   documents: [
     {
       id: "1",
@@ -850,6 +851,24 @@ function mapQualityCommittee(rows) {
   })).filter((x) => x.id || x.name || x.position || x.area || x.role || x.email || x.phone || x.uploadLink);
 }
 
+function mapClientExperience(rows) {
+  return rows.map((row, index) => ({
+    rowNumber: index + 2,
+    id: getRowValue(row, ["ID", "Id", "N", "N°", "NÂ°", "No", "Numero", "Número"]) || `EXP-M${index + 1}`,
+    month: getRowValue(row, ["Mes", "Periodo", "Período", "PeriodoMedicion", "Periodo Medicion"]) || `Mes ${index + 1}`,
+    requiredMilestones: getRowValue(row, ["HitosRequeridos", "Hitos Requeridos", "Hitos", "Hitos requeridos"]),
+    status: getRowValue(row, ["Estado", "Status"]) || "Pendiente",
+    satisfaction: getRowValue(row, ["Satisfaccion", "Satisfacción", "SatisfaccionGeneral", "Satisfacción General"]),
+    valued: getRowValue(row, ["Valorado", "AspectosValorados", "Aspectos Valorados", "QueValoro", "Qué Valoró"]),
+    improve: getRowValue(row, ["Mejorar", "AspectosMejorar", "Aspectos a mejorar", "QueMejorar", "Qué Mejorar"]),
+    nps: getRowValue(row, ["NPS", "Nps"]),
+    comment: getRowValue(row, ["Comentario", "Comentarios", "Observacion", "Observación"]),
+    requestContact: getRowValue(row, ["SolicitaContacto", "Solicita Contacto", "ContactoGSE", "Contacto GSE"]),
+    responseDate: getRowValue(row, ["FechaRespuesta", "Fecha Respuesta", "Fecha"]),
+    user: getRowValue(row, ["Usuario", "Cliente", "RespondidoPor", "Respondido Por"]),
+  })).filter((x) => x.id || x.month || x.requiredMilestones || x.status || x.satisfaction || x.nps || x.comment);
+}
+
 function mapProcessesAsIs(rows) {
   return rows.map((row, index) => ({
     id: getRowValue(row, ["NÂ°", "N", "No", "Numero", "NÃºmero", "ID", "Id"]) || String(index + 1),
@@ -945,7 +964,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
   const tutorialSheetNames = ["Tutoriales", "tutoriales", "TUTORIALES", "Tutorial", "Ayuda", "Videos", "VideosTutoriales", "Videos Tutoriales"];
   const tutorialHeaders = ["Titulo", "Título", "Title", "Descripcion", "Descripción", "Description", "Link", "Enlace", "Video", "Youtube", "YouTube"];
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, architectureToBeRows, indicatorRows, qualityCommitteeRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, architectureToBeRows, indicatorRows, qualityCommitteeRows, clientExperienceRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
     fetchCsvRows("Proyecto", true, spreadsheetId),
     fetchCsvSheet("Hitos", true, spreadsheetId),
     fetchCsvSheet("Hallazgos", true, spreadsheetId),
@@ -970,6 +989,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchFirstAvailableSheet(["ArquitecturaCargosTOBE", "Arquitectura Cargos TO BE", "ArquitecturaCargos To Be", "Arquitectura Cargos To Be", "EstructuraTOBE", "Estructura TO BE"], spreadsheetId),
     fetchFirstAvailableSheet(["Indicadores", "ImplementacionIndicadores", "Implementación Indicadores", "Implementacion Indicadores", "IndicadoresImplementacion", "Indicadores Implementacion"], spreadsheetId),
     fetchFirstAvailableSheet(["ComiteCalidad", "ComitéCalidad", "Comite Calidad", "Comité Calidad", "Comite de Calidad", "Comité de Calidad"], spreadsheetId),
+    fetchFirstAvailableSheet(["ExperienciaClientes", "Experiencia Clientes", "Tu experiencia", "Experiencia cliente", "Experiencia clientes"], spreadsheetId),
     fetchFirstAvailableSheet(["ProcesosASIS", "Procesos AS IS", "Procesos As Is", "Procesos AS-IS", "Procesos AS_IS", "ListaASIS", "Lista AS IS", "Lista AS-IS", "ASIS", "AS IS"], spreadsheetId),
     fetchFirstAvailableSheet(["ProcesosTOBE", "Procesos TO BE", "Procesos To Be", "Procesos TO-BE", "Procesos TO_BE", "ListaTOBE", "Lista TO BE", "Lista TO-BE", "TOBE", "TO BE"], spreadsheetId),
     fetchFirstAvailableSheet(["COEASIS", "COE AS IS", "COE As Is", "COE AS-IS", "COE AS_IS", "COE Actual", "COEActual"], spreadsheetId),
@@ -993,6 +1013,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     architectureRolesToBe: mapArchitectureRoles(architectureToBeRows),
     indicators: mapIndicators(indicatorRows),
     qualityCommittee: mapQualityCommittee(qualityCommitteeRows),
+    clientExperience: mapClientExperience(clientExperienceRows),
     processesAsIs: mapProcessesAsIs(processesAsIsRows),
     processesToBe: mapProcessesToBe(processesToBeRows),
     coeAsIs: mapCOERows(coeAsIsRows),

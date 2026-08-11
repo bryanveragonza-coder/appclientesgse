@@ -17,6 +17,376 @@
   font-family: "Roboto", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+/* Tu experiencia */
+.clientExperienceSection {
+  display: grid !important;
+  gap: 24px !important;
+}
+
+.clientExperienceHeader span {
+  color: #00a7a4 !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.clientExperienceSummary {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+}
+
+.clientExperienceSummary article,
+.clientExperienceCard,
+.clientExperiencePanel {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 184, 181, 0.16) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 22px 42px rgba(12, 39, 45, 0.06) !important;
+}
+
+.clientExperienceSummary article {
+  padding: 24px !important;
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.clientExperienceSummary span,
+.clientExperienceCard span,
+.clientExperiencePanelIntro span,
+.clientExperienceQuestion > span,
+.clientExperienceTextGrid span,
+.clientExperienceComment span {
+  color: #53676b !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+}
+
+.clientExperienceSummary strong {
+  color: #00b8b5 !important;
+  font-size: clamp(2.2rem, 5vw, 3.6rem) !important;
+  line-height: 1 !important;
+}
+
+.clientExperienceCards {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+}
+
+.clientExperienceCard {
+  cursor: pointer !important;
+  padding: 22px !important;
+  text-align: left !important;
+  color: #102e35 !important;
+  display: grid !important;
+  gap: 12px !important;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+.clientExperienceCard:hover,
+.clientExperienceCard.active {
+  border-color: #00b8b5 !important;
+  box-shadow: 0 24px 54px rgba(0, 184, 181, 0.13) !important;
+  transform: translateY(-2px) !important;
+}
+
+.clientExperienceCard > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.clientExperienceCard h3,
+.clientExperiencePanelIntro h3 {
+  margin: 0 !important;
+  color: #102e35 !important;
+  font-size: 1.25rem !important;
+  line-height: 1.2 !important;
+}
+
+.clientExperienceCard p,
+.clientExperiencePanelIntro p,
+.clientExperienceQuestion p,
+.clientExperienceLocked p {
+  margin: 0 !important;
+  color: #53676b !important;
+  line-height: 1.45 !important;
+}
+
+.clientExperienceCard small {
+  color: #00a7a4 !important;
+  font-weight: 700 !important;
+}
+
+.clientExperienceCard.bloqueado {
+  opacity: 0.78 !important;
+}
+
+.clientExperiencePanel {
+  padding: clamp(22px, 3vw, 34px) !important;
+  display: grid !important;
+  gap: 24px !important;
+}
+
+.clientExperiencePanelIntro {
+  display: flex !important;
+  align-items: start !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+}
+
+.clientExperiencePanelIntro > div {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.clientExperienceLocked {
+  min-height: 220px !important;
+  background: #f2f8f8 !important;
+  display: grid !important;
+  place-items: center !important;
+  align-content: center !important;
+  gap: 10px !important;
+  text-align: center !important;
+  color: #53676b !important;
+}
+
+.clientExperienceLocked strong {
+  color: #102e35 !important;
+  font-size: 1.12rem !important;
+}
+
+.clientExperienceForm {
+  display: grid !important;
+  gap: 22px !important;
+}
+
+.clientExperienceQuestion {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.clientExperienceMoodRow,
+.clientExperienceNps {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.clientExperienceMoodRow button,
+.clientExperienceNps button {
+  border: 1px solid rgba(0, 184, 181, 0.22) !important;
+  background: #f4fbfb !important;
+  color: #102e35 !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease !important;
+}
+
+.clientExperienceMoodRow button {
+  min-width: 118px !important;
+  min-height: 72px !important;
+  padding: 12px !important;
+  display: grid !important;
+  gap: 4px !important;
+  justify-items: center !important;
+}
+
+.clientExperienceMoodRow button strong {
+  color: inherit !important;
+  font-size: 1.4rem !important;
+}
+
+.clientExperienceMoodRow button small {
+  color: inherit !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+}
+
+.clientExperienceNps button {
+  width: 42px !important;
+  height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  font-weight: 800 !important;
+}
+
+.clientExperienceMoodRow button.active,
+.clientExperienceNps button.active {
+  background: #00b8b5 !important;
+  border-color: #00b8b5 !important;
+  color: #ffffff !important;
+}
+
+.clientExperienceMoodRow button:disabled,
+.clientExperienceNps button:disabled {
+  cursor: default !important;
+  opacity: 0.78 !important;
+}
+
+.clientExperienceTextGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.clientExperienceTextGrid label,
+.clientExperienceComment {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.clientExperienceTextGrid textarea,
+.clientExperienceComment textarea {
+  width: 100% !important;
+  min-height: 92px !important;
+  resize: vertical !important;
+  border: 1px solid rgba(0, 184, 181, 0.24) !important;
+  background: #f7fbfb !important;
+  border-radius: 0 !important;
+  color: #102e35 !important;
+  font: inherit !important;
+  line-height: 1.4 !important;
+  padding: 12px !important;
+  outline: none !important;
+}
+
+.clientExperienceTextGrid textarea:focus,
+.clientExperienceComment textarea:focus {
+  border-color: #00b8b5 !important;
+  box-shadow: 0 0 0 3px rgba(0, 184, 181, 0.11) !important;
+}
+
+.clientExperienceContact {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  color: #102e35 !important;
+  font-weight: 700 !important;
+}
+
+.clientExperienceContact input {
+  width: 18px !important;
+  height: 18px !important;
+  accent-color: #00b8b5 !important;
+}
+
+.clientExperienceSubmit {
+  justify-self: start !important;
+}
+
+.clientExperienceModalOverlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1200 !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 20px !important;
+  background: rgba(16, 46, 53, 0.36) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+.clientExperienceModal {
+  position: relative !important;
+  width: min(360px, 100%) !important;
+  background: #ffffff !important;
+  border-radius: 22px !important;
+  box-shadow: 0 32px 90px rgba(16, 46, 53, 0.24) !important;
+  border: 1px solid rgba(0, 184, 181, 0.12) !important;
+  padding: 28px 26px 26px !important;
+  display: grid !important;
+  gap: 14px !important;
+  text-align: center !important;
+}
+
+.clientExperienceModalClose {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  width: 30px !important;
+  height: 30px !important;
+  border: 0 !important;
+  background: #f4fbfb !important;
+  color: #102e35 !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  border-radius: 8px !important;
+}
+
+.clientExperienceModalIcon {
+  width: 40px !important;
+  height: 40px !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  place-items: center !important;
+  background: transparent !important;
+  color: #00a7a4 !important;
+  font-size: 1.8rem !important;
+}
+
+.clientExperienceModal h2 {
+  margin: 0 !important;
+  color: #102e35 !important;
+  font-size: clamp(1.45rem, 4vw, 1.8rem) !important;
+  line-height: 1.12 !important;
+}
+
+.clientExperienceModal p {
+  margin: 0 auto !important;
+  color: #53676b !important;
+  line-height: 1.5 !important;
+  max-width: 285px !important;
+  font-size: 0.94rem !important;
+}
+
+.clientExperienceModalActions {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 4px !important;
+}
+
+.clientExperienceModalActions .primaryAction,
+.clientExperienceModalActions .secondaryAction {
+  width: 100% !important;
+  min-height: 46px !important;
+  justify-content: center !important;
+  border-radius: 14px !important;
+  font-weight: 800 !important;
+}
+
+.clientExperienceModalActions .primaryAction {
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  border-color: #00b8b5 !important;
+}
+
+.clientExperienceModalActions .secondaryAction {
+  background: #ffffff !important;
+  color: #00a7a4 !important;
+  border: 1px solid rgba(0, 184, 181, 0.25) !important;
+}
+
+@media (max-width: 860px) {
+  .clientExperienceSummary,
+  .clientExperienceCards,
+  .clientExperienceTextGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .clientExperiencePanelIntro {
+    display: grid !important;
+  }
+
+  .clientExperienceMoodRow button {
+    flex: 1 1 112px !important;
+  }
+}
+
 /* INTERNAL_PROJECTS_PORTAL_V1 */
 .internalPortal {
   min-height: 100vh;
@@ -29648,5 +30018,515 @@ body {
   .app .main {
     min-width: 0 !important;
     transition: padding-left 180ms ease !important;
+  }
+}
+
+/* Tu experiencia - polish RIVI */
+.clientExperienceSection {
+  gap: 26px !important;
+  background: #ffffff !important;
+}
+
+.clientExperienceHeader {
+  align-items: center !important;
+}
+
+.clientExperienceHeader h2 {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.clientExperienceSummary {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.clientExperienceSummary article {
+  border: 1px solid #ece8fb !important;
+  box-shadow: 0 16px 36px rgba(20, 16, 52, 0.05) !important;
+}
+
+.clientExperienceSummary strong {
+  color: #00b8b5 !important;
+}
+
+.clientExperienceCards {
+  align-items: stretch !important;
+}
+
+.clientExperienceCard {
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 286px !important;
+  padding: 24px !important;
+  justify-items: center !important;
+  text-align: center !important;
+  border-color: #e7e3f7 !important;
+  box-shadow: 0 18px 45px rgba(20, 16, 52, 0.07) !important;
+}
+
+.clientExperienceCard > div:first-child {
+  width: 100% !important;
+  align-items: center !important;
+}
+
+.clientExperienceCard.active {
+  border-color: #5a36c9 !important;
+  box-shadow: 0 24px 60px rgba(90, 54, 201, 0.14) !important;
+}
+
+.clientExperienceCardIcon {
+  width: 70px !important;
+  height: 70px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  margin-top: 4px !important;
+  background: #f3f0ff !important;
+  color: #5a36c9 !important;
+}
+
+.clientExperienceCard.completado .clientExperienceCardIcon {
+  background: #e8f8ef !important;
+  color: #31b66f !important;
+}
+
+.clientExperienceCard.pendiente .clientExperienceCardIcon {
+  background: #fff4df !important;
+  color: #f59e0b !important;
+}
+
+.clientExperienceCard.bloqueado .clientExperienceCardIcon {
+  background: #eef1f5 !important;
+  color: #8b95a1 !important;
+}
+
+.clientExperienceCard h3 {
+  font-size: 1.45rem !important;
+}
+
+.clientExperienceCard p {
+  max-width: 230px !important;
+  min-height: 44px !important;
+}
+
+.clientExperienceCard .progress {
+  width: 100% !important;
+}
+
+.clientExperienceCardRivi {
+  width: 72px !important;
+  height: 72px !important;
+  object-fit: contain !important;
+  margin-top: auto !important;
+}
+
+.clientExperienceCard.bloqueado .clientExperienceCardRivi {
+  filter: grayscale(1) !important;
+  opacity: 0.45 !important;
+}
+
+.clientExperiencePendingNotice {
+  display: grid !important;
+  grid-template-columns: auto 1fr auto !important;
+  align-items: center !important;
+  gap: 16px !important;
+  padding: 18px 22px !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  background: #fff9ed !important;
+  color: #102e35 !important;
+  box-shadow: 0 16px 35px rgba(245, 158, 11, 0.08) !important;
+}
+
+.clientExperiencePendingNotice > svg {
+  color: #5a36c9 !important;
+}
+
+.clientExperiencePendingNotice strong {
+  color: #102e35 !important;
+}
+
+.clientExperiencePendingNotice p {
+  margin: 3px 0 0 !important;
+  color: #53676b !important;
+}
+
+.clientExperiencePendingNotice button {
+  border: 0 !important;
+  background: #5a36c9 !important;
+  color: #ffffff !important;
+  padding: 12px 18px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.clientExperiencePanel {
+  border-color: #e7e3f7 !important;
+  box-shadow: 0 24px 70px rgba(20, 16, 52, 0.08) !important;
+}
+
+.clientExperienceWizard {
+  display: grid !important;
+  grid-template-columns: minmax(220px, 300px) 1fr !important;
+  gap: 28px !important;
+  align-items: stretch !important;
+}
+
+.clientExperienceCoach {
+  background: linear-gradient(180deg, #f7f4ff 0%, #ffffff 100%) !important;
+  border: 1px solid #ece8fb !important;
+  display: grid !important;
+  align-content: center !important;
+  justify-items: center !important;
+  gap: 18px !important;
+  padding: 22px !important;
+  text-align: center !important;
+}
+
+.clientExperienceCoach img {
+  width: min(190px, 80%) !important;
+  max-height: 210px !important;
+  object-fit: contain !important;
+}
+
+.clientExperienceCoach strong {
+  color: #102e35 !important;
+  font-size: 1.15rem !important;
+}
+
+.clientExperienceCoach p {
+  margin: 6px 0 0 !important;
+  color: #53676b !important;
+  line-height: 1.45 !important;
+}
+
+.clientExperienceWizardMain {
+  display: grid !important;
+  gap: 24px !important;
+  align-content: start !important;
+}
+
+.clientExperienceStepper {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+.clientExperienceStepper button {
+  position: relative !important;
+  display: grid !important;
+  justify-items: center !important;
+  gap: 7px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #8b95a1 !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.clientExperienceStepper button::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 14px !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background: #d8dce3 !important;
+  z-index: 0 !important;
+}
+
+.clientExperienceStepper button span {
+  position: relative !important;
+  z-index: 1 !important;
+  width: 30px !important;
+  height: 30px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  border: 3px solid #c7ccd5 !important;
+  color: #8b95a1 !important;
+}
+
+.clientExperienceStepper button.active,
+.clientExperienceStepper button.done {
+  color: #00a7a4 !important;
+}
+
+.clientExperienceStepper button.active span,
+.clientExperienceStepper button.done span {
+  border-color: #00b8b5 !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+}
+
+.clientExperienceStepPane {
+  min-height: 300px !important;
+  align-content: start !important;
+  gap: 18px !important;
+}
+
+.clientExperienceStepPane h3 {
+  margin: 0 !important;
+  color: #102e35 !important;
+  font-size: clamp(1.35rem, 3vw, 1.9rem) !important;
+  line-height: 1.18 !important;
+}
+
+.clientExperienceMoodRow {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(88px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.clientExperienceMoodRow button {
+  min-height: 106px !important;
+  border-color: #e2e8f0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 28px rgba(20, 16, 52, 0.05) !important;
+}
+
+.clientExperienceMoodRow button strong {
+  font-size: 2.15rem !important;
+}
+
+.clientExperienceMoodRow button.active {
+  background: #f6f2ff !important;
+  border-color: #31b66f !important;
+  color: #102e35 !important;
+  box-shadow: 0 18px 36px rgba(49, 182, 111, 0.14) !important;
+}
+
+.clientExperienceMoodRow button.active::after {
+  content: "" !important;
+  width: 34px !important;
+  height: 3px !important;
+  background: #31b66f !important;
+}
+
+.clientExperienceOptionList {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.clientExperienceOptionList button {
+  display: grid !important;
+  grid-template-columns: 22px 1fr !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 44px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  color: #102e35 !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+}
+
+.clientExperienceOptionList button span {
+  width: 20px !important;
+  height: 20px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #ffffff !important;
+  font-size: 0.75rem !important;
+}
+
+.clientExperienceOptionList button.active {
+  border-color: #00b8b5 !important;
+  background: #eefafa !important;
+}
+
+.clientExperienceOptionList button.active span {
+  background: #00b8b5 !important;
+  border-color: #00b8b5 !important;
+}
+
+.clientExperienceComment.compact textarea {
+  min-height: 76px !important;
+}
+
+.clientExperienceNps {
+  display: grid !important;
+  grid-template-columns: repeat(11, minmax(34px, 1fr)) !important;
+  gap: 0 !important;
+  border: 1px solid #dbe1ea !important;
+  overflow: hidden !important;
+}
+
+.clientExperienceNps button {
+  width: auto !important;
+  height: 48px !important;
+  border: 0 !important;
+  border-right: 1px solid #dbe1ea !important;
+  background: #ffffff !important;
+  color: #102e35 !important;
+}
+
+.clientExperienceNps button:last-child {
+  border-right: 0 !important;
+}
+
+.clientExperienceNps button.active {
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+}
+
+.clientExperienceNpsScale {
+  display: flex !important;
+  justify-content: space-between !important;
+  color: #53676b !important;
+  font-weight: 800 !important;
+  font-size: 0.82rem !important;
+}
+
+.clientExperienceNpsScale span:first-child {
+  color: #d04444 !important;
+}
+
+.clientExperienceNpsScale span:last-child {
+  color: #12865d !important;
+}
+
+.clientExperienceNavActions {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-top: 4px !important;
+}
+
+.clientExperienceNavActions .primaryAction {
+  background: #00b8b5 !important;
+  border-color: #00b8b5 !important;
+  color: #ffffff !important;
+}
+
+.clientExperienceNavActions .secondaryAction {
+  min-width: 98px !important;
+}
+
+.clientExperienceSuccess {
+  min-height: 330px !important;
+  display: grid !important;
+  place-items: center !important;
+  gap: 18px !important;
+  text-align: center !important;
+}
+
+.clientExperienceSuccess img {
+  width: min(220px, 70%) !important;
+  max-height: 230px !important;
+  object-fit: contain !important;
+}
+
+.clientExperienceSuccess h3 {
+  margin: 6px 0 !important;
+  color: #102e35 !important;
+  font-size: 1.8rem !important;
+}
+
+.clientExperienceSuccess p {
+  max-width: 460px !important;
+  margin: 0 auto !important;
+  color: #53676b !important;
+}
+
+.clientExperienceSuccess small {
+  display: inline-block !important;
+  margin-top: 10px !important;
+  color: #00a7a4 !important;
+  font-weight: 800 !important;
+}
+
+.clientExperienceLocked {
+  grid-template-columns: minmax(160px, 250px) 1fr !important;
+  text-align: left !important;
+  padding: 26px !important;
+}
+
+.clientExperienceLocked img {
+  width: 210px !important;
+  max-width: 100% !important;
+  filter: grayscale(1) !important;
+  opacity: 0.45 !important;
+}
+
+.clientExperienceModal {
+  border-top: 0 !important;
+  border-radius: 22px !important;
+}
+
+.clientExperienceModalIcon {
+  background: transparent !important;
+  color: #00a7a4 !important;
+}
+
+.clientExperienceModalRivi {
+  width: 178px !important;
+  max-width: 78% !important;
+  max-height: 178px !important;
+  object-fit: contain !important;
+  margin: 4px auto 2px !important;
+}
+
+.clientExperiencePendingNotice button {
+  background: #00b8b5 !important;
+}
+
+@media (max-width: 980px) {
+  .clientExperienceWizard,
+  .clientExperienceLocked {
+    grid-template-columns: 1fr !important;
+  }
+
+  .clientExperienceCoach {
+    grid-template-columns: 100px 1fr !important;
+    text-align: left !important;
+    justify-items: start !important;
+  }
+
+  .clientExperienceCoach img {
+    width: 100px !important;
+  }
+
+  .clientExperienceMoodRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .clientExperiencePendingNotice {
+    grid-template-columns: auto 1fr !important;
+  }
+
+  .clientExperiencePendingNotice button {
+    grid-column: 1 / -1 !important;
+    justify-self: start !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .clientExperienceStepper {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    row-gap: 14px !important;
+  }
+
+  .clientExperienceMoodRow,
+  .clientExperienceNps {
+    grid-template-columns: 1fr !important;
+  }
+
+  .clientExperienceNps {
+    border: 0 !important;
+    gap: 6px !important;
+  }
+
+  .clientExperienceNps button {
+    border: 1px solid #dbe1ea !important;
+  }
+
+  .clientExperienceNavActions {
+    display: grid !important;
   }
 }
