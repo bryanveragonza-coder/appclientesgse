@@ -3850,14 +3850,14 @@ function ClientExperiencePrompt({ periods = [], onShare, onLater, spreadsheetId 
       return;
     }
     const key = `rivExperiencePromptDismissed:${spreadsheetId || "local"}:${pendingPeriod.id}`;
-    setVisible(window.localStorage.getItem(key) !== "1");
+    setVisible(window.sessionStorage.getItem(key) !== "1");
   }, [disabled, pendingPeriod?.id, spreadsheetId]);
 
   if (disabled || !visible || !pendingPeriod) return null;
 
   const closeForNow = () => {
     const key = `rivExperiencePromptDismissed:${spreadsheetId || "local"}:${pendingPeriod.id}`;
-    window.localStorage.setItem(key, "1");
+    window.sessionStorage.setItem(key, "1");
     setVisible(false);
     onLater?.();
   };
