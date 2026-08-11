@@ -3365,6 +3365,7 @@ const CLIENT_EXPERIENCE_PERIODS = [
 const RIVI_IMAGES = {
   celebration: "/rivi-celebracion.png",
   greeting: "/rivi-se%C3%B1alando.png",
+  loading: "/rivi-salundando.gif",
 };
 
 const EXPERIENCE_FEEDBACK_OPTIONS = [
@@ -3883,6 +3884,44 @@ function ClientExperiencePrompt({ periods = [], onShare, onLater, spreadsheetId 
           </button>
         </div>
       </article>
+    </div>
+  );
+}
+
+function RivLoadingIntro({ clientName = "", exiting = false }) {
+  return (
+    <div className={`rivLoadingIntro ${exiting ? "leaving" : ""}`} role="status" aria-live="polite">
+      <div className="rivLoadingCard">
+        <div className="rivLoadingBrand">
+          <span>RIV</span>
+          <small>Ruta de Implementación Visible</small>
+        </div>
+        <div className="rivLoadingRiviWrap">
+          <span className="rivLoadingPulse" />
+          <img
+            src={RIVI_IMAGES.loading || RIVI_IMAGES.greeting}
+            alt="RIVI preparando tu ruta"
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = RIVI_IMAGES.greeting;
+            }}
+          />
+        </div>
+        <div className="rivLoadingText">
+          <span>{clientName ? `Hola, ${clientName}` : "Bienvenido al RIV"}</span>
+          <h2>Preparando tu ruta de implementación...</h2>
+          <p>Estamos organizando tus avances, entregables y próximos pasos.</p>
+        </div>
+        <div className="rivLoadingBattery" aria-hidden="true">
+          <div className="rivLoadingBatteryBody"><i /></div>
+          <span />
+        </div>
+        <div className="rivLoadingSteps">
+          <span>Proyecto</span>
+          <span>Hitos</span>
+          <span>Entregables</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -10444,6 +10483,9 @@ function App() {
   const [view, setView] = useState("portal");
   const [data, setData] = useState(demoData);
   const [connected, setConnected] = useState(false);
+  const [loadingData, setLoadingData] = useState(Boolean(getStoredClientSession()?.sheetId));
+  const [introVisible, setIntroVisible] = useState(Boolean(getStoredClientSession()?.sheetId));
+  const [introLeaving, setIntroLeaving] = useState(false);
   const [error, setError] = useState("");
   const [selectedDeliverable, setSelectedDeliverable] = useState("");
   const [selectedHito, setSelectedHito] = useState("");
@@ -10452,6 +10494,7 @@ function App() {
   useEffect(() => {
     if (!session?.sheetId) return;
 
+    setLoadingData(true);
     loadSheetData()
       .then((sheetData) => {
         setData(sheetData);
@@ -10461,9 +10504,33 @@ function App() {
       .catch((err) => {
         console.error(err);
         setConnected(false);
-        setError("No se pudo conectar con Google Sheets. Revisa publicación, permisos o nombres de pestañas.");
+        setError("No pudimos cargar tu ruta. Intenta actualizar o contacta a GSE.");
+      })
+      .finally(() => {
+        setLoadingData(false);
       });
   }, [session?.sheetId]);
+
+  useEffect(() => {
+    if (!session?.sheetId) {
+      setIntroVisible(false);
+      setIntroLeaving(false);
+      return;
+    }
+
+    if (loadingData) {
+      setIntroVisible(true);
+      setIntroLeaving(false);
+      return;
+    }
+
+    setIntroLeaving(true);
+    const timer = window.setTimeout(() => {
+      setIntroVisible(false);
+      setIntroLeaving(false);
+    }, 720);
+    return () => window.clearTimeout(timer);
+  }, [loadingData, session?.sheetId]);
 
   const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], architectureRolesToBe = [], indicators = [], qualityCommittee = [], clientExperience = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
@@ -10478,6 +10545,9 @@ function App() {
     window.localStorage.removeItem("gseClientSession");
     setSession(null);
     setConnected(false);
+    setLoadingData(false);
+    setIntroVisible(false);
+    setIntroLeaving(false);
     setData(demoData);
   };
 
@@ -10493,6 +10563,7 @@ function App() {
 
   return (
     <div className="app">
+      {introVisible && <RivLoadingIntro clientName={session.nombre || session.usuario || project.contactName || ""} exiting={introLeaving} />}
       <Sidebar view={view} setView={navigate} project={project} />
       <ClientExperiencePrompt
         periods={experiencePeriods}
