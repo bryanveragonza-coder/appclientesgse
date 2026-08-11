@@ -3011,7 +3011,7 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
         ) : (
           <div className="structureEmptyImage">
             <Building2 size={42} />
-            <span>{structureViewMode === "tobe" ? "Agrega ImagenEstructuraTOBE en la pestaña Proyecto para mostrar la estructura TO BE." : "Agrega ImagenEstructura en la pestaña Proyecto para mostrar la estructura AS IS."}</span>
+            <span>No tiene</span>
           </div>
         )}
       </div>
@@ -3078,7 +3078,7 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
                       {item.profileUrl ? (
                         <a className="structureProfileLink" href={safeUrl(item.profileUrl)} target="_blank" rel="noreferrer">Ver</a>
                       ) : (
-                        <span className="structureProfileEmpty">Sin enlace</span>
+                        <span className="structureProfileEmpty">No tiene</span>
                       )}
                     </td>
                     <td>
