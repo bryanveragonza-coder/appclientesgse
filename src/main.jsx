@@ -3098,7 +3098,11 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
             </tbody>
           </table>
         </div>
-        {filteredRows.length === 0 && <div className="emptyState">No hay cargos que coincidan con los filtros seleccionados.</div>}
+        {filteredRows.length === 0 && (
+          <div className="emptyState">
+            {activeArchitectureRows.length === 0 ? "No tiene" : "No hay cargos que coincidan con los filtros seleccionados."}
+          </div>
+        )}
       </div>
     </section>
   );
