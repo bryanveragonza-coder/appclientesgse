@@ -4962,6 +4962,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
   const [priorityFilter, setPriorityFilter] = useState("Todos");
   const [managementFilter, setManagementFilter] = useState("Todos");
   const [areaFilter, setAreaFilter] = useState("Todos");
+  const [responsibleFilter, setResponsibleFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [mobileDeliverableSide, setMobileDeliverableSide] = useState("gse");
   const [mobileFindingsVisible, setMobileFindingsVisible] = useState(6);
@@ -5112,6 +5113,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     if (field === "status") return item.status || "";
     if (field === "management") return item.management || item.gerencia || "";
     if (field === "area") return item.areaDetail || item.area || "";
+    if (field === "responsible") return item.owner || item.responsible || "";
     return "";
   };
 
@@ -5121,6 +5123,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     const deliveryDate = getFindingField(item, "date");
     const area = getFindingField(item, "area");
     const management = getFindingField(item, "management");
+    const responsible = getFindingField(item, "responsible");
     const priority = getFindingField(item, "priority");
     const status = getFindingField(item, "status");
     const statusGroup = getFindingStatusGroup(status);
@@ -5132,6 +5135,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       (excludeField === "priority" || priorityFilter === "Todos" || priority === priorityFilter) &&
       (excludeField === "management" || managementFilter === "Todos" || management === managementFilter) &&
       (excludeField === "area" || areaFilter === "Todos" || area === areaFilter) &&
+      (excludeField === "responsible" || responsibleFilter === "Todos" || responsible === responsibleFilter) &&
       (excludeField === "status" || statusFilter === "Todos" || status === statusFilter || statusGroup === statusFilter)
     );
   };
@@ -5145,10 +5149,11 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     return [...new Set(values)];
   };
 
-  const dateOptions = useMemo(() => optionValuesFor("date"), [findings, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
-  const priorities = useMemo(() => optionValuesFor("priority"), [findings, dateFilter, deliverableTypeFilter, managementFilter, areaFilter, statusFilter]);
-  const managements = useMemo(() => optionValuesFor("management"), [findings, dateFilter, deliverableTypeFilter, priorityFilter, areaFilter, statusFilter]);
-  const areas = useMemo(() => optionValuesFor("area"), [findings, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, statusFilter]);
+  const dateOptions = useMemo(() => optionValuesFor("date"), [findings, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, responsibleFilter, statusFilter]);
+  const priorities = useMemo(() => optionValuesFor("priority"), [findings, dateFilter, deliverableTypeFilter, managementFilter, areaFilter, responsibleFilter, statusFilter]);
+  const managements = useMemo(() => optionValuesFor("management"), [findings, dateFilter, deliverableTypeFilter, priorityFilter, areaFilter, responsibleFilter, statusFilter]);
+  const areas = useMemo(() => optionValuesFor("area"), [findings, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, responsibleFilter, statusFilter]);
+  const responsibles = useMemo(() => optionValuesFor("responsible"), [findings, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
   const statuses = useMemo(() => {
     const values = findings
       .filter((item) => matchesCurrentFilters(item, "status"))
@@ -5156,7 +5161,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       .map(cleanOptionValue)
       .filter(Boolean);
     return [...new Set(values)];
-  }, [findings, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter]);
+  }, [findings, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, responsibleFilter]);
 
   const deliverableTypes = useMemo(() => {
     const values = findings
@@ -5165,12 +5170,13 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       .map(cleanOptionValue)
       .filter(Boolean);
     return [...new Set(values)];
-  }, [findings, dateFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
+  }, [findings, dateFilter, priorityFilter, managementFilter, areaFilter, responsibleFilter, statusFilter]);
 
   const getFindingSearchText = (item) => {
     const area = getFindingField(item, "area");
     const management = getFindingField(item, "management");
     const deliveryDate = getFindingField(item, "date");
+    const responsible = getFindingField(item, "responsible");
     const priority = getFindingField(item, "priority");
     const status = getFindingField(item, "status");
     const statusGroup = getFindingStatusGroup(status);
@@ -5181,6 +5187,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       deliveryDate,
       item.processArea,
       item.process,
+      responsible,
       item.finding,
       item.description,
       item.recommendation || item.solution,
@@ -5239,7 +5246,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
         return a.index - b.index;
       })
       .map(({ item }) => item);
-  }, [findings, searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
+  }, [findings, searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, responsibleFilter, statusFilter]);
 
   const getVisibleClientDeliverableLabels = (item = {}) => {
     const labels = getClientDeliverableLabels(item);
@@ -5333,7 +5340,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
 
   useEffect(() => {
     setMobileFindingsVisible(6);
-  }, [searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
+  }, [searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, responsibleFilter, statusFilter]);
 
   const activePending = pending.filter(isPendingActive).length;
   const findingsBackView = previousView === "coe" ? "coe" : "portal";
@@ -5510,6 +5517,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
           <FilterSelect label="Prioridad" value={priorityFilter} onChange={setPriorityFilter} options={priorities} />
           <FilterSelect label="Gerencia" value={managementFilter} onChange={setManagementFilter} options={managements} />
           <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areas} />
+          <FilterSelect label="Responsable" value={responsibleFilter} onChange={setResponsibleFilter} options={responsibles} />
           <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statuses} />
         </div>
 
@@ -5663,6 +5671,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
         <FilterSelect label="Prioridad" value={priorityFilter} onChange={setPriorityFilter} options={priorities} />
         <FilterSelect label="Gerencia" value={managementFilter} onChange={setManagementFilter} options={managements} />
         <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areas} />
+        <FilterSelect label="Responsable" value={responsibleFilter} onChange={setResponsibleFilter} options={responsibles} />
         <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statuses} />
       </div>
 
