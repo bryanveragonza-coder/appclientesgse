@@ -184,7 +184,7 @@ function Sidebar({ view, setView, project }) {
         [CalendarDays, "Calendario", "calendario"],
         [Target, "Ruta del proyecto", "ruta"],
         [BarChart3, "COE", "coe"],
-        [Search, "Hallazgos", "hallazgos"],
+        [Search, "Modelo de negocio y hallazgos", "hallazgos"],
         [AlertTriangle, "Pendientes cliente", "pendientes"],
       ],
     },
@@ -5098,6 +5098,13 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
   const getClientDeliverableLabels = (item = {}) => uniqueDeliverableLabels(
     splitDeliverableTypes(item.deliverableClient || "")
   );
+  const getGseDeliverableLabels = (item = {}) => uniqueDeliverableLabels(
+    splitDeliverableTypes(item.deliverableGSE || "")
+  );
+  const getAllDeliverableLabels = (item = {}) => uniqueDeliverableLabels([
+    ...getClientDeliverableLabels(item),
+    ...getGseDeliverableLabels(item),
+  ]);
 
   const getFindingField = (item, field) => {
     if (field === "date") return item.deliveryDate || item.fechaMax || item.fechamax || "";
@@ -5108,7 +5115,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     return "";
   };
 
-  const getDeliverableTypeMatches = (item) => getClientDeliverableLabels(item);
+  const getDeliverableTypeMatches = (item) => getAllDeliverableLabels(item);
 
   const matchesCurrentFilters = (item, excludeField = "") => {
     const deliveryDate = getFindingField(item, "date");
@@ -5241,6 +5248,13 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     return labels.filter((label) => normalizeSystemName(label) === selectedKey);
   };
 
+  const getVisibleGseDeliverableLabels = (item = {}) => {
+    const labels = getGseDeliverableLabels(item);
+    if (deliverableTypeFilter === "Todos") return labels;
+    const selectedKey = normalizeSystemName(deliverableTypeFilter);
+    return labels.filter((label) => normalizeSystemName(label) === selectedKey);
+  };
+
   const getFindingUniqueKey = (item = {}, index = 0) => {
     const rawId = String(item.id || "").trim();
     const numericMatch = rawId.match(/(\d+)(?!.*\d)/);
@@ -5250,39 +5264,26 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
   };
 
   const clientDeliverableRows = useMemo(() => {
+    const selectedKey = normalizeSystemName(deliverableTypeFilter);
     return filteredFindings
       .map((item, itemIndex) => {
-      const labels = getVisibleClientDeliverableLabels(item);
-      if (!labels.length) return null;
-      return {
-        ...item,
-        __clientDeliverableLabels: labels,
-        __clientDeliverableKey: `${item.id || "sin-id"}-${itemIndex}`,
-      };
-    })
+        const clientLabels = getClientDeliverableLabels(item);
+        const gseLabels = getGseDeliverableLabels(item);
+        const allRelatedLabels = uniqueDeliverableLabels([...clientLabels, ...gseLabels]);
+        const matchesSelected = deliverableTypeFilter === "Todos" || allRelatedLabels.some((label) => normalizeSystemName(label) === selectedKey);
+        if (!matchesSelected || !allRelatedLabels.length) return null;
+        return {
+          ...item,
+          __clientDeliverableLabels: clientLabels,
+          __gseDeliverableLabels: gseLabels,
+          __clientDeliverableKey: `${item.id || "sin-id"}-${itemIndex}-${normalizeSystemName(allRelatedLabels.join("-"))}`,
+        };
+      })
       .filter(Boolean);
   }, [filteredFindings, deliverableTypeFilter]);
 
   const clientDeliverableFindings = useMemo(() => {
-    const map = new Map();
-    clientDeliverableRows.forEach((item, index) => {
-      const key = getFindingUniqueKey(item, index);
-      const existing = map.get(key);
-      if (!existing) {
-        map.set(key, {
-          ...item,
-          __clientDeliverableKey: key,
-          __clientDeliverableLabels: uniqueDeliverableLabels(item.__clientDeliverableLabels || []),
-        });
-        return;
-      }
-      existing.__clientDeliverableLabels = uniqueDeliverableLabels([
-        ...(existing.__clientDeliverableLabels || []),
-        ...(item.__clientDeliverableLabels || []),
-      ]);
-      if (!existing.deliverableClient) existing.deliverableClient = item.deliverableClient;
-    });
-    return [...map.values()];
+    return clientDeliverableRows;
   }, [clientDeliverableRows]);
 
   const visibleDeliverableSummary = useMemo(() => {
@@ -5294,11 +5295,12 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       });
     };
 
-    return clientDeliverableRows.reduce((acc, item) => {
+    return filteredFindings.reduce((acc, item) => {
+      addLabels(acc, getGseDeliverableLabels(item), "gse");
       addLabels(acc, item.__clientDeliverableLabels || getVisibleClientDeliverableLabels(item), "client");
       return acc;
     }, {});
-  }, [clientDeliverableRows]);
+  }, [filteredFindings, deliverableTypeFilter]);
 
   const visibleDeliverableTotals = useMemo(() => {
     return Object.values(visibleDeliverableSummary).reduce((acc, item) => {
@@ -5309,17 +5311,25 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
   }, [visibleDeliverableSummary]);
 
   const visibleDeliverableCategoryTotals = visibleDeliverableTotals;
-  const uniqueFindingsCount = clientDeliverableFindings.length;
+  const uniqueVisibleFindings = useMemo(() => {
+    const map = new Map();
+    clientDeliverableFindings.forEach((item, index) => {
+      const key = getFindingUniqueKey(item, index);
+      if (!map.has(key)) map.set(key, item);
+    });
+    return [...map.values()];
+  }, [clientDeliverableFindings]);
+  const uniqueFindingsCount = uniqueVisibleFindings.length;
 
   const statusSummary = useMemo(() => {
-    return clientDeliverableFindings.reduce((acc, item) => {
+    return uniqueVisibleFindings.reduce((acc, item) => {
       const group = getFindingStatusGroup(item.status);
       if (group === "Pendiente") acc.pending += 1;
       if (group === "En proceso") acc.inProcess += 1;
       if (group === "Completado") acc.completed += 1;
       return acc;
     }, { pending: 0, inProcess: 0, completed: 0 });
-  }, [clientDeliverableFindings]);
+  }, [uniqueVisibleFindings]);
 
   useEffect(() => {
     setMobileFindingsVisible(6);
@@ -5364,6 +5374,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     const key = `mobile-${item.id}-${item.finding || item.description}`;
     const isOpen = open === key;
     const clientDeliverables = getClientDeliverableLabels(item);
+    const gseDeliverables = getGseDeliverableLabels(item);
     return (
       <article className={`mobileFindingCard ${isOpen ? "open" : ""}`}>
         <i />
@@ -5382,6 +5393,12 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
           <div className="findingClientDeliverables">
             <strong>Entregable cliente</strong>
             <span>{clientDeliverables.join(", ")}</span>
+          </div>
+        )}
+        {gseDeliverables.length > 0 && (
+          <div className="findingClientDeliverables gse">
+            <strong>Entregable GSE</strong>
+            <span>{gseDeliverables.join(", ")}</span>
           </div>
         )}
         {deliveryDate && <p>Fecha de entrega: {deliveryDate}</p>}
@@ -5595,6 +5612,22 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       </div>
 
       <div className="findingsDeliverablesSplitGrid compactDeliverableCards">
+        <article className="findingsDeliverableDashboardCard gse">
+          <div className="findingsDeliverableDashboardHeader">
+            <span>Entregables GSE</span>
+            <strong>{visibleDeliverableTotals.gse}</strong>
+          </div>
+          <div className="findingsDeliverableBreakdownRows">
+            {Object.values(visibleDeliverableSummary).filter((item) => item.gse > 0).map((item) => (
+              <div key={`gse-${item.label}`}>
+                <span>{item.label}</span>
+                <div><i style={{ width: `${visibleDeliverableCategoryTotals.gse ? (item.gse / visibleDeliverableCategoryTotals.gse) * 100 : 0}%` }} /></div>
+                <strong>{item.gse}</strong>
+              </div>
+            ))}
+            {!visibleDeliverableTotals.gse && <p className="findingsDeliverableEmpty">Sin entregables GSE para los filtros activos.</p>}
+          </div>
+        </article>
         <article className="findingsDeliverableDashboardCard client">
           <div className="findingsDeliverableDashboardHeader">
             <span>Entregables cliente</span>
@@ -5644,6 +5677,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
           const status = item.status || "Pendiente";
           const deliveryDate = getFindingField(item, "date");
           const clientDeliverables = getClientDeliverableLabels(item);
+          const gseDeliverables = getGseDeliverableLabels(item);
 
           return (
             <article key={key} className={`findingWhiteCard ${isOpen ? "selected" : ""}`}>
@@ -5658,6 +5692,12 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
                     <div className="findingClientDeliverables">
                       <strong>Entregable cliente</strong>
                       <span>{clientDeliverables.join(", ")}</span>
+                    </div>
+                  )}
+                  {gseDeliverables.length > 0 && (
+                    <div className="findingClientDeliverables gse">
+                      <strong>Entregable GSE</strong>
+                      <span>{gseDeliverables.join(", ")}</span>
                     </div>
                   )}
                   {deliveryDate && <p className="findingDeliveryDate">Fecha de entrega: {deliveryDate}</p>}
