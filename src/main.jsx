@@ -7365,6 +7365,11 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
       setSaveMessage((current) => ({ ...current, [key]: "Falta configurar VITE_DOCUMENT_CHECKLIST_WEBHOOK_URL en Vercel." }));
       return;
     }
+    if (!/script\.google\.com\/macros\/s\/[^/]+\/exec/i.test(webhookUrl)) {
+      setSaving((current) => ({ ...current, [key]: false }));
+      setSaveMessage((current) => ({ ...current, [key]: "La URL del webhook no es válida. Debe terminar en /exec." }));
+      return;
+    }
 
     try {
       const payload = {
@@ -7397,6 +7402,9 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
       try {
         result = JSON.parse(text);
       } catch {
+        if (text.trim().startsWith("<")) {
+          throw new Error("El webhook devolvió una página HTML. Revisa que VITE_DOCUMENT_CHECKLIST_WEBHOOK_URL sea la URL /exec del Apps Script.");
+        }
         result = { ok: response.ok, message: text };
       }
 
@@ -7412,31 +7420,7 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
         String(error.message || "").toLowerCase().includes("failed to fetch");
 
       if (requestWasSent) {
-        try {
-          const fallbackPayload = {
-            spreadsheetId,
-            sheetName: "Documentos",
-            rowNumber: item.rowNumber,
-            documentKey: getDocumentStableKey(item),
-            documento: item.item,
-            documentoSolicitado: item.item,
-            item: item.item,
-            id: item.id,
-            categoria: item.category,
-            respuesta,
-            estado,
-            fecha: new Date().toISOString(),
-            columnas: {
-              respuesta: "RespuestaCliente",
-              estado: "Estado",
-              fecha: "FechaRespuesta",
-            },
-          };
-          navigator.sendBeacon?.(webhookUrl, new Blob([JSON.stringify(fallbackPayload)], { type: "text/plain;charset=utf-8" }));
-        } catch {
-          // El estado local ya refleja la accion; el usuario puede reintentar si no llega a Sheets.
-        }
-        setSaveMessage((current) => ({ ...current, [key]: "Respuesta registrada" }));
+        setSaveMessage((current) => ({ ...current, [key]: "No se pudo confirmar el guardado. Revisa el webhook /exec y vuelve a intentar." }));
         return;
       }
 
