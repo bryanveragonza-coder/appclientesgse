@@ -7285,6 +7285,7 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
   const description = "Bienvenido al inicio formal de tu proyecto Business Power. Esta sección nos ayudará a conocer cómo opera actualmente tu empresa. Este es el primer paso para dejar atrás el caos operativo y empezar a trabajar con estructura, control y claridad.";
 
   const getDocumentKey = (item) => item.id || item.item || item.title || item.description || "";
+  const getDocumentStableKey = (item) => [item.id, item.rowNumber, item.item, item.category].filter(Boolean).join("::");
   const normalizeDocumentStatus = (value) => {
     const normalized = normalizeSystemName(value || "");
     if (!normalized || normalized === "pendiente") return "Pendiente";
@@ -7366,18 +7367,29 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
     }
 
     try {
+      const payload = {
+        spreadsheetId,
+        sheetName: "Documentos",
+        rowNumber: item.rowNumber,
+        documentKey: getDocumentStableKey(item),
+        documento: item.item,
+        documentoSolicitado: item.item,
+        item: item.item,
+        id: item.id,
+        categoria: item.category,
+        respuesta,
+        estado,
+        fecha: new Date().toISOString(),
+        columnas: {
+          respuesta: "RespuestaCliente",
+          estado: "EstadoDocumento",
+          fecha: "FechaRespuesta",
+        },
+      };
       const response = await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          spreadsheetId,
-          item: item.item,
-          id: item.id,
-          categoria: item.category,
-          respuesta,
-          estado,
-          fecha: new Date().toISOString(),
-        }),
+        body: JSON.stringify(payload),
       });
 
       const text = await response.text();
@@ -7400,6 +7412,30 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
         String(error.message || "").toLowerCase().includes("failed to fetch");
 
       if (requestWasSent) {
+        try {
+          const fallbackPayload = {
+            spreadsheetId,
+            sheetName: "Documentos",
+            rowNumber: item.rowNumber,
+            documentKey: getDocumentStableKey(item),
+            documento: item.item,
+            documentoSolicitado: item.item,
+            item: item.item,
+            id: item.id,
+            categoria: item.category,
+            respuesta,
+            estado,
+            fecha: new Date().toISOString(),
+            columnas: {
+              respuesta: "RespuestaCliente",
+              estado: "EstadoDocumento",
+              fecha: "FechaRespuesta",
+            },
+          };
+          navigator.sendBeacon?.(webhookUrl, new Blob([JSON.stringify(fallbackPayload)], { type: "text/plain;charset=utf-8" }));
+        } catch {
+          // El estado local ya refleja la accion; el usuario puede reintentar si no llega a Sheets.
+        }
         setSaveMessage((current) => ({ ...current, [key]: "Respuesta registrada" }));
         return;
       }

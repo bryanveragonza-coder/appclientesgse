@@ -746,6 +746,7 @@ function mapDocuments(rows) {
 
     return {
       id: getRowValue(row, ["ID", "Id", "N", "NÂ°", "No"]) || String(index + 1),
+      rowNumber: index + 2,
       title,
       description,
       category,
