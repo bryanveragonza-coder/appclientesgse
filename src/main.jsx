@@ -7293,8 +7293,46 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
     if (normalized.includes("no disponible") || normalized.includes("no tengo")) return "No disponible";
     return String(value || "Pendiente").trim();
   };
-  const getCurrentResponse = (item) => responses[getDocumentKey(item)] ?? item.responseClient ?? "";
-  const getCurrentStatus = (item) => normalizeDocumentStatus(documentStates[getDocumentKey(item)] ?? item.status ?? "");
+  const normalizeDocumentResponse = (value) => {
+    const normalized = normalizeSystemName(value || "");
+    if (!normalized) return "";
+    if (
+      normalized === "si" ||
+      normalized.includes("si tengo") ||
+      normalized.includes("ya lo cargue") ||
+      normalized.includes("cargado")
+    ) {
+      return "Sí tengo";
+    }
+    if (normalized === "no" || normalized.includes("no tengo") || normalized.includes("no disponible")) {
+      return "No tengo";
+    }
+    return String(value || "").trim();
+  };
+  const inferDocumentStatusFromResponse = (value) => {
+    const normalized = normalizeSystemName(value || "");
+    if (!normalized) return "";
+    if (
+      normalized === "si" ||
+      normalized.includes("si tengo") ||
+      normalized.includes("ya lo cargue") ||
+      normalized.includes("cargado")
+    ) {
+      return "En revisión";
+    }
+    if (normalized === "no" || normalized.includes("no tengo") || normalized.includes("no disponible")) {
+      return "No disponible";
+    }
+    return "";
+  };
+  const getCurrentResponse = (item) => normalizeDocumentResponse(responses[getDocumentKey(item)] ?? item.responseClient ?? "");
+  const getCurrentStatus = (item) => {
+    const key = getDocumentKey(item);
+    const rawStatus = documentStates[key] ?? item.status ?? "";
+    const normalizedStatus = normalizeDocumentStatus(rawStatus);
+    if (rawStatus && normalizedStatus !== "Pendiente") return normalizedStatus;
+    return inferDocumentStatusFromResponse(getCurrentResponse(item)) || normalizedStatus;
+  };
   const isRequiredDocument = (item) => {
     const value = normalizeSystemName(item.required || item.obligatorio || "");
     return value.startsWith("s") || value.includes("obligatorio");

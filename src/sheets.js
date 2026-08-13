@@ -752,11 +752,24 @@ function mapDocuments(rows) {
       item,
       detail,
       required: getRowValue(row, ["Obligatorio", "Required", "Requerido", "Es obligatorio"]),
-      responseClient: getRowValue(row, ["RespuestaCliente", "Respuesta Cliente", "Respuesta", "Tiene", "Disponibilidad", "SeleccionCliente", "SelecciÃ³n Cliente"]),
-      status: getRowValue(row, ["Estado", "Status", "Situacion", "SituaciÃ³n", "Disponible"]),
+      responseClient: getRowValue(row, [
+        "RespuestaCliente", "Respuesta Cliente", "Respuesta cliente", "Respuesta del cliente", "RespuestaDelCliente",
+        "Respuesta", "RespuestaDocumento", "Respuesta Documento", "Tiene", "TieneDocumento", "Tiene Documento",
+        "Disponibilidad", "DisponibilidadDocumento", "Disponibilidad Documento", "SeleccionCliente", "SelecciÃ³n Cliente",
+        "Seleccion Cliente", "YaLoCargue", "Ya lo cargue", "Ya lo carguÃ©", "NoTengo", "No tengo"
+      ]),
+      status: getRowValue(row, [
+        "Estado", "Status", "Estatus", "Situacion", "SituaciÃ³n", "Disponible",
+        "EstadoDocumento", "Estado Documento", "Estado de documento", "Estado documentos", "Estado de documentos",
+        "EstadoCarga", "Estado Carga", "StatusDocumento", "Status Documento", "EstatusDocumento",
+        "Validacion", "ValidaciÃ³n"
+      ]),
       observation: getRowValue(row, ["Observacion", "ObservaciÃ³n", "Notas", "Comentario", "Comentarios", "Observaciones"]),
       folderLink: getRowValue(row, ["LinkCarpeta", "Link Carpeta", "Carpeta", "URLCarpeta", "URL Carpeta", "EnlaceCarpeta", "Enlace Carpeta"]),
-      responseDate: getRowValue(row, ["FechaRespuesta", "Fecha Respuesta", "Fecha", "FechaRegistro"]),
+      responseDate: getRowValue(row, [
+        "FechaRespuesta", "Fecha Respuesta", "Fecha", "FechaRegistro", "Fecha Registro",
+        "FechaCarga", "Fecha Carga", "FechaActualizacion", "Fecha Actualizacion", "Fecha actualizaciÃ³n"
+      ]),
     };
   }).filter((x) => x.item || x.title || x.description || x.detail || x.category);
 }
