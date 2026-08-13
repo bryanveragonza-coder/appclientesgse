@@ -7797,7 +7797,14 @@ useEffect(() => {
                                   </>
                                 )}
                                 {status === "En revisión" && (
-                                  folderLink ? <a href={folderLink} target="_blank" rel="noreferrer">Ver carpeta</a> : <button type="button" disabled>Sin carpeta</button>
+                                  <>
+                                    {folderLink ? (
+                                      <a href={folderLink} target="_blank" rel="noreferrer">Ver carpeta</a>
+                                    ) : (
+                                      <button type="button" disabled>Sin carpeta</button>
+                                    )}
+                                    <button type="button" disabled={isBusy} onClick={() => handleDocumentAction(item, { respuesta: "", estado: "Pendiente" })}>Cambiar respuesta</button>
+                                  </>
                                 )}
                                 {status === "Validado" && (
                                   folderLink ? <a href={folderLink} target="_blank" rel="noreferrer">Ver carpeta</a> : <button type="button" disabled>Sin carpeta</button>
