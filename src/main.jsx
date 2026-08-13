@@ -7268,7 +7268,7 @@ useEffect(() => {
 
 function DocumentsUpload({ documents = [], project, setView, previousView = "portal", pending = [] }) {
   const uploadLink = safeUrl(project.documentUploadLink || project.linkCargaDocumentos || "");
-  const webhookUrl = safeUrl(import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
+  const webhookUrl = safeUrl(import.meta.env.VITE_DOCUMENT_CHECKLIST_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
   const [responses, setResponses] = useState({});
   const [saving, setSaving] = useState({});
@@ -7362,7 +7362,7 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
 
     if (!webhookUrl) {
       setSaving((current) => ({ ...current, [key]: false }));
-      setSaveMessage((current) => ({ ...current, [key]: "Falta configurar VITE_DOCUMENTS_WEBHOOK_URL en Vercel." }));
+      setSaveMessage((current) => ({ ...current, [key]: "Falta configurar VITE_DOCUMENT_CHECKLIST_WEBHOOK_URL en Vercel." }));
       return;
     }
 
@@ -7382,7 +7382,7 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
         fecha: new Date().toISOString(),
         columnas: {
           respuesta: "RespuestaCliente",
-          estado: "EstadoDocumento",
+          estado: "Estado",
           fecha: "FechaRespuesta",
         },
       };
@@ -7428,7 +7428,7 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
             fecha: new Date().toISOString(),
             columnas: {
               respuesta: "RespuestaCliente",
-              estado: "EstadoDocumento",
+              estado: "Estado",
               fecha: "FechaRespuesta",
             },
           };
