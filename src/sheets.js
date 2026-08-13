@@ -133,6 +133,39 @@ function parseNumber(value, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function isCompletedStatusValue(status = "") {
+  const normalized = normalizeKey(status);
+  return (
+    normalized.includes("finalizado") ||
+    normalized.includes("aprobado") ||
+    normalized.includes("completado") ||
+    normalized.includes("terminado")
+  );
+}
+
+function parseWeightPercent(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return 0;
+  const parsed = parseNumber(raw, 0);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 0;
+  if (raw.includes("%")) return parsed;
+  return parsed > 0 && parsed <= 1 ? parsed * 100 : parsed;
+}
+
+function calculateDeliverablesProgress(deliverables = []) {
+  const weights = deliverables
+    .map((item) => parseWeightPercent(item.weight || item.ponderacion))
+    .filter((value) => value > 0);
+  if (!weights.length) return null;
+
+  const progress = deliverables.reduce((total, item) => {
+    const weight = parseWeightPercent(item.weight || item.ponderacion);
+    return total + (isCompletedStatusValue(item.status) ? weight : 0);
+  }, 0);
+
+  return Math.max(0, Math.min(100, Math.round(progress)));
+}
+
 function getSpreadsheetId(rawValue) {
   const raw = String(rawValue || "").trim();
 
@@ -657,6 +690,7 @@ function mapDeliverables(rows) {
     validated: getRowValue(row, ["Validado", "Validada", "Validacion", "Validación", "Estado validado"]),
     responsible: getRowValue(row, ["Responsable", "responsable", "Owner", "Encargado", "ResponsableEntregable", "Responsable Entregable"]),
     progress: parseNumber(getRowValue(row, ["% Avance", "Avance", "Progreso"])),
+    weight: getRowValue(row, ["Ponderacion", "Ponderación", "Peso", "PesoProyecto", "Peso Proyecto", "PesoAvance", "Peso Avance"]),
     link: getRowValue(row, [
       "LinkEntregable", "Link Entregable", "Link entregable", "Link", "URL", "Enlace",
       "EnlaceEntregable", "Enlace Entregable", "Documento", "Archivo"
@@ -1011,12 +1045,19 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchFirstAvailableSheet(["Usuarios", "UsuariosInternos", "Usuarios Internos", "Equipo", "Colaboradores"], spreadsheetId),
   ]);
 
+  const deliverables = mapDeliverables(deliverableRows);
+  const project = projectFromRawRows(projectRawRows);
+  const weightedProgress = calculateDeliverablesProgress(deliverables);
+
   return {
-    project: projectFromRawRows(projectRawRows),
+    project: {
+      ...project,
+      progress: weightedProgress ?? 0,
+    },
     milestones: mapMilestones(milestoneRows),
     findings: mapFindings(findingRows),
     pending: mapPending(pendingRows),
-    deliverables: mapDeliverables(deliverableRows),
+    deliverables,
     updates: mapUpdates(updateRows),
     education: mapEducation(educationRows),
     tutorials: mapTutorials(masterTutorialRows.length ? masterTutorialRows : clientTutorialRows),
