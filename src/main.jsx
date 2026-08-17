@@ -1,5 +1,5 @@
 ﻿
-import React, { Fragment, useEffect, useMemo, useState } from "react";
+import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
 // RESUMEN_HITOS_BARRA_FINAL
 // RADAR_5_SISTEMAS_GSE
 // BUSCADOR_ENTREGABLES_EDUCACION_FINAL
@@ -81,6 +81,28 @@ function getDrivePreviewUrl(url = "") {
   if (!clean) return "";
   const directMatch = clean.match(/\/d\/([^/]+)/) || clean.match(/[?&]id=([^&]+)/);
   return directMatch?.[1] ? `https://drive.google.com/thumbnail?id=${directMatch[1]}&sz=w2000` : clean;
+}
+
+function getDocumentEmbedUrl(url = "") {
+  const clean = safeUrl(url);
+  if (!clean) return "";
+
+  if (/drive\.google\.com/i.test(clean)) {
+    const directMatch = clean.match(/\/d\/([^/]+)/) || clean.match(/[?&]id=([^&]+)/);
+    return directMatch?.[1] ? `https://drive.google.com/file/d/${directMatch[1]}/preview` : clean;
+  }
+
+  if (/1drv\.ms|onedrive\.live\.com/i.test(clean)) {
+    try {
+      const parsed = new URL(clean);
+      parsed.searchParams.set("embed", "1");
+      return parsed.toString();
+    } catch {
+      return clean.includes("embed=1") ? clean : `${clean}${clean.includes("?") ? "&" : "?"}embed=1`;
+    }
+  }
+
+  return clean;
 }
 
 function getYouTubeVideoId(url = "") {
@@ -2818,7 +2840,7 @@ function ImplementationIndicators({ indicators = [] }) {
   );
 }
 
-function StructureView({ project = {}, architectureRoles = [], architectureRolesToBe = [] }) {
+function StructureView({ project = {}, architectureRoles = [], architectureRolesToBe = [], deliverables = [], organizationProcesses = [], processesAsIs = [], processesToBe = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [gerenciaFilter, setGerenciaFilter] = useState("Todos");
   const [areaFilter, setAreaFilter] = useState("Todos");
@@ -2827,8 +2849,23 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
   const [savingValidation, setSavingValidation] = useState({});
   const [structureViewMode, setStructureViewMode] = useState("asis");
   const [architectureMatrixMode, setArchitectureMatrixMode] = useState("asis");
+  const [expandedOrgNodes, setExpandedOrgNodes] = useState({});
+  const [selectedOrgNodeId, setSelectedOrgNodeId] = useState("");
+  const [orgCanvasZoom, setOrgCanvasZoom] = useState(0.78);
+  const [orgCanvasPan, setOrgCanvasPan] = useState({ x: 0, y: 0 });
+  const [orgConnectors, setOrgConnectors] = useState([]);
+  const [showOrgChart, setShowOrgChart] = useState(false);
+  const [localStructureValidation, setLocalStructureValidation] = useState({});
+  const [savingStructureValidation, setSavingStructureValidation] = useState({});
+  const [localRofValidated, setLocalRofValidated] = useState(false);
+  const [savingRofValidation, setSavingRofValidation] = useState(false);
+  const [rofPreviewFailed, setRofPreviewFailed] = useState(false);
+  const orgCanvasDragRef = useRef(null);
+  const orgCanvasContentRef = useRef(null);
+  const orgNodeRefs = useRef(new Map());
 
   const validationWebhookUrl = safeUrl(import.meta.env.VITE_STRUCTURE_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_ARCHITECTURE_VALIDATION_WEBHOOK_URL || "");
+  const structureRofValidationWebhookUrl = safeUrl(import.meta.env.VITE_STRUCTURE_ROF_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_STRUCTURE_ASSET_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_STRUCTURE_VALIDATION_WEBHOOK_URL || "");
   const spreadsheetId = getActiveSpreadsheetId();
   const activeArchitectureRows = architectureMatrixMode === "tobe" ? architectureRolesToBe : architectureRoles;
   const activeArchitectureSheetName = architectureMatrixMode === "tobe" ? "ArquitecturaCargosTOBE" : "ArquitecturaCargos";
@@ -2837,12 +2874,152 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
   const structureToBeImage = getDrivePreviewUrl(project.structureToBeImage || project.imagenEstructuraTOBE || "");
   const activeStructureImage = structureViewMode === "tobe" ? structureToBeImage : structureAsIsImage;
   const activeStructureLabel = structureViewMode === "tobe" ? "Estructura TO BE" : "Estructura AS IS";
+  const activeStructureField = structureViewMode === "tobe" ? "ImagenEstructuraTOBE" : "ImagenEstructura";
+  const activeStructureValidationKey = structureViewMode === "tobe" ? "estructura-tobe" : "estructura-asis";
+  const activeStructureValidated = Boolean(
+    localStructureValidation[activeStructureValidationKey] ||
+    isCheckedSheetValue(structureViewMode === "tobe" ? project.structureToBeValidated : project.structureAsIsValidated)
+  );
+  const activeStructureSaving = Boolean(savingStructureValidation[activeStructureValidationKey]);
+  const rofDeliverable = useMemo(() => {
+    const candidates = deliverables.filter((item) => {
+      const text = normalizeSystemName([item.deliverable, item.activity, item.system, item.milestone].join(" "));
+      return text.includes("rof") || text.includes("reglamento organico") || text.includes("estructura actual");
+    });
+    return candidates.find((item) => item.link || item.imageProcess || item.technicalSheet) || candidates[0] || null;
+  }, [deliverables]);
+  const rofLink = safeUrl(rofDeliverable?.link || rofDeliverable?.technicalSheet || rofDeliverable?.imageProcess || "");
+  const rofPreviewLink = rofLink ? getDocumentEmbedUrl(rofLink) : "";
+  const rofRequiresExternalPreview = Boolean(rofLink && !/drive\.google\.com/i.test(rofLink));
+  const rofValidated = localRofValidated || isCheckedSheetValue(rofDeliverable?.clientValidated) || isCheckedSheetValue(rofDeliverable?.validated);
+  const visibleOrgNodes = useMemo(
+    () => organizationProcesses.filter((item) => !normalizeSystemName(item.status).includes("inactivo")),
+    [organizationProcesses]
+  );
+  const orgNodesByParent = useMemo(() => {
+    const groups = new Map();
+    visibleOrgNodes.forEach((item) => {
+      const parentKey = item.parentId || "__root__";
+      groups.set(parentKey, [...(groups.get(parentKey) || []), item]);
+    });
+    groups.forEach((items, key) => {
+      groups.set(key, [...items].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0) || String(a.name).localeCompare(String(b.name))));
+    });
+    return groups;
+  }, [visibleOrgNodes]);
+  const orgRootNodes = orgNodesByParent.get("__root__") || [];
+  const selectedOrgNode = visibleOrgNodes.find((item) => item.id === selectedOrgNodeId) || orgRootNodes[0] || visibleOrgNodes[0] || null;
+  const asIsProcessMap = useMemo(() => {
+    const map = new Map();
+    processesAsIs.forEach((item) => {
+      [item.processCode, item.processId, item.id].filter(Boolean).forEach((key) => map.set(normalizeSystemName(key), item));
+    });
+    return map;
+  }, [processesAsIs]);
+  const toBeProcessMap = useMemo(() => {
+    const map = new Map();
+    processesToBe.forEach((item) => {
+      [item.processCode, item.processId, item.id].filter(Boolean).forEach((key) => map.set(normalizeSystemName(key), item));
+    });
+    return map;
+  }, [processesToBe]);
 
   useEffect(() => {
     setGerenciaFilter("Todos");
     setAreaFilter("Todos");
     setStatusFilter("Todos");
   }, [architectureMatrixMode]);
+
+  useEffect(() => {
+    if (!visibleOrgNodes.length) return;
+    setSelectedOrgNodeId((current) => current || orgRootNodes[0]?.id || visibleOrgNodes[0]?.id || "");
+  }, [visibleOrgNodes, orgRootNodes]);
+
+  useEffect(() => {
+    setRofPreviewFailed(false);
+  }, [rofPreviewLink]);
+
+  const centerOrgCanvas = () => {
+    setOrgCanvasZoom(0.78);
+    setOrgCanvasPan({ x: 0, y: 0 });
+  };
+
+  const handleOrgCanvasPointerDown = (event) => {
+    if (event.button !== 0 || event.target.closest("button, a, input, select, textarea")) return;
+    orgCanvasDragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: orgCanvasPan.x,
+      originY: orgCanvasPan.y,
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handleOrgCanvasPointerMove = (event) => {
+    const drag = orgCanvasDragRef.current;
+    if (!drag) return;
+    setOrgCanvasPan({
+      x: drag.originX + event.clientX - drag.startX,
+      y: drag.originY + event.clientY - drag.startY,
+    });
+  };
+
+  const handleOrgCanvasPointerUp = (event) => {
+    orgCanvasDragRef.current = null;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+  };
+
+  useEffect(() => {
+    if (!visibleOrgNodes.length) {
+      setOrgConnectors([]);
+      return undefined;
+    }
+
+    const updateOrgConnectors = () => {
+      const content = orgCanvasContentRef.current;
+      if (!content) return;
+
+      const contentRect = content.getBoundingClientRect();
+      const scale = orgCanvasZoom || 1;
+      const nextConnectors = [];
+
+      visibleOrgNodes.forEach((parent) => {
+        const parentElement = orgNodeRefs.current.get(parent.id);
+        const children = orgNodesByParent.get(parent.id) || [];
+        if (!parentElement || !children.length) return;
+
+        const parentRect = parentElement.getBoundingClientRect();
+        const parentBottom = {
+          x: (parentRect.left + parentRect.width / 2 - contentRect.left) / scale,
+          y: (parentRect.bottom - contentRect.top) / scale,
+        };
+
+        children.forEach((child) => {
+          const childElement = orgNodeRefs.current.get(child.id);
+          if (!childElement) return;
+          const childRect = childElement.getBoundingClientRect();
+          const childTop = {
+            x: (childRect.left + childRect.width / 2 - contentRect.left) / scale,
+            y: (childRect.top - contentRect.top) / scale,
+          };
+          const middleY = parentBottom.y + Math.max(16, (childTop.y - parentBottom.y) / 2);
+          nextConnectors.push({
+            id: `${parent.id}-${child.id}`,
+            path: `M ${parentBottom.x} ${parentBottom.y} V ${middleY} H ${childTop.x} V ${childTop.y}`,
+          });
+        });
+      });
+
+      setOrgConnectors(nextConnectors);
+    };
+
+    const frame = window.requestAnimationFrame(updateOrgConnectors);
+    window.addEventListener("resize", updateOrgConnectors);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", updateOrgConnectors);
+    };
+  }, [visibleOrgNodes, orgNodesByParent, orgCanvasZoom]);
 
   const getValidationKey = (item) => [architectureMatrixMode, item.id || "sin-id", item.gerencia || "sin-gerencia", item.area || "sin-area", item.cargo || "sin-cargo"].join("|");
   const getValidated = (item) => {
@@ -2882,6 +3059,77 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
 
   const distinctGerencias = useMemo(() => new Set(activeArchitectureRows.map((item) => String(item.gerencia || "").trim()).filter(Boolean)).size, [activeArchitectureRows]);
   const distinctAreas = useMemo(() => new Set(activeArchitectureRows.map((item) => String(item.area || "").trim()).filter(Boolean)).size, [activeArchitectureRows]);
+  const splitProcessCodes = (value = "") => String(value || "")
+    .split(/[,;|\n\r]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const renderProcessList = (codes = [], processMap, emptyText) => {
+    if (!codes.length) return <p className="orgProcessEmpty">{emptyText}</p>;
+    return (
+      <div className="orgProcessList">
+        {codes.map((code, index) => {
+          const process = processMap.get(normalizeSystemName(code));
+          const label = process?.processName || process?.macroName || "Proceso asociado";
+          const description = process?.description || process?.changes || "";
+          return (
+            <article key={`${code}-${index}`}>
+              <strong>{code}</strong>
+              <span>{label}</span>
+              {description && <p>{description}</p>}
+            </article>
+          );
+        })}
+      </div>
+    );
+  };
+  const getOrgNodeVisualClass = (node = {}, level = 0) => {
+    const text = normalizeSystemName([node.type, node.name, node.position, node.area].join(" "));
+    if (text.includes("empresa") || level === 0) return "company";
+    if (text.includes("gerencia")) return "management";
+    if (text.includes("supervision") || text.includes("supervisor")) return "supervision";
+    if (text.includes("cargo") || text.includes("asistente") || text.includes("tecnico") || text.includes("vendedor") || text.includes("cajero") || level >= 3) return "position";
+    return "area";
+  };
+  const renderOrgNode = (node, level = 0) => {
+    const children = orgNodesByParent.get(node.id) || [];
+    const hasChildren = children.length > 0;
+    const asIsCodes = splitProcessCodes(node.processesAsIs);
+    const toBeCodes = splitProcessCodes(node.processesToBe);
+    const isSelected = selectedOrgNode?.id === node.id;
+    const visualClass = getOrgNodeVisualClass(node, level);
+    return (
+      <div className={`orgTreeNodeWrap level-${Math.min(level, 4)} ${hasChildren ? "hasOpenChildren" : ""} type-${visualClass}`} key={node.id}>
+        <button
+          ref={(element) => {
+            if (element) {
+              orgNodeRefs.current.set(node.id, element);
+            } else {
+              orgNodeRefs.current.delete(node.id);
+            }
+          }}
+          type="button"
+          className={`orgTreeNode level-${Math.min(level, 3)} type-${visualClass} ${isSelected ? "selected" : ""}`}
+          onClick={() => setSelectedOrgNodeId(node.id)}
+        >
+          <span className="orgTreeChevron" aria-hidden="true" />
+          <span className="orgTreeMain">
+            <em>{node.type || "Nodo"}</em>
+            <strong>{node.name || node.position || node.area || node.management || "Sin nombre"}</strong>
+            {node.description && <small>{node.description}</small>}
+          </span>
+          <span className="orgTreeMeta">
+            <b>{asIsCodes.length}</b> AS IS
+            <b>{toBeCodes.length}</b> TO BE
+          </span>
+        </button>
+        {hasChildren && (
+          <div className={`orgTreeChildren ${children.length === 1 ? "singleChild" : ""}`}>
+            {children.map((child) => renderOrgNode(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const handleValidate = async (item, nextChecked) => {
     if (!nextChecked) return;
@@ -2938,6 +3186,97 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
       window.alert(error.message || "No se pudo guardar la validación.");
     } finally {
       setSavingValidation((current) => ({ ...current, [key]: false }));
+    }
+  };
+
+  const postStructureRofValidation = async (payload) => {
+    if (!structureRofValidationWebhookUrl) {
+      throw new Error("Falta configurar VITE_STRUCTURE_ROF_VALIDATION_WEBHOOK_URL en Vercel.");
+    }
+
+    const response = await fetch(structureRofValidationWebhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+    let result = {};
+    try {
+      result = JSON.parse(text);
+    } catch {
+      result = { ok: response.ok, message: text };
+    }
+
+    if (!response.ok || result.ok === false) {
+      throw new Error(result.message || "No se pudo guardar la validación.");
+    }
+
+    return result;
+  };
+
+  const handleValidateStructureAsset = async () => {
+    if (!activeStructureImage || activeStructureValidated || activeStructureSaving) return;
+    if (!window.confirm(`¿Confirmas que validas ${activeStructureLabel}?`)) return;
+
+    const key = activeStructureValidationKey;
+    setLocalStructureValidation((current) => ({ ...current, [key]: true }));
+    setSavingStructureValidation((current) => ({ ...current, [key]: true }));
+
+    try {
+      const session = getClientSession();
+      await postStructureRofValidation({
+        action: "updateStructureRofValidation",
+        spreadsheetId,
+        targetType: structureViewMode === "tobe" ? "estructura_tobe" : "estructura_asis",
+        sheetName: "Proyecto",
+        projectField: activeStructureField,
+        field: "validadocliente",
+        value: "SI",
+        validatedAt: new Date().toISOString(),
+        validatedBy: session.nombre || session.usuario || session.cliente || "Cliente",
+        user: session.usuario || "",
+      });
+    } catch (error) {
+      console.error(error);
+      setLocalStructureValidation((current) => ({ ...current, [key]: false }));
+      window.alert(error.message || "No se pudo guardar la validación.");
+    } finally {
+      setSavingStructureValidation((current) => ({ ...current, [key]: false }));
+    }
+  };
+
+  const handleValidateRof = async () => {
+    if (!rofDeliverable || rofValidated || savingRofValidation) return;
+    if (!window.confirm("¿Confirmas que validas el ROF?")) return;
+
+    setLocalRofValidated(true);
+    setSavingRofValidation(true);
+
+    try {
+      const session = getClientSession();
+      await postStructureRofValidation({
+        action: "updateStructureRofValidation",
+        spreadsheetId,
+        targetType: "rof",
+        sheetName: "Entregables",
+        rowNumber: rofDeliverable.rowNumber,
+        deliverable: rofDeliverable.deliverable,
+        activity: rofDeliverable.activity,
+        milestone: rofDeliverable.milestone,
+        system: rofDeliverable.system,
+        field: "validadocliente",
+        value: "SI",
+        validatedAt: new Date().toISOString(),
+        validatedBy: session.nombre || session.usuario || session.cliente || "Cliente",
+        user: session.usuario || "",
+      });
+    } catch (error) {
+      console.error(error);
+      setLocalRofValidated(false);
+      window.alert(error.message || "No se pudo guardar la validación del ROF.");
+    } finally {
+      setSavingRofValidation(false);
     }
   };
 
@@ -3004,6 +3343,14 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
                 <Download size={16} />
               </a>
             )}
+            <button
+              type="button"
+              className={activeStructureValidated ? "active" : ""}
+              onClick={handleValidateStructureAsset}
+              disabled={!activeStructureImage || activeStructureValidated || activeStructureSaving}
+            >
+              {activeStructureSaving ? "Guardando..." : activeStructureValidated ? "Validado" : "Validar"}
+            </button>
           </div>
         </div>
         {activeStructureImage ? (
@@ -3014,6 +3361,121 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
             <span>No tiene</span>
           </div>
         )}
+      </div>
+
+      <div className="structureRofCard">
+        <div className="imageToggleHeader">
+          <div>
+            <h3>ROF</h3>
+            <p>Reglamento orgánico funcional asociado a la estructura.</p>
+          </div>
+          <div className="imageToggleButtons">
+            {rofLink && (
+              <a className="imageDownloadButton rofOpenButton" href={rofLink} target="_blank" rel="noreferrer" title="Abrir ROF">
+                <ExternalLink size={16} />
+              </a>
+            )}
+            <button
+              type="button"
+              className={rofValidated ? "active" : ""}
+              onClick={handleValidateRof}
+              disabled={!rofDeliverable || rofValidated || savingRofValidation}
+            >
+              {savingRofValidation ? "Guardando..." : rofValidated ? "Validado" : "Validar"}
+            </button>
+          </div>
+        </div>
+        {rofPreviewLink && !rofPreviewFailed && !rofRequiresExternalPreview ? (
+          <div className="rofPreviewFrame">
+            <iframe title="Vista previa ROF" src={rofPreviewLink} loading="lazy" onError={() => setRofPreviewFailed(true)} />
+            <div className="rofPreviewFallback">
+              <FileText size={34} />
+              <strong>Vista previa no disponible</strong>
+              <span>OneDrive puede bloquear la visualización dentro del RIV.</span>
+              {rofLink && <a href={rofLink} target="_blank" rel="noreferrer">Abrir ROF <ExternalLink size={14} /></a>}
+            </div>
+          </div>
+        ) : (
+          <div className="structureEmptyImage rofEmptyPreview">
+            <FileText size={42} />
+            <strong>{rofLink ? "ROF disponible" : "No tiene"}</strong>
+            <span>{rofLink ? "Este enlace no permite vista previa dentro del RIV. Ábrelo en una pestaña para revisarlo." : "No se encontró enlace del ROF en entregables."}</span>
+            {rofLink && <a href={rofLink} target="_blank" rel="noreferrer">Abrir ROF <ExternalLink size={14} /></a>}
+          </div>
+        )}
+      </div>
+
+      <div className="structureOrgChartCard">
+        <div className="processTableHeader">
+          <div>
+            <h3>Organigrama de procesos</h3>
+            <p>Selecciona un nodo para consultar sus procesos AS IS y TO BE en el panel lateral.</p>
+          </div>
+          <div className="orgCanvasToolbar">
+            {showOrgChart && (
+              <>
+                <button type="button" onClick={() => setOrgCanvasZoom((value) => Math.max(0.48, Number((value - 0.08).toFixed(2))))} aria-label="Alejar organigrama">-</button>
+                <span>{Math.round(orgCanvasZoom * 100)}%</span>
+                <button type="button" onClick={() => setOrgCanvasZoom((value) => Math.min(1.25, Number((value + 0.08).toFixed(2))))} aria-label="Acercar organigrama">+</button>
+                <button type="button" onClick={centerOrgCanvas}>Centrar</button>
+              </>
+            )}
+            <button type="button" className="orgShowMoreButton" onClick={() => setShowOrgChart((current) => !current)}>
+              {showOrgChart ? "Ver menos" : "Ver más"}
+            </button>
+            <Badge status="En validación">{visibleOrgNodes.length} nodos</Badge>
+          </div>
+        </div>
+        {showOrgChart && visibleOrgNodes.length ? (
+          <div className="structureOrgChartLayout">
+            <div
+              className="orgCanvasViewport"
+              onPointerDown={handleOrgCanvasPointerDown}
+              onPointerMove={handleOrgCanvasPointerMove}
+              onPointerUp={handleOrgCanvasPointerUp}
+              onPointerCancel={handleOrgCanvasPointerUp}
+            >
+              <div
+                ref={orgCanvasContentRef}
+                className="orgCanvasContent"
+                style={{
+                  transform: `translate(${orgCanvasPan.x}px, ${orgCanvasPan.y}px) scale(${orgCanvasZoom})`,
+                }}
+              >
+                <svg className="orgConnectorLayer" aria-hidden="true">
+                  {orgConnectors.map((connector) => (
+                    <path key={connector.id} className="orgConnectorLine" d={connector.path} />
+                  ))}
+                </svg>
+                <div className="orgTree">
+                  {orgRootNodes.map((node) => renderOrgNode(node))}
+                </div>
+              </div>
+            </div>
+            <aside className="orgProcessPanel">
+              <span>{selectedOrgNode?.type || "Nodo seleccionado"}</span>
+              <h3>{selectedOrgNode?.name || "Selecciona un nodo"}</h3>
+              {selectedOrgNode?.description && <p>{selectedOrgNode.description}</p>}
+              <div className="orgProcessPanelMeta">
+                {selectedOrgNode?.management && <small>Gerencia: {selectedOrgNode.management}</small>}
+                {selectedOrgNode?.area && <small>Área: {selectedOrgNode.area}</small>}
+                {selectedOrgNode?.position && <small>Cargo: {selectedOrgNode.position}</small>}
+              </div>
+              <div className="orgProcessColumns">
+                <section>
+                  <h4>Procesos AS IS</h4>
+                  {renderProcessList(splitProcessCodes(selectedOrgNode?.processesAsIs), asIsProcessMap, "No tiene procesos AS IS asociados.")}
+                </section>
+                <section>
+                  <h4>Procesos TO BE</h4>
+                  {renderProcessList(splitProcessCodes(selectedOrgNode?.processesToBe), toBeProcessMap, "No tiene procesos TO BE asociados.")}
+                </section>
+              </div>
+            </aside>
+          </div>
+        ) : showOrgChart ? (
+          <div className="emptyState">No tiene</div>
+        ) : null}
       </div>
 
       <div className="premiumFilters processFilters structureFilters">
@@ -4961,10 +5423,8 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
   const [deliverableTypeFilter, setDeliverableTypeFilter] = useState("Todos");
   const [priorityFilter, setPriorityFilter] = useState("Todos");
   const [managementFilter, setManagementFilter] = useState("Todos");
-  const [areaFilter, setAreaFilter] = useState("Todos");
   const [responsibleFilter, setResponsibleFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
-  const [mobileDeliverableSide, setMobileDeliverableSide] = useState("gse");
   const [mobileFindingsVisible, setMobileFindingsVisible] = useState(6);
   const [mobileFindingsTouchStart, setMobileFindingsTouchStart] = useState(null);
   const [findingUploadStatus, setFindingUploadStatus] = useState({});
@@ -5102,26 +5562,24 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
   const getGseDeliverableLabels = (item = {}) => uniqueDeliverableLabels(
     splitDeliverableTypes(item.deliverableGSE || "")
   );
-  const getAllDeliverableLabels = (item = {}) => uniqueDeliverableLabels([
-    ...getClientDeliverableLabels(item),
-    ...getGseDeliverableLabels(item),
-  ]);
+  const clientFacingFindings = useMemo(
+    () => findings.filter((item) => getClientDeliverableLabels(item).length > 0),
+    [findings]
+  );
 
   const getFindingField = (item, field) => {
     if (field === "date") return item.deliveryDate || item.fechaMax || item.fechamax || "";
     if (field === "priority") return item.priority || "";
     if (field === "status") return item.status || "";
     if (field === "management") return item.management || item.gerencia || "";
-    if (field === "area") return item.areaDetail || item.area || "";
     if (field === "responsible") return item.owner || item.responsible || "";
     return "";
   };
 
-  const getDeliverableTypeMatches = (item) => getAllDeliverableLabels(item);
+  const getDeliverableTypeMatches = (item) => getClientDeliverableLabels(item);
 
   const matchesCurrentFilters = (item, excludeField = "") => {
     const deliveryDate = getFindingField(item, "date");
-    const area = getFindingField(item, "area");
     const management = getFindingField(item, "management");
     const responsible = getFindingField(item, "responsible");
     const priority = getFindingField(item, "priority");
@@ -5134,14 +5592,13 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       (excludeField === "deliverableType" || deliverableTypeFilter === "Todos" || deliverableTypeMatches.includes(deliverableTypeFilter)) &&
       (excludeField === "priority" || priorityFilter === "Todos" || priority === priorityFilter) &&
       (excludeField === "management" || managementFilter === "Todos" || management === managementFilter) &&
-      (excludeField === "area" || areaFilter === "Todos" || area === areaFilter) &&
       (excludeField === "responsible" || responsibleFilter === "Todos" || responsible === responsibleFilter) &&
       (excludeField === "status" || statusFilter === "Todos" || status === statusFilter || statusGroup === statusFilter)
     );
   };
 
   const optionValuesFor = (field) => {
-    const values = findings
+    const values = clientFacingFindings
       .filter((item) => matchesCurrentFilters(item, field))
       .map((item) => getFindingField(item, field))
       .map(cleanOptionValue)
@@ -5149,31 +5606,29 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     return [...new Set(values)];
   };
 
-  const dateOptions = useMemo(() => optionValuesFor("date"), [findings, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, responsibleFilter, statusFilter]);
-  const priorities = useMemo(() => optionValuesFor("priority"), [findings, dateFilter, deliverableTypeFilter, managementFilter, areaFilter, responsibleFilter, statusFilter]);
-  const managements = useMemo(() => optionValuesFor("management"), [findings, dateFilter, deliverableTypeFilter, priorityFilter, areaFilter, responsibleFilter, statusFilter]);
-  const areas = useMemo(() => optionValuesFor("area"), [findings, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, responsibleFilter, statusFilter]);
-  const responsibles = useMemo(() => optionValuesFor("responsible"), [findings, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, statusFilter]);
+  const dateOptions = useMemo(() => optionValuesFor("date"), [clientFacingFindings, deliverableTypeFilter, priorityFilter, managementFilter, responsibleFilter, statusFilter]);
+  const priorities = useMemo(() => optionValuesFor("priority"), [clientFacingFindings, dateFilter, deliverableTypeFilter, managementFilter, responsibleFilter, statusFilter]);
+  const managements = useMemo(() => optionValuesFor("management"), [clientFacingFindings, dateFilter, deliverableTypeFilter, priorityFilter, responsibleFilter, statusFilter]);
+  const responsibles = useMemo(() => optionValuesFor("responsible"), [clientFacingFindings, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, statusFilter]);
   const statuses = useMemo(() => {
-    const values = findings
+    const values = clientFacingFindings
       .filter((item) => matchesCurrentFilters(item, "status"))
       .flatMap((item) => [item.status, getFindingStatusGroup(item.status)])
       .map(cleanOptionValue)
       .filter(Boolean);
     return [...new Set(values)];
-  }, [findings, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, responsibleFilter]);
+  }, [clientFacingFindings, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, responsibleFilter]);
 
   const deliverableTypes = useMemo(() => {
-    const values = findings
+    const values = clientFacingFindings
       .filter((item) => matchesCurrentFilters(item, "deliverableType"))
       .flatMap((item) => getDeliverableTypeMatches(item))
       .map(cleanOptionValue)
       .filter(Boolean);
     return [...new Set(values)];
-  }, [findings, dateFilter, priorityFilter, managementFilter, areaFilter, responsibleFilter, statusFilter]);
+  }, [clientFacingFindings, dateFilter, priorityFilter, managementFilter, responsibleFilter, statusFilter]);
 
   const getFindingSearchText = (item) => {
-    const area = getFindingField(item, "area");
     const management = getFindingField(item, "management");
     const deliveryDate = getFindingField(item, "date");
     const responsible = getFindingField(item, "responsible");
@@ -5183,7 +5638,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     return normalizeSystemName([
       item.id,
       management,
-      area,
       deliveryDate,
       item.processArea,
       item.process,
@@ -5192,7 +5646,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       item.description,
       item.recommendation || item.solution,
       item.solutionType || item.system,
-      item.deliverableGSE,
       item.deliverableClient,
       ...getDeliverableTypeMatches(item),
       status,
@@ -5238,7 +5691,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       return searchText.includes(query) || queryWords.every((word) => searchText.includes(word));
     };
 
-    return findings
+    return clientFacingFindings
       .map((item, index) => ({ item, index, score: getFindingSearchScore(item, query, queryWords) }))
       .filter(({ item }) => matchesCurrentFilters(item) && matchesQuery(item))
       .sort((a, b) => {
@@ -5246,7 +5699,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
         return a.index - b.index;
       })
       .map(({ item }) => item);
-  }, [findings, searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, responsibleFilter, statusFilter]);
+  }, [clientFacingFindings, searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, responsibleFilter, statusFilter]);
 
   const getVisibleClientDeliverableLabels = (item = {}) => {
     const labels = getClientDeliverableLabels(item);
@@ -5275,15 +5728,12 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     return filteredFindings
       .map((item, itemIndex) => {
         const clientLabels = getClientDeliverableLabels(item);
-        const gseLabels = getGseDeliverableLabels(item);
-        const allRelatedLabels = uniqueDeliverableLabels([...clientLabels, ...gseLabels]);
-        const matchesSelected = deliverableTypeFilter === "Todos" || allRelatedLabels.some((label) => normalizeSystemName(label) === selectedKey);
-        if (!matchesSelected || !allRelatedLabels.length) return null;
+        const matchesSelected = deliverableTypeFilter === "Todos" || clientLabels.some((label) => normalizeSystemName(label) === selectedKey);
+        if (!matchesSelected || !clientLabels.length) return null;
         return {
           ...item,
           __clientDeliverableLabels: clientLabels,
-          __gseDeliverableLabels: gseLabels,
-          __clientDeliverableKey: `${item.id || "sin-id"}-${itemIndex}-${normalizeSystemName(allRelatedLabels.join("-"))}`,
+          __clientDeliverableKey: `${item.id || "sin-id"}-${itemIndex}-${normalizeSystemName(clientLabels.join("-"))}`,
         };
       })
       .filter(Boolean);
@@ -5303,7 +5753,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     };
 
     return filteredFindings.reduce((acc, item) => {
-      addLabels(acc, getGseDeliverableLabels(item), "gse");
       addLabels(acc, item.__clientDeliverableLabels || getVisibleClientDeliverableLabels(item), "client");
       return acc;
     }, {});
@@ -5340,7 +5789,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
 
   useEffect(() => {
     setMobileFindingsVisible(6);
-  }, [searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, areaFilter, responsibleFilter, statusFilter]);
+  }, [searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, responsibleFilter, statusFilter]);
 
   const activePending = pending.filter(isPendingActive).length;
   const findingsBackView = previousView === "coe" ? "coe" : "portal";
@@ -5351,11 +5800,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
 
   const finishFindingsSwipe = (touch) => {
     if (!mobileFindingsTouchStart) return;
-    const diffX = mobileFindingsTouchStart.x - touch.clientX;
-    const diffY = mobileFindingsTouchStart.y - touch.clientY;
-    if (Math.abs(diffX) > 24 && Math.abs(diffX) > Math.abs(diffY) * 1.05) {
-      setMobileDeliverableSide((current) => current === "gse" ? "client" : "gse");
-    }
     setMobileFindingsTouchStart(null);
   };
 
@@ -5368,7 +5812,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
   const mobileDeliverableRows = Object.values(visibleDeliverableSummary)
     .map((item) => ({
       label: item.label,
-      value: mobileDeliverableSide === "gse" ? item.gse : item.client,
+      value: item.client,
     }))
     .filter((item) => item.value > 0);
 
@@ -5381,7 +5825,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     const key = `mobile-${item.id}-${item.finding || item.description}`;
     const isOpen = open === key;
     const clientDeliverables = getClientDeliverableLabels(item);
-    const gseDeliverables = getGseDeliverableLabels(item);
     return (
       <article className={`mobileFindingCard ${isOpen ? "open" : ""}`}>
         <i />
@@ -5400,12 +5843,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
           <div className="findingClientDeliverables">
             <strong>Entregable cliente</strong>
             <span>{clientDeliverables.join(", ")}</span>
-          </div>
-        )}
-        {gseDeliverables.length > 0 && (
-          <div className="findingClientDeliverables gse">
-            <strong>Entregable GSE</strong>
-            <span>{gseDeliverables.join(", ")}</span>
           </div>
         )}
         {deliveryDate && <p>Fecha de entrega: {deliveryDate}</p>}
@@ -5491,10 +5928,9 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
         >
           <i />
           <div className="mobileFindingsDeliverableHead">
-            <span>{mobileDeliverableSide === "gse" ? "GSE" : "Cliente"}</span>
-            <b>{mobileDeliverableSide === "gse" ? visibleDeliverableTotals.gse : visibleDeliverableTotals.client} entregables</b>
+            <span>Cliente</span>
+            <b>{visibleDeliverableTotals.client} entregables</b>
           </div>
-          <button className="mobileFindingsDeliverableArrow left" type="button" onClick={() => setMobileDeliverableSide(mobileDeliverableSide === "gse" ? "client" : "gse")}><ChevronLeft size={26} /></button>
           <div className="mobileFindingsDeliverableRows">
             {mobileDeliverableRows.map((item) => (
               <div key={item.label}>
@@ -5505,10 +5941,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
             ))}
             {!mobileDeliverableRows.length && <p className="mobileFindingsEmptyText">Sin entregables para los filtros activos.</p>}
           </div>
-          <button className="mobileFindingsDeliverableArrow right" type="button" onClick={() => setMobileDeliverableSide(mobileDeliverableSide === "gse" ? "client" : "gse")}><ChevronRight size={26} /></button>
-          <button className="mobileFindingsNextDeliverable" type="button" onClick={() => setMobileDeliverableSide(mobileDeliverableSide === "gse" ? "client" : "gse")}>
-            Entregables {mobileDeliverableSide === "gse" ? "clientes" : "GSE"} <ChevronRight size={14} />
-          </button>
         </article>
 
         <div className="mobileFindingsFilters">
@@ -5516,7 +5948,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
           <FilterSelect label="Tipo de entregable" value={deliverableTypeFilter} onChange={setDeliverableTypeFilter} options={deliverableTypes} />
           <FilterSelect label="Prioridad" value={priorityFilter} onChange={setPriorityFilter} options={priorities} />
           <FilterSelect label="Gerencia" value={managementFilter} onChange={setManagementFilter} options={managements} />
-          <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areas} />
           <FilterSelect label="Responsable" value={responsibleFilter} onChange={setResponsibleFilter} options={responsibles} />
           <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statuses} />
         </div>
@@ -5620,22 +6051,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       </div>
 
       <div className="findingsDeliverablesSplitGrid compactDeliverableCards">
-        <article className="findingsDeliverableDashboardCard gse">
-          <div className="findingsDeliverableDashboardHeader">
-            <span>Entregables GSE</span>
-            <strong>{visibleDeliverableTotals.gse}</strong>
-          </div>
-          <div className="findingsDeliverableBreakdownRows">
-            {Object.values(visibleDeliverableSummary).filter((item) => item.gse > 0).map((item) => (
-              <div key={`gse-${item.label}`}>
-                <span>{item.label}</span>
-                <div><i style={{ width: `${visibleDeliverableCategoryTotals.gse ? (item.gse / visibleDeliverableCategoryTotals.gse) * 100 : 0}%` }} /></div>
-                <strong>{item.gse}</strong>
-              </div>
-            ))}
-            {!visibleDeliverableTotals.gse && <p className="findingsDeliverableEmpty">Sin entregables GSE para los filtros activos.</p>}
-          </div>
-        </article>
         <article className="findingsDeliverableDashboardCard client">
           <div className="findingsDeliverableDashboardHeader">
             <span>Entregables cliente</span>
@@ -5670,7 +6085,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
         <FilterSelect label="Tipo de entregable" value={deliverableTypeFilter} onChange={setDeliverableTypeFilter} options={deliverableTypes} />
         <FilterSelect label="Prioridad" value={priorityFilter} onChange={setPriorityFilter} options={priorities} />
         <FilterSelect label="Gerencia" value={managementFilter} onChange={setManagementFilter} options={managements} />
-        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areas} />
         <FilterSelect label="Responsable" value={responsibleFilter} onChange={setResponsibleFilter} options={responsibles} />
         <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statuses} />
       </div>
@@ -5686,7 +6100,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
           const status = item.status || "Pendiente";
           const deliveryDate = getFindingField(item, "date");
           const clientDeliverables = getClientDeliverableLabels(item);
-          const gseDeliverables = getGseDeliverableLabels(item);
 
           return (
             <article key={key} className={`findingWhiteCard ${isOpen ? "selected" : ""}`}>
@@ -5701,12 +6114,6 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
                     <div className="findingClientDeliverables">
                       <strong>Entregable cliente</strong>
                       <span>{clientDeliverables.join(", ")}</span>
-                    </div>
-                  )}
-                  {gseDeliverables.length > 0 && (
-                    <div className="findingClientDeliverables gse">
-                      <strong>Entregable GSE</strong>
-                      <span>{gseDeliverables.join(", ")}</span>
                     </div>
                   )}
                   {deliveryDate && <p className="findingDeliveryDate">Fecha de entrega: {deliveryDate}</p>}
@@ -6564,6 +6971,10 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
   const [searchTerm, setSearchTerm] = useState("");
   const [openDeliverable, setOpenDeliverable] = useState("");
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
+  const [localDeliverableValidation, setLocalDeliverableValidation] = useState({});
+  const [savingDeliverableValidation, setSavingDeliverableValidation] = useState({});
+  const validationWebhookUrl = safeUrl(import.meta.env.VITE_STRUCTURE_ROF_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_STRUCTURE_ASSET_VALIDATION_WEBHOOK_URL || "");
+  const spreadsheetId = getActiveSpreadsheetId();
 
   const systems = [...new Set(deliverables.map((d) => d.system).filter(Boolean))];
   const statuses = [...new Set(deliverables.map((d) => d.status).filter(Boolean))];
@@ -6617,7 +7028,74 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
   const mobileItems = filtered.slice(0, mobileVisibleCount);
   const deliverablesBackView = previousView === "procesos" ? "procesos" : "portal";
   const activePending = pending.filter(isPendingActive).length;
-useEffect(() => {
+  const getDeliverableValidationKey = (item) => String(item.rowNumber || `${item.system}-${item.milestone}-${item.deliverable}`);
+  const isDeliverableValidated = (item) => {
+    const key = getDeliverableValidationKey(item);
+    if (Object.prototype.hasOwnProperty.call(localDeliverableValidation, key)) return localDeliverableValidation[key];
+    return isCheckedSheetValue(item.clientValidated) || isCheckedSheetValue(item.validated);
+  };
+  const isDeliverableSaving = (item) => Boolean(savingDeliverableValidation[getDeliverableValidationKey(item)]);
+
+  const handleValidateDeliverable = async (item) => {
+    if (!item || isDeliverableValidated(item) || isDeliverableSaving(item)) return;
+    const label = item.deliverable || "este entregable";
+    if (!window.confirm(`¿Confirmas que validas ${label}?`)) return;
+
+    const key = getDeliverableValidationKey(item);
+    setLocalDeliverableValidation((current) => ({ ...current, [key]: true }));
+    setSavingDeliverableValidation((current) => ({ ...current, [key]: true }));
+
+    if (!validationWebhookUrl) {
+      setLocalDeliverableValidation((current) => ({ ...current, [key]: false }));
+      setSavingDeliverableValidation((current) => ({ ...current, [key]: false }));
+      window.alert("Falta configurar VITE_STRUCTURE_ROF_VALIDATION_WEBHOOK_URL en Vercel.");
+      return;
+    }
+
+    try {
+      const session = getClientSession();
+      const response = await fetch(validationWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "updateStructureRofValidation",
+          spreadsheetId,
+          targetType: "deliverable",
+          sheetName: "Entregables",
+          rowNumber: item.rowNumber,
+          deliverable: item.deliverable,
+          activity: item.activity,
+          milestone: item.milestone,
+          system: item.system,
+          field: "validadocliente",
+          value: "SI",
+          validatedAt: new Date().toISOString(),
+          validatedBy: session.nombre || session.usuario || session.cliente || "Cliente",
+          user: session.usuario || "",
+        }),
+      });
+
+      const text = await response.text();
+      let result = {};
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = { ok: response.ok, message: text };
+      }
+
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.message || "No se pudo guardar la validación.");
+      }
+    } catch (error) {
+      console.error(error);
+      setLocalDeliverableValidation((current) => ({ ...current, [key]: false }));
+      window.alert(error.message || "No se pudo guardar la validación del entregable.");
+    } finally {
+      setSavingDeliverableValidation((current) => ({ ...current, [key]: false }));
+    }
+  };
+
+  useEffect(() => {
     setMobileVisibleCount(6);
   }, [searchTerm, systemFilter, responsibleFilter, statusFilter]);
 
@@ -6805,9 +7283,11 @@ useEffect(() => {
           const selected = selectedDeliverable === item.deliverable;
           const deliverableKey = `${item.system}-${item.milestone}-${item.deliverable}`;
           const isOpen = openDeliverable === deliverableKey;
+          const validated = isDeliverableValidated(item);
+          const saving = isDeliverableSaving(item);
           return (
             <div
-              className={`deliverableCard ${selected ? "selected" : ""} ${compact ? "clickable" : ""}`}
+              className={`deliverableCard ${selected ? "selected" : ""} ${validated ? "clientValidated" : ""} ${compact ? "clickable" : ""}`}
               key={deliverableKey}
               onClick={() => {
                 if (compact) {
@@ -6837,6 +7317,19 @@ useEffect(() => {
                 <a className="secondaryLink routeSecondaryLinkFixed" href={link} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
                   Ver entregable <ExternalLink size={15} />
                 </a>
+              )}
+              {!compact && (
+                <button
+                  type="button"
+                  className={`deliverableValidateButton ${validated ? "validated" : ""}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleValidateDeliverable(item);
+                  }}
+                  disabled={validated || saving}
+                >
+                  {saving ? "Guardando..." : validated ? "Validado" : "Validar"}
+                </button>
               )}
             </div>
           );
@@ -10650,7 +11143,7 @@ function App() {
     return () => window.clearTimeout(timer);
   }, [loadingData, session?.sheetId]);
 
-  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], architectureRolesToBe = [], indicators = [], qualityCommittee = [], clientExperience = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
+  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], architectureRolesToBe = [], organizationProcesses = [], indicators = [], qualityCommittee = [], clientExperience = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
   const completedText = useMemo(() => {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
@@ -10789,7 +11282,17 @@ function App() {
             </>
           )}
           {view === "procesos" && <ProcessesMasterList project={project} processesAsIs={processesAsIs} processesToBe={processesToBe} pending={pending} setView={navigate} previousView={previousView} />}
-          {view === "estructura" && <StructureView project={project} architectureRoles={architectureRoles} architectureRolesToBe={architectureRolesToBe} />}
+          {view === "estructura" && (
+            <StructureView
+              project={project}
+              architectureRoles={architectureRoles}
+              architectureRolesToBe={architectureRolesToBe}
+              deliverables={deliverables}
+              organizationProcesses={organizationProcesses}
+              processesAsIs={processesAsIs}
+              processesToBe={processesToBe}
+            />
+          )}
           {view === "indicadores" && <ImplementationIndicators indicators={indicators} />}
           {view === "comite-calidad" && <QualityCommittee committee={qualityCommittee} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}

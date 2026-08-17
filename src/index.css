@@ -20732,6 +20732,38 @@ body {
   font-weight: 400 !important;
 }
 
+.deliverablesSection .deliverableValidateButton {
+  width: fit-content !important;
+  min-height: 34px !important;
+  margin-top: 2px !important;
+  padding: 0 16px !important;
+  border: 1px solid #bfe5e4 !important;
+  background: #ffffff !important;
+  color: #087d78 !important;
+  -webkit-text-fill-color: #087d78 !important;
+  font-size: 0.82rem !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.deliverablesSection .deliverableValidateButton:hover,
+.deliverablesSection .deliverableValidateButton:focus-visible {
+  border-color: #00b8b5 !important;
+  background: #e9fafa !important;
+  outline: none !important;
+}
+
+.deliverablesSection .deliverableValidateButton.validated,
+.deliverablesSection .deliverableValidateButton:disabled {
+  border-color: #00b8b5 !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  cursor: default !important;
+  opacity: 0.9 !important;
+}
+
 @media (max-width: 1100px) {
   .deliverablesSection .deliverablesSummaryGrid,
   .deliverablesSection .premiumFilters.deliverablesFilters,
@@ -26616,6 +26648,73 @@ body {
   background: #ffffff !important;
 }
 
+.structureRofCard {
+  display: grid !important;
+  gap: 18px !important;
+  background: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(4, 31, 36, 0.08) !important;
+  padding: 26px !important;
+  overflow: hidden !important;
+}
+
+.rofPreviewFrame {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 420px !important;
+  background: #f7fcfc !important;
+  border: 1px solid rgba(0, 184, 181, 0.18) !important;
+  overflow: hidden !important;
+}
+
+.rofPreviewFrame iframe {
+  display: block !important;
+  width: 100% !important;
+  height: 520px !important;
+  border: 0 !important;
+  background: #ffffff !important;
+}
+
+.rofPreviewFallback {
+  display: none;
+}
+
+.rofOpenButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.rofEmptyPreview {
+  min-height: 220px !important;
+  background: #f7fcfc !important;
+  border: 1px dashed rgba(0, 184, 181, 0.24) !important;
+  align-content: center !important;
+}
+
+.rofEmptyPreview strong {
+  color: #102e35 !important;
+  -webkit-text-fill-color: #102e35 !important;
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+}
+
+.rofEmptyPreview a,
+.rofPreviewFallback a {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: fit-content !important;
+  margin: 0 auto !important;
+  padding: 10px 16px !important;
+  background: #00b8b5 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-decoration: none !important;
+  font-size: 0.84rem !important;
+  font-weight: 800 !important;
+}
+
 .structureEmptyImage {
   min-height: 240px !important;
   display: grid !important;
@@ -26801,6 +26900,11 @@ body {
   background: #00b8b5 !important;
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
+}
+
+.imageToggleButtons button:disabled {
+  cursor: default !important;
+  opacity: 0.82 !important;
 }
 
 .imageDownloadButton {
@@ -28729,6 +28833,460 @@ body {
 .structureProfileEmpty {
   color: #8a9ca1 !important;
   font-size: 0.76rem !important;
+}
+
+/* STRUCTURE_ORG_PROCESS_TREE_V1 */
+.structureOrgChartCard {
+  background: #ffffff;
+  padding: 20px;
+  box-shadow: 0 18px 45px rgba(0, 88, 86, 0.075);
+}
+
+.structureOrgChartLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.35fr);
+  gap: 16px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+.orgCanvasToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.orgCanvasToolbar button {
+  min-width: 34px;
+  height: 30px;
+  padding: 0 10px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 184, 181, 0.34);
+  color: #007e7c;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.orgCanvasToolbar button:hover {
+  background: #e9fbfa;
+}
+
+.orgCanvasToolbar span {
+  min-width: 44px;
+  color: #102e35;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.orgCanvasViewport {
+  position: relative;
+  max-height: 460px;
+  min-height: 430px;
+  overflow: hidden;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 28, 0.08);
+  cursor: grab;
+  user-select: none;
+  scrollbar-color: #00b8b5 #e7f5f4;
+  scrollbar-width: thin;
+}
+
+.orgCanvasViewport:active {
+  cursor: grabbing;
+}
+
+.orgCanvasContent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 1500px;
+  min-height: 760px;
+  padding: 34px 44px;
+  transform-origin: top center;
+  transition: transform 0.12s ease;
+}
+
+.orgConnectorLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.orgConnectorLine {
+  fill: none;
+  stroke: #2f3538;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.orgTree {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  width: max-content;
+  min-width: 100%;
+  pointer-events: auto;
+}
+
+.orgTreeNodeWrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 150px;
+}
+
+.orgTree > .orgTreeNodeWrap {
+  min-width: 0;
+  width: max-content;
+}
+
+.orgTreeNodeWrap.hasOpenChildren > .orgTreeNode::after {
+  display: none;
+}
+
+.orgTreeChildren {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  width: max-content;
+  margin-top: 28px;
+  padding-top: 14px;
+}
+
+.orgTreeChildren::before {
+  display: none;
+}
+
+.orgTreeChildren.singleChild::before {
+  display: none;
+}
+
+.orgTreeChildren > .orgTreeNodeWrap::before {
+  display: none;
+}
+
+.orgTreeChildren > .orgTreeNodeWrap:only-child::before {
+  height: 28px;
+  top: -28px;
+}
+
+.orgTreeNode {
+  position: relative;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  grid-template-areas:
+    "chev main"
+    "meta meta";
+  gap: 7px 8px;
+  align-items: center;
+  width: 150px;
+  min-height: 62px;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 2px solid #7d878b;
+  border-top: 2px solid #7d878b;
+  color: #102e35;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: none;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.orgTreeNode:hover,
+.orgTreeNode.selected {
+  background: #f7fcfc;
+  border-color: #00b8b5;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 88, 86, 0.08);
+}
+
+.orgTreeNode.selected {
+  outline: 1px solid rgba(0, 184, 181, 0.24);
+  outline-offset: 3px;
+}
+
+.orgTreeNode.type-company,
+.orgTreeNode.type-management,
+.orgTreeNode.type-area,
+.orgTreeNode.type-supervision,
+.orgTreeNode.type-position {
+  min-height: 58px;
+  background: #ffffff;
+  border: 1px solid #9fb9bd;
+  border-top: 4px solid #00b8b5;
+  border-radius: 0;
+}
+
+.orgTreeNode.type-company {
+  background: #f7fcfc;
+  border-color: #7d878b;
+}
+
+.orgTreeNode.type-management,
+.orgTreeNode.type-area {
+  background: #c9e2e6;
+}
+
+.orgTreeChevron {
+  grid-area: chev;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+  color: #00a8a5;
+  background: rgba(0, 184, 181, 0.14);
+  border-radius: 999px;
+}
+
+.orgTreeChevron svg {
+  transition: transform 0.18s ease;
+}
+
+.orgTreeChevron svg.open {
+  transform: rotate(90deg);
+}
+
+.orgTreeMain {
+  grid-area: main;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  text-align: center;
+}
+
+.orgTreeMain em {
+  color: #00a8a5;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.orgTreeMain strong {
+  color: #102e35;
+  font-size: 10px;
+  line-height: 1.18;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.orgTreeMain small {
+  color: #587078;
+  font-size: 8px;
+  line-height: 1.25;
+}
+
+.orgTreeProcessDrawer {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 8px;
+  width: 150px;
+  margin-top: 7px;
+  padding: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 28, 0.14);
+  border-left: 3px solid #00b8b5;
+  box-shadow: none;
+}
+
+.orgTreeProcessDrawer section {
+  display: grid;
+  gap: 5px;
+}
+
+.orgTreeProcessDrawer h4 {
+  margin: 0;
+  color: #00a8a5;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.orgTreeProcessDrawer .orgProcessList {
+  gap: 0;
+}
+
+.orgTreeProcessDrawer .orgProcessList article {
+  display: grid;
+  gap: 2px;
+  padding: 6px 0;
+  background: transparent;
+  border-left: 0;
+  border-bottom: 1px solid rgba(0, 184, 181, 0.18);
+}
+
+.orgTreeProcessDrawer .orgProcessList article:last-child {
+  border-bottom: 0;
+}
+
+.orgTreeProcessDrawer .orgProcessList strong {
+  font-size: 9px;
+}
+
+.orgTreeProcessDrawer .orgProcessList span {
+  font-size: 9px;
+  line-height: 1.2;
+}
+
+.orgTreeProcessDrawer .orgProcessList p {
+  display: none;
+}
+
+.orgTreeMeta {
+  grid-area: meta;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  color: #587078;
+  font-size: 8px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.orgTreeMeta b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  background: #00b8b5;
+  color: #ffffff;
+  font-size: 8px;
+}
+
+.orgProcessPanel {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  background: #f7fcfc;
+  border: 1px solid rgba(0, 184, 181, 0.18);
+}
+
+.orgProcessPanel > span {
+  color: #00a8a5;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.orgProcessPanel h3 {
+  margin: 0;
+  color: #102e35;
+  font-size: 20px;
+  line-height: 1.08;
+  font-weight: 800;
+}
+
+.orgProcessPanel p {
+  margin: 0;
+  color: #587078;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.orgProcessPanelMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.orgProcessPanelMeta small {
+  padding: 6px 8px;
+  background: #ffffff;
+  color: #102e35;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.orgProcessColumns {
+  display: grid;
+  gap: 10px;
+}
+
+.orgProcessColumns section {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 184, 181, 0.18);
+}
+
+.orgProcessColumns h4 {
+  margin: 0;
+  color: #102e35;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.orgProcessList {
+  display: grid;
+  gap: 8px;
+}
+
+.orgProcessList article {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  background: #ffffff;
+  border-left: 4px solid #00b8b5;
+}
+
+.orgProcessList strong {
+  color: #00a8a5;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.orgProcessList span {
+  color: #102e35;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.orgProcessList p,
+.orgProcessEmpty {
+  color: #587078;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (max-width: 980px) {
+  .structureOrgChartLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .orgProcessPanel {
+    position: static;
+  }
+
+  .orgTree {
+    justify-content: flex-start;
+  }
 }
 
 

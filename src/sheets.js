@@ -66,6 +66,7 @@ export const demoData = {
   coeToBe: [],
   architectureRoles: [],
   architectureRolesToBe: [],
+  organizationProcesses: [],
   indicators: [],
   qualityCommittee: [],
   clientExperience: [],
@@ -412,6 +413,36 @@ function findProjectFieldValue(cleanRows, possibleKeys = []) {
   return "";
 }
 
+function findProjectRelatedValue(cleanRows, possibleFields = [], possibleColumns = []) {
+  const normalizedFields = possibleFields.map(normalizeKey);
+  const normalizedColumns = possibleColumns.map(normalizeKey);
+  const headerRows = cleanRows
+    .map((row, index) => ({ row, index, keys: row.map(normalizeKey) }))
+    .filter((entry) => entry.keys.some((key) => normalizedColumns.includes(key)));
+
+  for (let rowIndex = 0; rowIndex < cleanRows.length; rowIndex++) {
+    const row = cleanRows[rowIndex] || [];
+    const normalizedRow = row.map(normalizeKey);
+    const hasField = normalizedRow.some((key) => normalizedFields.includes(key));
+    if (!hasField) continue;
+
+    for (let columnIndex = 0; columnIndex < normalizedRow.length; columnIndex++) {
+      if (!normalizedColumns.includes(normalizedRow[columnIndex])) continue;
+      const nextValue = cleanText(row[columnIndex + 1]);
+      if (nextValue) return nextValue;
+    }
+
+    const header = [...headerRows].reverse().find((entry) => entry.index < rowIndex) || headerRows[0];
+    if (!header) continue;
+
+    const valueIndex = header.keys.findIndex((key) => normalizedColumns.includes(key));
+    const value = cleanText(row[valueIndex]);
+    if (value) return value;
+  }
+
+  return "";
+}
+
 function projectFromRawRows(rows) {
   const map = {};
   const validKeys = [
@@ -560,6 +591,8 @@ function projectFromRawRows(rows) {
     documentUploadLink: map.linkcargadocumentos || map.enlacecargadocumentos || map.linkdocumentos || map.enlacedocumentos || map.linkonedrive || map.onedrive || demoData.project.documentUploadLink,
     structureImage: map.imagenestructura || map.estructuraimagen || map.linkestructura || map.enlaceestructura || demoData.project.structureImage,
     structureToBeImage: map.imagenestructuratobe || findProjectFieldValue(cleanRows, ["ImagenEstructuraTOBE", "Imagen Estructura TO BE", "Estructura TO BE"]) || demoData.project.structureToBeImage,
+    structureAsIsValidated: findProjectRelatedValue(cleanRows, ["ImagenEstructura", "Imagen Estructura", "Estructura AS IS"], ["validadocliente", "ValidadoCliente", "Validado Cliente", "ValidacionCliente", "Validación Cliente"]),
+    structureToBeValidated: findProjectRelatedValue(cleanRows, ["ImagenEstructuraTOBE", "Imagen Estructura TO BE", "Estructura TO BE"], ["validadocliente", "ValidadoCliente", "Validado Cliente", "ValidacionCliente", "Validación Cliente"]),
     processMapAsIsImage: map.imagenmapadeprocesos || map.imagenmapaprocesos || map.linkmapaprocesos || map.enlacemapaprocesos || findProjectFieldValue(cleanRows, ["ImagenMapadeprocesos", "Imagen Mapa de procesos", "Imagen Mapa de Procesos", "ImagenMapaProcesos"]) || demoData.project.processMapAsIsImage,
     processMapToBeImage: map.imagenmapadeprocesostobe || map.imagenmapaprocesostobe || map.mapaprocesostobe || findProjectFieldValue(cleanRows, ["ImagenMapadeprocesosTOBE", "Imagen Mapa de procesos TO BE", "ImagenMapaProcesosTOBE", "Mapa procesos TO BE", "Mapa de procesos TO BE"]) || demoData.project.processMapToBeImage,
     businessModelImage: map.modelodenegocio || map.modelonegocio || map.imagenmodelodenegocio || findProjectFieldValue(cleanRows, ["Modelodenegocio", "Modelo de negocio", "ImagenModeloDeNegocio", "Imagen Modelo de negocio"]) || demoData.project.businessModelImage,
@@ -687,7 +720,8 @@ function mapDeliverables(rows) {
     status: getRowValue(row, ["Estado"]),
     date: getRowValue(row, ["Fecha", "Fecha entrega", "FechaEntrega", "Fecha máxima", "Fecha maxima", "FechaMax", "Fechamax"]),
     overdue: getRowValue(row, ["Vencido", "EstaVencido", "Está vencido", "Estado vencido", "Vencimiento"]),
-    validated: getRowValue(row, ["Validado", "Validada", "Validacion", "Validación", "Estado validado"]),
+    validated: getRowValue(row, ["validadocliente", "ValidadoCliente", "Validado Cliente", "ValidacionCliente", "Validación Cliente", "Validado", "Validada", "Validacion", "Validación", "Estado validado"]),
+    clientValidated: getRowValue(row, ["validadocliente", "ValidadoCliente", "Validado Cliente", "ValidacionCliente", "Validación Cliente"]),
     responsible: getRowValue(row, ["Responsable", "responsable", "Owner", "Encargado", "ResponsableEntregable", "Responsable Entregable"]),
     progress: parseNumber(getRowValue(row, ["% Avance", "Avance", "Progreso"])),
     weight: getRowValue(row, ["Ponderacion", "Ponderación", "Peso", "PesoProyecto", "Peso Proyecto", "PesoAvance", "Peso Avance"]),
@@ -822,6 +856,24 @@ function mapArchitectureRoles(rows) {
     status: getRowValue(row, ["STATUS", "Status", "Estado"]),
     validated: getRowValue(row, ["Validado", "VALIDADO", "Validada"]),
   })).filter((x) => x.gerencia || x.area || x.cargo || x.profileUrl || x.occupationalGroup || x.abbreviation || x.status);
+}
+
+function mapOrganizationProcesses(rows) {
+  return rows.map((row, index) => ({
+    id: getRowValue(row, ["IDNodo", "ID Nodo", "IdNodo", "Id Nodo", "ID", "Id", "Codigo", "Código"]) || `ORG-${index + 1}`,
+    name: getRowValue(row, ["Nombre", "Nodo", "Titulo", "Título", "Cargo", "Area", "Área", "Gerencia"]),
+    type: getRowValue(row, ["Tipo", "TipoNodo", "Tipo Nodo", "Nivel"]),
+    parentId: getRowValue(row, ["IDPadre", "ID Padre", "IdPadre", "Id Padre", "Padre", "Parent", "ParentID"]),
+    management: getRowValue(row, ["Gerencia", "GERENCIA"]),
+    area: getRowValue(row, ["Area", "Área", "AREA", "ÁREA"]),
+    position: getRowValue(row, ["Cargo", "CARGO", "Puesto", "Rol"]),
+    responsible: getRowValue(row, ["Responsable", "Owner", "Encargado"]),
+    processesAsIs: getRowValue(row, ["ProcesosASIS", "Procesos AS IS", "Procesos As Is", "ASIS", "AS IS", "ProcesosActuales"]),
+    processesToBe: getRowValue(row, ["ProcesosTOBE", "Procesos TO BE", "Procesos To Be", "TOBE", "TO BE", "ProcesosPropuestos"]),
+    description: getRowValue(row, ["Descripcion", "Descripción", "Detalle", "DescripcionNodo", "Descripción Nodo"]),
+    order: parseNumber(getRowValue(row, ["Orden", "Order", "Secuencia"]), index + 1),
+    status: getRowValue(row, ["Estado", "Status", "Estatus"]) || "Activo",
+  })).filter((x) => x.id || x.name || x.parentId || x.processesAsIs || x.processesToBe);
 }
 
 function mapIndicators(rows) {
@@ -1012,7 +1064,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
   const tutorialSheetNames = ["Tutoriales", "tutoriales", "TUTORIALES", "Tutorial", "Ayuda", "Videos", "VideosTutoriales", "Videos Tutoriales"];
   const tutorialHeaders = ["Titulo", "Título", "Title", "Descripcion", "Descripción", "Description", "Link", "Enlace", "Video", "Youtube", "YouTube"];
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, architectureToBeRows, indicatorRows, qualityCommitteeRows, clientExperienceRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, architectureToBeRows, organizationProcessRows, indicatorRows, qualityCommitteeRows, clientExperienceRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
     fetchCsvRows("Proyecto", true, spreadsheetId),
     fetchCsvSheet("Hitos", true, spreadsheetId),
     fetchCsvSheet("Hallazgos", true, spreadsheetId),
@@ -1035,6 +1087,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchFirstAvailableSheet(["Documentos", "CargaDocumentos", "Carga de documentos", "Carga Documentos", "ChecklistDocumentos", "Checklist Documentos", "Checklist"], spreadsheetId),
     fetchFirstAvailableSheet(["ArquitecturaCargos", "Arquitectura Cargos", "Estructura", "EstructuraCargos", "Arquitectura"], spreadsheetId),
     fetchFirstAvailableSheet(["ArquitecturaCargosTOBE", "Arquitectura Cargos TO BE", "ArquitecturaCargos To Be", "Arquitectura Cargos To Be", "EstructuraTOBE", "Estructura TO BE"], spreadsheetId),
+    fetchFirstAvailableSheet(["OrganigramaProcesos", "Organigrama Procesos", "OrganigramaDeProcesos", "Organigrama de Procesos", "EstructuraProcesos", "Estructura Procesos"], spreadsheetId),
     fetchFirstAvailableSheet(["Indicadores", "ImplementacionIndicadores", "Implementación Indicadores", "Implementacion Indicadores", "IndicadoresImplementacion", "Indicadores Implementacion"], spreadsheetId),
     fetchFirstAvailableSheet(["ComiteCalidad", "ComitéCalidad", "Comite Calidad", "Comité Calidad", "Comite de Calidad", "Comité de Calidad"], spreadsheetId),
     fetchFirstAvailableSheet(["ExperienciaClientes", "Experiencia Clientes", "Tu experiencia", "Experiencia cliente", "Experiencia clientes"], spreadsheetId),
@@ -1066,6 +1119,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     documents: mapDocuments(documentRows),
     architectureRoles: mapArchitectureRoles(architectureRows),
     architectureRolesToBe: mapArchitectureRoles(architectureToBeRows),
+    organizationProcesses: mapOrganizationProcesses(organizationProcessRows),
     indicators: mapIndicators(indicatorRows),
     qualityCommittee: mapQualityCommittee(qualityCommitteeRows),
     clientExperience: mapClientExperience(clientExperienceRows),
