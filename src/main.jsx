@@ -790,8 +790,16 @@ function isCompletedStatus(status = "") {
 
 function isPendingCompleted(item = {}) {
   const status = normalizeSystemName(item.status || "");
-  const validation = normalizeSystemName(item.validationClient || item.validacionCliente || "");
-  return status.includes("terminado") || validation.includes("validado");
+  const validation = normalizeSystemName(item.validationClient || item.validacionCliente || item.implemento || item.implementado || "");
+  return (
+    status.includes("terminado") ||
+    status.includes("finalizado") ||
+    status.includes("completado") ||
+    validation.includes("validado") ||
+    validation.includes("implementado") ||
+    validation.includes("implemento") ||
+    validation.includes("completado")
+  );
 }
 
 function isPendingBlocked(item = {}) {
@@ -6175,7 +6183,7 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
   );
 }
 
-function PendingClient({ pending, compact = false, setView, previousView = "portal" }) {
+function PendingClient({ pending, compact = false, setView, previousView = "portal", onPendingValidationChange }) {
   const [openPending, setOpenPending] = useState("");
   const [pendingValidation, setPendingValidation] = useState({});
   const [savingValidation, setSavingValidation] = useState({});
@@ -6269,11 +6277,13 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
     const previous = pendingValidation[key] ?? item.validationClient ?? "";
 
     setPendingValidation((current) => ({ ...current, [key]: value }));
+    onPendingValidationChange?.(item, value);
     setSavingValidation((current) => ({ ...current, [key]: true }));
     setValidationMessage((current) => ({ ...current, [key]: "Guardando..." }));
 
     if (!pendingWebhookUrl) {
       setPendingValidation((current) => ({ ...current, [key]: previous }));
+      onPendingValidationChange?.(item, previous);
       setSavingValidation((current) => ({ ...current, [key]: false }));
       setValidationMessage((current) => ({
         ...current,
@@ -6317,6 +6327,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
     } catch (error) {
       console.error(error);
       setPendingValidation((current) => ({ ...current, [key]: previous }));
+      onPendingValidationChange?.(item, previous);
       setValidationMessage((current) => ({
         ...current,
         [key]: error.message || "No se pudo guardar."
@@ -11168,6 +11179,29 @@ function App() {
     setView(nextView);
   };
 
+  const handlePendingValidationChange = (target = {}, value = "") => {
+    const targetRow = target.rowNumber ? String(target.rowNumber) : "";
+    const targetRequest = normalizeSystemName(target.request || "");
+    const targetOwner = normalizeSystemName(target.owner || "");
+    const targetDueDate = normalizeSystemName(target.dueDate || "");
+
+    setData((current) => ({
+      ...current,
+      pending: (current.pending || []).map((item) => {
+        const sameRow = targetRow && String(item.rowNumber || "") === targetRow;
+        const sameRequest =
+          targetRequest &&
+          normalizeSystemName(item.request || "") === targetRequest &&
+          (!targetOwner || normalizeSystemName(item.owner || "") === targetOwner) &&
+          (!targetDueDate || normalizeSystemName(item.dueDate || "") === targetDueDate);
+
+        return sameRow || sameRequest
+          ? { ...item, validationClient: value, validacionCliente: value }
+          : item;
+      }),
+    }));
+  };
+
   if (!session?.sheetId) {
     return <ClientLogin onLogin={setSession} />;
   }
@@ -11297,7 +11331,7 @@ function App() {
           {view === "comite-calidad" && <QualityCommittee committee={qualityCommittee} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "hallazgos" && <Findings findings={findings} project={project} pending={pending} setView={navigate} previousView={previousView} />}
-          {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} />}
+          {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} onPendingValidationChange={handlePendingValidationChange} />}
           {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "entregables-clientes" && <ClientDeliverables findings={findings} project={project} />}
           {view === "documentos" && <DocumentsUpload documents={documents} project={project} setView={navigate} previousView={previousView} pending={pending} />}

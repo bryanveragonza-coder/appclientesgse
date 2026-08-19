@@ -705,6 +705,7 @@ function mapPending(rows) {
     technicalSheet: getRowValue(row, ["Ficha", "FichaTecnica", "Ficha TÃ©cnica", "Ficha Tecnica", "FichaTecnicaProceso", "Ficha Proceso", "LinkFicha", "Link Ficha", "LinkFichaTecnica", "Link Ficha Tecnica", "Link Ficha TÃ©cnica"]),
     validationClient: getRowValue(row, [
       "ValidacionDeCliente", "ValidaciÃ³nDeCliente", "Validacion De Cliente", "ValidaciÃ³n De Cliente", "ValidacionCliente", "ValidaciÃ³nCliente", "Validacion Cliente", "ValidaciÃ³n Cliente",
+      "Implemento", "Implementó", "ImplementÃ³", "Implementado", "ImplementadoCliente", "Implementado Cliente", "Implementó Cliente", "ImplementÃ³ Cliente",
       "Validado", "AprobacionCliente", "AprobaciÃ³nCliente", "Aprobacion Cliente", "AprobaciÃ³n Cliente"
     ]),
   })).filter((x) => Object.values(x).some((value) => cleanText(value)));
