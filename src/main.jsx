@@ -1437,7 +1437,7 @@ const meetUrl = safeUrl(project?.linkMeet);
         </article>
 
         <article className="canvaPanel canvaSystemsPanel">
-          <h3>Avances por Sistema</h3>
+          <h3>Avances</h3>
           <div className="canvaSystemGrid">
             {systemMetrics.map((item) => (
               <div className="canvaSystemMetric" key={item.label}>
@@ -1452,13 +1452,16 @@ const meetUrl = safeUrl(project?.linkMeet);
         <article className="canvaPanel canvaDetailPanel">
           <h3>Detalle de Avance Hitos</h3>
           <div className="canvaDetailTable">
-            <div className="canvaDetailHead"><span>ID</span><span>Nombre</span><span>Estado</span><span>Avance</span></div>
+            <div className="canvaDetailHead"><span>ID</span><span>Nombre</span><span>Estado</span><span>Avance</span><span>Progreso</span></div>
             {(filteredDetail.length ? filteredDetail : milestones).map((item, index) => (
               <button className="canvaDetailRow" key={`${item.id}-${index}`} onClick={() => setView?.("ruta")}>
                 <span>{item.id}</span>
                 <span>{item.title}</span>
                 <em className={statusClass(item.status)}>{item.status || "Pendiente"}</em>
                 <strong>{Number(item.progress) || 0}%</strong>
+                <i className="canvaDetailProgress" aria-hidden="true">
+                  <b style={{ width: `${Math.max(0, Math.min(100, Number(item.progress) || 0))}%` }} />
+                </i>
               </button>
             ))}
           </div>
@@ -2859,10 +2862,8 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
   const [architectureMatrixMode, setArchitectureMatrixMode] = useState("asis");
   const [expandedOrgNodes, setExpandedOrgNodes] = useState({});
   const [selectedOrgNodeId, setSelectedOrgNodeId] = useState("");
-  const [orgCanvasZoom, setOrgCanvasZoom] = useState(0.78);
+  const [orgCanvasZoom, setOrgCanvasZoom] = useState(1);
   const [orgCanvasPan, setOrgCanvasPan] = useState({ x: 0, y: 0 });
-  const [orgConnectors, setOrgConnectors] = useState([]);
-  const [showOrgChart, setShowOrgChart] = useState(false);
   const [localStructureValidation, setLocalStructureValidation] = useState({});
   const [savingStructureValidation, setSavingStructureValidation] = useState({});
   const [localRofValidated, setLocalRofValidated] = useState(false);
@@ -2901,13 +2902,13 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
   const rofRequiresExternalPreview = Boolean(rofLink && !/drive\.google\.com/i.test(rofLink));
   const rofValidated = localRofValidated || isCheckedSheetValue(rofDeliverable?.clientValidated) || isCheckedSheetValue(rofDeliverable?.validated);
   const visibleOrgNodes = useMemo(
-    () => organizationProcesses.filter((item) => !normalizeSystemName(item.status).includes("inactivo")),
+    () => organizationProcesses.filter((item) => normalizeSystemName(item.status || "Activo") === "activo"),
     [organizationProcesses]
   );
   const orgNodesByParent = useMemo(() => {
     const groups = new Map();
     visibleOrgNodes.forEach((item) => {
-      const parentKey = item.parentId || "__root__";
+      const parentKey = String(item.parentId || "").trim() || "__root__";
       groups.set(parentKey, [...(groups.get(parentKey) || []), item]);
     });
     groups.forEach((items, key) => {
@@ -2916,7 +2917,15 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
     return groups;
   }, [visibleOrgNodes]);
   const orgRootNodes = orgNodesByParent.get("__root__") || [];
-  const selectedOrgNode = visibleOrgNodes.find((item) => item.id === selectedOrgNodeId) || orgRootNodes[0] || visibleOrgNodes[0] || null;
+  const orgRootNode = useMemo(() => {
+    const general = visibleOrgNodes.find((item) => normalizeSystemName(item.name || "").includes("gerencia general"));
+    if (general) return general;
+    const nonCompanyRoot = orgRootNodes.find((item) => !isCompanyOrgNode(item));
+    if (nonCompanyRoot) return nonCompanyRoot;
+    const companyRoot = orgRootNodes.find(isCompanyOrgNode);
+    return companyRoot ? (orgNodesByParent.get(companyRoot.id) || []).find((item) => !isCompanyOrgNode(item)) || null : visibleOrgNodes.find((item) => !isCompanyOrgNode(item)) || null;
+  }, [visibleOrgNodes, orgRootNodes, orgNodesByParent]);
+  const selectedOrgNode = visibleOrgNodes.find((item) => item.id === selectedOrgNodeId) || orgRootNode || null;
   const asIsProcessMap = useMemo(() => {
     const map = new Map();
     processesAsIs.forEach((item) => {
@@ -2939,16 +2948,23 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
   }, [architectureMatrixMode]);
 
   useEffect(() => {
-    if (!visibleOrgNodes.length) return;
-    setSelectedOrgNodeId((current) => current || orgRootNodes[0]?.id || visibleOrgNodes[0]?.id || "");
-  }, [visibleOrgNodes, orgRootNodes]);
+    if (!orgRootNode?.id) {
+      setExpandedOrgNodes({});
+      setSelectedOrgNodeId("");
+      return;
+    }
+    setExpandedOrgNodes({ [orgRootNode.id]: true });
+    setSelectedOrgNodeId(orgRootNode.id);
+    setOrgCanvasZoom(1);
+    setOrgCanvasPan({ x: 0, y: 0 });
+  }, [orgRootNode?.id]);
 
   useEffect(() => {
     setRofPreviewFailed(false);
   }, [rofPreviewLink]);
 
   const centerOrgCanvas = () => {
-    setOrgCanvasZoom(0.78);
+    setOrgCanvasZoom(1);
     setOrgCanvasPan({ x: 0, y: 0 });
   };
 
@@ -2976,58 +2992,6 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
     orgCanvasDragRef.current = null;
     event.currentTarget.releasePointerCapture?.(event.pointerId);
   };
-
-  useEffect(() => {
-    if (!visibleOrgNodes.length) {
-      setOrgConnectors([]);
-      return undefined;
-    }
-
-    const updateOrgConnectors = () => {
-      const content = orgCanvasContentRef.current;
-      if (!content) return;
-
-      const contentRect = content.getBoundingClientRect();
-      const scale = orgCanvasZoom || 1;
-      const nextConnectors = [];
-
-      visibleOrgNodes.forEach((parent) => {
-        const parentElement = orgNodeRefs.current.get(parent.id);
-        const children = orgNodesByParent.get(parent.id) || [];
-        if (!parentElement || !children.length) return;
-
-        const parentRect = parentElement.getBoundingClientRect();
-        const parentBottom = {
-          x: (parentRect.left + parentRect.width / 2 - contentRect.left) / scale,
-          y: (parentRect.bottom - contentRect.top) / scale,
-        };
-
-        children.forEach((child) => {
-          const childElement = orgNodeRefs.current.get(child.id);
-          if (!childElement) return;
-          const childRect = childElement.getBoundingClientRect();
-          const childTop = {
-            x: (childRect.left + childRect.width / 2 - contentRect.left) / scale,
-            y: (childRect.top - contentRect.top) / scale,
-          };
-          const middleY = parentBottom.y + Math.max(16, (childTop.y - parentBottom.y) / 2);
-          nextConnectors.push({
-            id: `${parent.id}-${child.id}`,
-            path: `M ${parentBottom.x} ${parentBottom.y} V ${middleY} H ${childTop.x} V ${childTop.y}`,
-          });
-        });
-      });
-
-      setOrgConnectors(nextConnectors);
-    };
-
-    const frame = window.requestAnimationFrame(updateOrgConnectors);
-    window.addEventListener("resize", updateOrgConnectors);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("resize", updateOrgConnectors);
-    };
-  }, [visibleOrgNodes, orgNodesByParent, orgCanvasZoom]);
 
   const getValidationKey = (item) => [architectureMatrixMode, item.id || "sin-id", item.gerencia || "sin-gerencia", item.area || "sin-area", item.cargo || "sin-cargo"].join("|");
   const getValidated = (item) => {
@@ -3071,6 +3035,14 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
     .split(/[,;|\n\r]+/)
     .map((item) => item.trim())
     .filter(Boolean);
+  function isCompanyOrgNode(node = {}) {
+    const type = normalizeSystemName(node.type || "");
+    const name = normalizeSystemName(node.name || "");
+    const text = normalizeSystemName([node.position, node.area, node.management].join(" "));
+    const isGeneralManagement = name.includes("gerencia general") || text.includes("gerencia general");
+    if (isGeneralManagement) return false;
+    return name.includes("troyamotor") || (type.includes("empresa") && !name.includes("gerencia"));
+  }
   const renderProcessList = (codes = [], processMap, emptyText) => {
     if (!codes.length) return <p className="orgProcessEmpty">{emptyText}</p>;
     return (
@@ -3098,15 +3070,55 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
     if (text.includes("cargo") || text.includes("asistente") || text.includes("tecnico") || text.includes("vendedor") || text.includes("cajero") || level >= 3) return "position";
     return "area";
   };
+  const getOrgNodeChildren = (nodeOrId) => {
+    const nodeId = typeof nodeOrId === "string" ? nodeOrId : nodeOrId?.id;
+    return orgNodesByParent.get(nodeId) || [];
+  };
+
+  const removeOrgBranch = (next, nodeId) => {
+    delete next[nodeId];
+    getOrgNodeChildren(nodeId).forEach((child) => removeOrgBranch(next, child.id));
+  };
+
+  const handleOrgNodeSelect = (node) => {
+    const children = getOrgNodeChildren(node);
+    setSelectedOrgNodeId(node.id);
+    if (!children.length) return;
+
+    setExpandedOrgNodes((current) => {
+      const next = { ...current };
+      const isRoot = node.id === orgRootNode?.id;
+      const isOpen = Boolean(next[node.id]);
+
+      if (isOpen && !isRoot) {
+        removeOrgBranch(next, node.id);
+        if (orgRootNode?.id) next[orgRootNode.id] = true;
+        return next;
+      }
+
+      const parentKey = String(node.parentId || "").trim() || "__root__";
+      const siblings = orgNodesByParent.get(parentKey) || [];
+      siblings.forEach((sibling) => {
+        if (sibling.id !== node.id) removeOrgBranch(next, sibling.id);
+      });
+
+      next[node.id] = true;
+      if (orgRootNode?.id) next[orgRootNode.id] = true;
+      return next;
+    });
+  };
+
   const renderOrgNode = (node, level = 0) => {
     const children = orgNodesByParent.get(node.id) || [];
     const hasChildren = children.length > 0;
+    const isOpen = node.id === orgRootNode?.id || Boolean(expandedOrgNodes[node.id]);
     const asIsCodes = splitProcessCodes(node.processesAsIs);
     const toBeCodes = splitProcessCodes(node.processesToBe);
     const isSelected = selectedOrgNode?.id === node.id;
     const visualClass = getOrgNodeVisualClass(node, level);
+    const isStaff = normalizeSystemName(node.type || "").includes("staff");
     return (
-      <div className={`orgTreeNodeWrap level-${Math.min(level, 4)} ${hasChildren ? "hasOpenChildren" : ""} type-${visualClass}`} key={node.id}>
+      <div className={`orgTreeNodeWrap level-${Math.min(level, 4)} ${hasChildren && isOpen ? "hasOpenChildren" : ""} type-${visualClass} ${isStaff ? "staffNodeWrap" : ""}`} key={node.id}>
         <button
           ref={(element) => {
             if (element) {
@@ -3116,10 +3128,12 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
             }
           }}
           type="button"
-          className={`orgTreeNode level-${Math.min(level, 3)} type-${visualClass} ${isSelected ? "selected" : ""}`}
-          onClick={() => setSelectedOrgNodeId(node.id)}
+          className={`orgTreeNode level-${Math.min(level, 3)} type-${visualClass} ${isSelected ? "selected" : ""} ${hasChildren ? "expandable" : "leaf"} ${isStaff ? "staff" : ""}`}
+          onClick={() => handleOrgNodeSelect(node)}
         >
-          <span className="orgTreeChevron" aria-hidden="true" />
+          <span className="orgTreeChevron" aria-hidden="true">
+            {hasChildren ? <ChevronRight size={12} className={isOpen ? "open" : ""} /> : null}
+          </span>
           <span className="orgTreeMain">
             <em>{node.type || "Nodo"}</em>
             <strong>{node.name || node.position || node.area || node.management || "Sin nombre"}</strong>
@@ -3130,7 +3144,7 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
             <b>{toBeCodes.length}</b> TO BE
           </span>
         </button>
-        {hasChildren && (
+        {hasChildren && isOpen && (
           <div className={`orgTreeChildren ${children.length === 1 ? "singleChild" : ""}`}>
             {children.map((child) => renderOrgNode(child, level + 1))}
           </div>
@@ -3420,21 +3434,14 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
             <p>Selecciona un nodo para consultar sus procesos AS IS y TO BE en el panel lateral.</p>
           </div>
           <div className="orgCanvasToolbar">
-            {showOrgChart && (
-              <>
-                <button type="button" onClick={() => setOrgCanvasZoom((value) => Math.max(0.48, Number((value - 0.08).toFixed(2))))} aria-label="Alejar organigrama">-</button>
-                <span>{Math.round(orgCanvasZoom * 100)}%</span>
-                <button type="button" onClick={() => setOrgCanvasZoom((value) => Math.min(1.25, Number((value + 0.08).toFixed(2))))} aria-label="Acercar organigrama">+</button>
-                <button type="button" onClick={centerOrgCanvas}>Centrar</button>
-              </>
-            )}
-            <button type="button" className="orgShowMoreButton" onClick={() => setShowOrgChart((current) => !current)}>
-              {showOrgChart ? "Ver menos" : "Ver más"}
-            </button>
+            <button type="button" onClick={() => setOrgCanvasZoom((value) => Math.max(0.7, Number((value - 0.1).toFixed(2))))}>-</button>
+            <span>{Math.round(orgCanvasZoom * 100)}%</span>
+            <button type="button" onClick={() => setOrgCanvasZoom((value) => Math.min(1.35, Number((value + 0.1).toFixed(2))))}>+</button>
+            <button type="button" onClick={centerOrgCanvas}>Centrar</button>
             <Badge status="En validación">{visibleOrgNodes.length} nodos</Badge>
           </div>
         </div>
-        {showOrgChart && visibleOrgNodes.length ? (
+        {visibleOrgNodes.length && orgRootNode ? (
           <div className="structureOrgChartLayout">
             <div
               className="orgCanvasViewport"
@@ -3446,17 +3453,10 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
               <div
                 ref={orgCanvasContentRef}
                 className="orgCanvasContent"
-                style={{
-                  transform: `translate(${orgCanvasPan.x}px, ${orgCanvasPan.y}px) scale(${orgCanvasZoom})`,
-                }}
+                style={{ transform: `translate(${orgCanvasPan.x}px, ${orgCanvasPan.y}px) scale(${orgCanvasZoom})` }}
               >
-                <svg className="orgConnectorLayer" aria-hidden="true">
-                  {orgConnectors.map((connector) => (
-                    <path key={connector.id} className="orgConnectorLine" d={connector.path} />
-                  ))}
-                </svg>
-                <div className="orgTree">
-                  {orgRootNodes.map((node) => renderOrgNode(node))}
+                <div className="orgTree orgTreeInteractive">
+                  {renderOrgNode(orgRootNode, 0)}
                 </div>
               </div>
             </div>
@@ -3481,9 +3481,9 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
               </div>
             </aside>
           </div>
-        ) : showOrgChart ? (
+        ) : (
           <div className="emptyState">No tiene</div>
-        ) : null}
+        )}
       </div>
 
       <div className="premiumFilters processFilters structureFilters">
