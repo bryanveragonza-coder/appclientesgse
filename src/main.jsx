@@ -23,6 +23,7 @@ import {
   Eye,
   EyeOff,
   ExternalLink,
+  FolderOpen,
   FileText,
   UploadCloud,
   Flag,
@@ -2901,6 +2902,16 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
   const rofPreviewLink = rofLink ? getDocumentEmbedUrl(rofLink) : "";
   const rofRequiresExternalPreview = Boolean(rofLink && !/drive\.google\.com/i.test(rofLink));
   const rofValidated = localRofValidated || isCheckedSheetValue(rofDeliverable?.clientValidated) || isCheckedSheetValue(rofDeliverable?.validated);
+
+  useEffect(() => {
+    if (!structureAsIsImage && structureToBeImage) setStructureViewMode("tobe");
+    else if (structureAsIsImage) setStructureViewMode("asis");
+  }, [Boolean(structureAsIsImage), Boolean(structureToBeImage)]);
+
+  useEffect(() => {
+    if (!architectureRoles.length && architectureRolesToBe.length) setArchitectureMatrixMode("tobe");
+    else if (architectureRoles.length) setArchitectureMatrixMode("asis");
+  }, [architectureRoles.length, architectureRolesToBe.length]);
   const visibleOrgNodes = useMemo(
     () => organizationProcesses.filter((item) => normalizeSystemName(item.status || "Activo") === "activo"),
     [organizationProcesses]
@@ -3424,65 +3435,6 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
             <span>{rofLink ? "Este enlace no permite vista previa dentro del RIV. Ábrelo en una pestaña para revisarlo." : "No se encontró enlace del ROF en entregables."}</span>
             {rofLink && <a href={rofLink} target="_blank" rel="noreferrer">Abrir ROF <ExternalLink size={14} /></a>}
           </div>
-        )}
-      </div>
-
-      <div className="structureOrgChartCard">
-        <div className="processTableHeader">
-          <div>
-            <h3>Organigrama de procesos</h3>
-            <p>Selecciona un nodo para consultar sus procesos AS IS y TO BE en el panel lateral.</p>
-          </div>
-          <div className="orgCanvasToolbar">
-            <button type="button" onClick={() => setOrgCanvasZoom((value) => Math.max(0.7, Number((value - 0.1).toFixed(2))))}>-</button>
-            <span>{Math.round(orgCanvasZoom * 100)}%</span>
-            <button type="button" onClick={() => setOrgCanvasZoom((value) => Math.min(1.35, Number((value + 0.1).toFixed(2))))}>+</button>
-            <button type="button" onClick={centerOrgCanvas}>Centrar</button>
-            <Badge status="En validación">{visibleOrgNodes.length} nodos</Badge>
-          </div>
-        </div>
-        {visibleOrgNodes.length && orgRootNode ? (
-          <div className="structureOrgChartLayout">
-            <div
-              className="orgCanvasViewport"
-              onPointerDown={handleOrgCanvasPointerDown}
-              onPointerMove={handleOrgCanvasPointerMove}
-              onPointerUp={handleOrgCanvasPointerUp}
-              onPointerCancel={handleOrgCanvasPointerUp}
-            >
-              <div
-                ref={orgCanvasContentRef}
-                className="orgCanvasContent"
-                style={{ transform: `translate(${orgCanvasPan.x}px, ${orgCanvasPan.y}px) scale(${orgCanvasZoom})` }}
-              >
-                <div className="orgTree orgTreeInteractive">
-                  {renderOrgNode(orgRootNode, 0)}
-                </div>
-              </div>
-            </div>
-            <aside className="orgProcessPanel">
-              <span>{selectedOrgNode?.type || "Nodo seleccionado"}</span>
-              <h3>{selectedOrgNode?.name || "Selecciona un nodo"}</h3>
-              {selectedOrgNode?.description && <p>{selectedOrgNode.description}</p>}
-              <div className="orgProcessPanelMeta">
-                {selectedOrgNode?.management && <small>Gerencia: {selectedOrgNode.management}</small>}
-                {selectedOrgNode?.area && <small>Área: {selectedOrgNode.area}</small>}
-                {selectedOrgNode?.position && <small>Cargo: {selectedOrgNode.position}</small>}
-              </div>
-              <div className="orgProcessColumns">
-                <section>
-                  <h4>Procesos AS IS</h4>
-                  {renderProcessList(splitProcessCodes(selectedOrgNode?.processesAsIs), asIsProcessMap, "No tiene procesos AS IS asociados.")}
-                </section>
-                <section>
-                  <h4>Procesos TO BE</h4>
-                  {renderProcessList(splitProcessCodes(selectedOrgNode?.processesToBe), toBeProcessMap, "No tiene procesos TO BE asociados.")}
-                </section>
-              </div>
-            </aside>
-          </div>
-        ) : (
-          <div className="emptyState">No tiene</div>
         )}
       </div>
 
@@ -5775,6 +5727,25 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
   }, [visibleDeliverableSummary]);
 
   const visibleDeliverableCategoryTotals = visibleDeliverableTotals;
+  const clientDeliverableFolders = useMemo(() => {
+    const folders = new Map();
+    clientDeliverableFindings.forEach((item) => {
+      const url = safeUrl(item.link || item.image);
+      if (!url) return;
+      const labels = item.__clientDeliverableLabels || getClientDeliverableLabels(item);
+      labels.forEach((label) => {
+        const key = `${normalizeSystemName(label)}|${url}`;
+        if (!folders.has(key)) {
+          folders.set(key, {
+            label,
+            url,
+            detail: item.finding || item.description || item.processArea || "Abrir carpeta del entregable",
+          });
+        }
+      });
+    });
+    return [...folders.values()];
+  }, [clientDeliverableFindings]);
   const uniqueVisibleFindings = useMemo(() => {
     const map = new Map();
     clientDeliverableFindings.forEach((item, index) => {
@@ -6076,6 +6047,27 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
           </div>
         </article>
       </div>
+
+      {clientDeliverableFolders.length > 0 && (
+        <section className="findingsClientFolders" aria-labelledby="client-folders-title">
+          <div className="findingsClientFoldersHeader">
+            <h3 id="client-folders-title">Carpetas de entregables cliente</h3>
+            <span>{clientDeliverableFolders.length} disponibles</span>
+          </div>
+          <div className="findingsClientFolderGrid">
+            {clientDeliverableFolders.map((folder) => (
+              <a key={`${folder.label}-${folder.url}`} href={folder.url} target="_blank" rel="noreferrer" className="findingsClientFolderCard">
+                <FolderOpen size={24} aria-hidden="true" />
+                <span>
+                  <strong>{folder.label}</strong>
+                  <small>{folder.detail}</small>
+                </span>
+                <ExternalLink size={16} aria-hidden="true" />
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="premiumFilters findingsFilters findingsFiltersOrdered dependentFindingFilters">
         <label className="searchFilter findingsSearchFilter">
