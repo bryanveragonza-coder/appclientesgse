@@ -66,10 +66,12 @@ export const demoData = {
   coeToBe: [],
   architectureRoles: [],
   architectureRolesToBe: [],
+  personnelMatrix: [],
   organizationProcesses: [],
   indicators: [],
   qualityCommittee: [],
   clientExperience: [],
+  repository: [],
   documents: [
     {
       id: "1",
@@ -859,6 +861,45 @@ function mapArchitectureRoles(rows) {
   })).filter((x) => x.gerencia || x.area || x.cargo || x.profileUrl || x.occupationalGroup || x.abbreviation || x.status);
 }
 
+function mapPersonnelMatrix(rows) {
+  const optionalNumber = (value) => {
+    const clean = cleanText(value);
+    if (!clean) return null;
+    const parsed = Number(clean.replace("%", "").replace(",", "."));
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+  const averagePair = (first, second) => {
+    const value = ((Number(first) || 0) + (Number(second) || 0)) / 2;
+    return Math.max(0, Math.min(100, Number(value.toFixed(2))));
+  };
+
+  return rows.map((row, index) => {
+    const app60 = optionalNumber(getRowValue(row, ["APP/60", "APP 60", "APP60", "APP al 60"]));
+    const app40 = optionalNumber(getRowValue(row, ["APP/40", "APP 40", "APP40", "APP al 40"]));
+    const edd20 = optionalNumber(getRowValue(row, ["EDD/20", "EDD 20", "EDD20", "EDD al 20"]));
+    const edd80 = optionalNumber(getRowValue(row, ["EDD/80", "EDD 80", "EDD80", "EDD al 80"]));
+
+    return {
+      rowNumber: index + 2,
+      id: getRowValue(row, ["N.", "N°", "NÂ°", "N", "No", "Numero", "Número", "ID", "Id"]) || String(index + 1),
+      name: getRowValue(row, ["Nombre Completo", "NombreCompleto", "Nombre", "Colaborador", "Empleado"]),
+      management: getRowValue(row, ["Gerencia", "GERENCIA"]),
+      area: getRowValue(row, ["Área", "Area", "ÁREA", "AREA"]),
+      position: getRowValue(row, ["Cargo", "CARGO", "Puesto"]),
+      occupationalGroup: getRowValue(row, ["Grupo Ocupacional", "GrupoOcupacional", "Grupo"]),
+      salary: getRowValue(row, ["Sueldo", "Salario", "Sueldo actual", "SueldoActual"]),
+      app60,
+      app40,
+      edd20,
+      edd80,
+      employmentLevel: averagePair(app60, app40),
+      performanceLevel: averagePair(edd20, edd80),
+      proposedSalary: getRowValue(row, ["Sueldo propuesto", "SueldoPropuesto", "Salario propuesto", "SalarioPropuesto"]),
+      observation: getRowValue(row, ["Observación / recomendación TH", "Observacion / recomendacion TH", "Observación TH", "Observacion TH", "Recomendación", "Recomendacion", "Observación", "Observacion"]),
+    };
+  }).filter((item) => item.name || item.management || item.area || item.position);
+}
+
 function mapOrganizationProcesses(rows) {
   return rows.map((row, index) => ({
     id: getRowValue(row, ["IDNodo", "ID Nodo", "IdNodo", "Id Nodo", "ID", "Id", "Codigo", "Código"]) || `ORG-${index + 1}`,
@@ -1037,8 +1078,21 @@ function mapTutorials(rows) {
   })).filter((x) => x.title || x.description || x.link);
 }
 
+function mapRepository(rows) {
+  return rows.map((row, index) => ({
+    id: `${getRowValue(row, ["CODIGO", "CÓDIGO", "Codigo", "Código", "Code"]) || "DOC"}-${index + 1}`,
+    code: getRowValue(row, ["CODIGO", "CÓDIGO", "Codigo", "Código", "Code"]),
+    name: getRowValue(row, ["NOMBRE", "Nombre", "Documento", "Titulo", "Título"]),
+    description: getRowValue(row, ["DESCRIPCIÓN", "DESCRIPCION", "Descripción", "Descripcion", "Detalle"]),
+    updatedAt: getRowValue(row, ["ACTUALIZACION", "ACTUALIZACIÓN", "Actualizacion", "Actualización", "Fecha", "FechaActualizacion", "Fecha Actualización"]),
+    link: getRowValue(row, ["LINK", "Link", "URL", "Url", "Enlace", "Documento"]),
+    type: getRowValue(row, ["TIPO", "Tipo", "Categoria", "Categoría"]),
+  })).filter((item) => item.code || item.name || item.description || item.link || item.type);
+}
+
 function mapCOERows(rows) {
   return rows.map((row) => ({
+    sequence: getRowValue(row, ["N.", "N", "N°", "NÂ°", "No", "Número", "Numero"]),
     code: getRowValue(row, ["CÃ“DIGO", "CODIGO", "Codigo", "CÃ³digo", "CodigoProceso", "CÃ³digo Proceso", "Code"]),
     process: getRowValue(row, ["PROCESO", "Proceso", "NombreProceso", "Nombre del Proceso"]),
     processType: getRowValue(row, ["TIPO DE PROCESO", "Tipo de Proceso", "TipoProceso", "TIPO PROCESO", "Tipo", "Tipo Proceso"]),
@@ -1048,6 +1102,13 @@ function mapCOERows(rows) {
     time: getRowValue(row, ["TIEMPO (xmin)", "Tiempo (xmin)", "Tiempo", "TIEMPO", "TiempoXmin", "Tiempo xmin"]),
     cost: getRowValue(row, ["COSTO (xmin)", "Costo (xmin)", "Costo", "COSTO", "CostoXmin", "Costo xmin"]),
     frequency: getRowValue(row, ["FRECUENCIA", "Frecuencia"]),
+    totalMinutes: getRowValue(row, ["TOTAL MINUTOS/MES", "Total minutos/mes", "Total Minutos/Mes", "TOTAL MINUTOS", "Total minutos", "TotalMinutos", "Tiempo total"]),
+    monthlySalary: getRowValue(row, ["SUELDO MENSUAL", "Sueldo mensual", "Sueldo Mensual", "SueldoMensual", "Salario mensual"]),
+    hourlyValue: getRowValue(row, ["VALOR HORA", "Valor hora", "Valor Hora", "ValorHora", "Costo hora"]),
+    minuteValue: getRowValue(row, ["VALOR MINUTO", "Valor minuto", "Valor Minuto", "ValorMinuto", "Costo minuto"]),
+    monthlyActivityCost: getRowValue(row, ["COSTO MENSUAL ACTIVIDAD", "Costo mensual actividad", "Costo Mensual Actividad", "CostoMensualActividad", "Costo mensual de actividad"]),
+    sourceProcessCodes: getRowValue(row, ["PROCESOS AS IS RELACIONADOS", "Procesos AS IS relacionados", "ProcesosASISRelacionados", "CodigosASISRelacionados", "Códigos AS IS relacionados", "Procesos origen AS IS"]),
+    transformationType: getRowValue(row, ["TIPO TRANSFORMACION", "TIPO TRANSFORMACIÓN", "Tipo transformación", "TipoTransformacion", "Transformación", "Transformacion"]),
     nav: getRowValue(row, ["NAV", "Nav", "nav", "GeneraValor", "Genera Valor", "Valor", "NoAgregaValor", "No agrega valor"]),
     month: getRowValue(row, ["MES", "Mes", "month", "Month"]),
   })).filter((x) => x.code || x.process || x.processType || x.activity || x.participant || x.observation || x.nav);
@@ -1065,7 +1126,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
   const tutorialSheetNames = ["Tutoriales", "tutoriales", "TUTORIALES", "Tutorial", "Ayuda", "Videos", "VideosTutoriales", "Videos Tutoriales"];
   const tutorialHeaders = ["Titulo", "Título", "Title", "Descripcion", "Descripción", "Description", "Link", "Enlace", "Video", "Youtube", "YouTube"];
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, architectureToBeRows, organizationProcessRows, indicatorRows, qualityCommitteeRows, clientExperienceRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, userRows] = await Promise.all([
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, architectureToBeRows, personnelMatrixRows, organizationProcessRows, indicatorRows, qualityCommitteeRows, clientExperienceRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, repositoryRows, userRows] = await Promise.all([
     fetchCsvRows("Proyecto", true, spreadsheetId),
     fetchCsvSheet("Hitos", true, spreadsheetId),
     fetchCsvSheet("Hallazgos", true, spreadsheetId),
@@ -1088,6 +1149,11 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchFirstAvailableSheet(["Documentos", "CargaDocumentos", "Carga de documentos", "Carga Documentos", "ChecklistDocumentos", "Checklist Documentos", "Checklist"], spreadsheetId),
     fetchFirstAvailableSheet(["ArquitecturaCargos", "Arquitectura Cargos", "Estructura", "EstructuraCargos", "Arquitectura"], spreadsheetId),
     fetchFirstAvailableSheet(["ArquitecturaCargosTOBE", "Arquitectura Cargos TO BE", "ArquitecturaCargos To Be", "Arquitectura Cargos To Be", "EstructuraTOBE", "Estructura TO BE"], spreadsheetId),
+    fetchFirstAvailableSheetWithHeaders(
+      ["Matrizpersonal", "Matriz personal", "Matriz Personal", "MatrizPersonal"],
+      spreadsheetId,
+      ["Nombre Completo", "APP/60", "APP/40", "EDD/20", "EDD/80"]
+    ),
     fetchFirstAvailableSheet(["OrganigramaProcesos", "Organigrama Procesos", "OrganigramaDeProcesos", "Organigrama de Procesos", "EstructuraProcesos", "Estructura Procesos"], spreadsheetId),
     fetchFirstAvailableSheet(["Indicadores", "ImplementacionIndicadores", "Implementación Indicadores", "Implementacion Indicadores", "IndicadoresImplementacion", "Indicadores Implementacion"], spreadsheetId),
     fetchFirstAvailableSheet(["ComiteCalidad", "ComitéCalidad", "Comite Calidad", "Comité Calidad", "Comite de Calidad", "Comité de Calidad"], spreadsheetId),
@@ -1096,6 +1162,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchFirstAvailableSheet(["ProcesosTOBE", "Procesos TO BE", "Procesos To Be", "Procesos TO-BE", "Procesos TO_BE", "ListaTOBE", "Lista TO BE", "Lista TO-BE", "TOBE", "TO BE"], spreadsheetId),
     fetchFirstAvailableSheet(["COEASIS", "COE AS IS", "COE As Is", "COE AS-IS", "COE AS_IS", "COE Actual", "COEActual"], spreadsheetId),
     fetchFirstAvailableSheet(["COETOBE", "COE TO BE", "COE To Be", "COE TO-BE", "COE TO_BE", "COE Propuesto", "COEPropuesto"], spreadsheetId),
+    fetchFirstAvailableSheet(["Repositorio", "repositorio", "REPOSITORIO"], spreadsheetId),
     fetchFirstAvailableSheet(["Usuarios", "UsuariosInternos", "Usuarios Internos", "Equipo", "Colaboradores"], spreadsheetId),
   ]);
 
@@ -1120,6 +1187,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     documents: mapDocuments(documentRows),
     architectureRoles: mapArchitectureRoles(architectureRows),
     architectureRolesToBe: mapArchitectureRoles(architectureToBeRows),
+    personnelMatrix: mapPersonnelMatrix(personnelMatrixRows),
     organizationProcesses: mapOrganizationProcesses(organizationProcessRows),
     indicators: mapIndicators(indicatorRows),
     qualityCommittee: mapQualityCommittee(qualityCommitteeRows),
@@ -1128,6 +1196,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     processesToBe: mapProcessesToBe(processesToBeRows),
     coeAsIs: mapCOERows(coeAsIsRows),
     coeToBe: mapCOERows(coeToBeRows),
+    repository: mapRepository(repositoryRows),
     users: mapUsers(userRows),
   };
 }

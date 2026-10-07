@@ -211,13 +211,21 @@ function Sidebar({ view, setView, project }) {
         [AlertTriangle, "Pendientes cliente", "pendientes"],
       ],
     },
-    { title: "Procesos", items: [[ClipboardCheck, "Mapa y lista maestra de procesos", "procesos"], [Building2, "Estructura y perfil", "estructura"]] },
+    {
+      title: "Procesos",
+      items: [
+        [ClipboardCheck, "Mapa y lista maestra de procesos", "procesos"],
+        [Building2, "Estructura y perfil", "estructura"],
+        [LockKeyhole, "Optimización y Racionalización", "optimizacion-racionalizacion"],
+      ],
+    },
     { title: "Implementación", items: [[Target, "Indicadores", "indicadores"], [Users, "Comité de Calidad", "comite-calidad"]] },
     {
       title: "Documentacion",
       items: [
         [FileText, "Entregables GSE", "entregables"],
         [ClipboardCheck, "Entregables clientes", "entregables-clientes"],
+        [FolderOpen, "Repositorio", "repositorio"],
         [UploadCloud, "Carga de documentos", "documentos"],
       ],
     },
@@ -415,7 +423,7 @@ function PortalProject({ project, milestones, pending, setView }) {
 
           <div className="portalMetricCard">
             <div>
-              <span>Desorden restante</span>
+              <span>Avance Pendiente</span>
               <strong>{disorder}%</strong>
               <ProgressBar value={disorder} status="Bloqueado" reverse />
             </div>
@@ -928,9 +936,7 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
   const systemScores = getSystemScores({ milestones, deliverables, projectProgress: Number(project?.progress) || 0 });
 
   const totalCost = (rows = []) => rows.reduce((sum, item) => {
-    const cost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"] ?? 0);
-    const frequency = parseNumericValue(item.frequency ?? item.frecuencia ?? item.FRECUENCIA ?? 1) || 1;
-    return sum + (cost * frequency);
+    return sum + getCOEMonthlyCost(item);
   }, 0);
 
   const summarizeStatus = (rows = []) => {
@@ -1008,7 +1014,7 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
       <article className="summaryBottomCard summaryCOECard">
         <div className="summaryBottomHeader">
           <div>
-            <h3>COE mensual</h3>
+            <h3>Variación mensual COE</h3>
           </div>
         </div>
         <strong className="summaryCOEValue">${formatCurrency(Math.abs(coeDelta))}</strong>
@@ -1047,7 +1053,7 @@ function SummaryInsightCards({ project, milestones = [], deliverables = [], find
   );
 }
 
-function AppTopbar({ project, pending = [], meetings = [], updates = [], milestones = [], findings = [], deliverables = [], documents = [], education = [], tutorials = [], processesAsIs = [], processesToBe = [], setView, setSelectedHito, setSelectedDeliverable, onLogout }) {
+function AppTopbar({ project, pending = [], meetings = [], updates = [], milestones = [], findings = [], deliverables = [], repository = [], documents = [], education = [], tutorials = [], processesAsIs = [], processesToBe = [], setView, setSelectedHito, setSelectedDeliverable, onLogout }) {
   const [openPanel, setOpenPanel] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const meetUrl = safeUrl(project?.linkMeet);
@@ -1102,6 +1108,13 @@ const meetingItems = [
       view: "entregables",
       action: () => setSelectedDeliverable?.(item.deliverable || ""),
       haystack: `${item.deliverable} ${item.system} ${item.milestone} ${item.status} ${item.responsible}`,
+    })),
+    ...repository.map((item) => ({
+      type: "Repositorio",
+      title: item.name || item.code,
+      detail: [item.type, item.code, item.updatedAt].filter(Boolean).join(" - "),
+      view: "repositorio",
+      haystack: `${item.code} ${item.name} ${item.description} ${item.updatedAt} ${item.type}`,
     })),
     ...documents.map((item) => ({
       type: "Documento",
@@ -1246,7 +1259,18 @@ const meetingItems = [
   );
 }
 
-function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], deliverables = [], architectureRoles = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], updates = [], meetings = [], setView }) {
+function getPersonnelAverage(rows = [], field) {
+  const values = rows
+    .map((item) => item?.[field])
+    .filter((value) => value !== null && value !== undefined && value !== "")
+    .map(Number)
+    .filter(Number.isFinite);
+  if (!values.length) return 0;
+  const average = values.reduce((sum, value) => sum + value, 0) / values.length;
+  return Number(average.toFixed(1));
+}
+
+function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], deliverables = [], architectureRolesToBe = [], personnelMatrix = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], updates = [], meetings = [], setView }) {
   const [openPanel, setOpenPanel] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -1304,14 +1328,14 @@ const meetUrl = safeUrl(project?.linkMeet);
   const unlockedMilestoneCode = String(unlockedMilestoneRaw).replace(/^E/i, "").replace(".0", "") || "0";
 
   const totalCost = (rows = []) => rows.reduce((sum, item) => {
-    const cost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"] ?? 0);
-    const frequency = parseNumericValue(item.frequency ?? item.frecuencia ?? item.FRECUENCIA ?? 1) || 1;
-    return sum + (cost * frequency);
+    return sum + getCOEMonthlyCost(item);
   }, 0);
   const asIsCOE = totalCost(coeAsIs);
   const toBeCOE = totalCost(coeToBe);
   const coeDelta = asIsCOE - toBeCOE;
   const coePercent = asIsCOE > 0 ? (coeDelta / asIsCOE) * 100 : 0;
+  const employmentAverage = getPersonnelAverage(personnelMatrix, "employmentLevel");
+  const performanceAverage = getPersonnelAverage(personnelMatrix, "performanceLevel");
 
   const statusClass = (status = "") => {
     const text = normalizeSystemName(status);
@@ -1345,35 +1369,38 @@ const meetUrl = safeUrl(project?.linkMeet);
       total: findings.length,
       value: findings.filter((item) => isCompletedStatus(item.status)).length,
       note: "Completado",
-      segments: countByStatus(findings),
+      accent: true,
     },
     {
       label: "Perfiles",
-      total: architectureRoles.length,
-      value: architectureRoles.filter((item) => isCompletedStatus(item.status) || isCheckedSheetValue(item.validated)).length,
-      note: architectureRoles.length ? "Validado" : "Pendiente de datos",
-      segments: countByStatus(architectureRoles),
+      total: architectureRolesToBe.length,
+      value: architectureRolesToBe.length,
+      note: architectureRolesToBe.length ? "Realizado" : "Pendiente de datos",
+      accent: architectureRolesToBe.length > 0,
     },
     {
       label: "Nivel de empleabilidad",
-      total: 0,
-      value: 0,
-      note: "Pendiente de datos",
-      segments: [],
+      total: personnelMatrix.length,
+      value: employmentAverage,
+      ringTotal: 100,
+      note: personnelMatrix.length ? "Promedio APP" : "Pendiente de datos",
+      accent: personnelMatrix.length > 0,
     },
     {
       label: "Desempeño",
-      total: 0,
-      value: 0,
-      note: "Pendiente de datos",
-      segments: [],
+      total: personnelMatrix.length,
+      value: performanceAverage,
+      ringTotal: 100,
+      note: personnelMatrix.length ? "Promedio EDD" : "Pendiente de datos",
+      accent: personnelMatrix.length > 0,
     },
     {
       label: "Masa Salarial",
-      total: 0,
+      total: "Pendiente",
       value: 0,
+      displayValue: "—",
       note: "Pendiente de datos",
-      segments: [],
+      pending: true,
     },
   ];
 
@@ -1393,15 +1420,12 @@ const meetUrl = safeUrl(project?.linkMeet);
       <div className="canvaKpiRow">
         <button className="canvaKpiCard" onClick={() => setView?.("ruta")}>
           <div><span>Avance General</span><strong>{projectProgress}%</strong></div>
-          <Rocket size={30} />
         </button>
         <button className="canvaKpiCard">
-          <div><span>Desorden Operativo</span><strong>{disorder.toFixed(2)}%</strong></div>
-          <AlertTriangle size={30} />
+          <div><span>Avance Pendiente</span><strong>{Math.round(disorder)}%</strong></div>
         </button>
         <button className="canvaKpiCard" onClick={() => setView?.("pendientes")}>
           <div><span>Pendientes Cliente</span><strong>{activePending}</strong></div>
-          <Hourglass size={30} />
         </button>
       </div>
 
@@ -1424,14 +1448,11 @@ const meetUrl = safeUrl(project?.linkMeet);
 
         <article className="canvaPanel canvaCoePanel">
           <div className="canvaPanelHeader">
-            <div>
+            <div className="canvaCoeHeadline">
               <h3>COE</h3>
-              <strong>${formatCurrency(Math.abs(coeDelta))}</strong>
-              <strong>{Math.abs(coePercent).toFixed(0)}%</strong>
-            </div>
-            <div className="canvaLegend">
-              <span><i></i> COE AS IS</span>
-              <span><i className="muted"></i> COE TO BE</span>
+              <strong className="asIsValue">AS IS ${formatCurrency(asIsCOE)}</strong>
+              <strong className="toBeValue">TO BE ${formatCurrency(toBeCOE)}</strong>
+              <small>{Math.abs(coePercent).toFixed(0)}% de variación</small>
             </div>
           </div>
           <CanvaTrendChart coeAsIs={coeAsIs} coeToBe={coeToBe} asIs={asIsCOE} toBe={toBeCOE} progress={projectProgress} />
@@ -1444,7 +1465,14 @@ const meetUrl = safeUrl(project?.linkMeet);
               <div className="canvaSystemMetric" key={item.label}>
                 <strong>{item.total}</strong>
                 <span>{item.label}</span>
-                <CanvaRing value={item.value} total={Math.max(item.total, item.value, 1)} segments={item.segments} />
+                <CanvaRing
+                  value={item.value}
+                  total={item.ringTotal || Math.max(Number(item.total) || 0, item.value, 1)}
+                  label={item.note}
+                  accent={item.accent}
+                  pending={item.pending}
+                  displayValue={item.displayValue}
+                />
               </div>
             ))}
           </div>
@@ -1472,7 +1500,7 @@ const meetUrl = safeUrl(project?.linkMeet);
   );
 }
 
-function CanvaRing({ value = 0, total = 1, segments = [] }) {
+function CanvaRing({ value = 0, total = 1, segments = [], label = "", accent = false, pending = false, displayValue }) {
   const [activeSegment, setActiveSegment] = useState(null);
   const cleanSegments = segments.filter((item) => item.value > 0);
   const totalSegments = cleanSegments.reduce((sum, item) => sum + item.value, 0);
@@ -1486,7 +1514,7 @@ function CanvaRing({ value = 0, total = 1, segments = [] }) {
   }).join(", ");
   const percent = Math.max(0, Math.min(100, (Number(value) / Math.max(1, Number(total))) * 100));
   return (
-    <div className={`canvaRingWrap ${cleanSegments.length ? "interactive" : "empty"}`}>
+    <div className={`canvaRingWrap ${cleanSegments.length ? "interactive" : "empty"} ${accent ? "isAccent" : ""} ${pending ? "isPending" : ""}`}>
       <div
         className="canvaRing"
         style={{ "--ring": `${percent}%`, "--segments": segmentGradient || "#dfe7e7 0% 100%" }}
@@ -1499,9 +1527,9 @@ function CanvaRing({ value = 0, total = 1, segments = [] }) {
             onClick={() => setActiveSegment(item)}
           />
         ))}
-        <span>{active ? active.value : value}</span>
+        <span>{active ? active.value : displayValue ?? value}</span>
       </div>
-      <small className="canvaRingLabel">{active ? active.label : cleanSegments.length ? "Estado" : "Pendiente de datos"}</small>
+      <small className="canvaRingLabel">{active ? active.label : label || (cleanSegments.length ? "Estado" : "Pendiente de datos")}</small>
     </div>
   );
 }
@@ -1537,100 +1565,150 @@ function CanvaMilestonePath({ milestones = [], pinIndex = 0, statusClass, setVie
   );
 }
 
-function CanvaTrendChart({ coeAsIs = [], coeToBe = [], asIs = 0, toBe = 0, progress = 0 }) {
-  const normalizeMonth = (value = "") => {
-    const raw = String(value || "").trim();
-    if (!raw) return "";
-    const numeric = Number(raw);
-    if (Number.isFinite(numeric) && numeric > 0) return `Mes ${numeric}`;
-    return raw;
+function buildCOETransformationGroups(coeAsIs = [], coeToBe = []) {
+  const aggregate = (rows) => {
+    const groups = new Map();
+    rows.forEach((item) => {
+      const code = String(item.code || "").trim();
+      const name = String(item.process || code || "Sin proceso").trim();
+      const key = normalizeSystemName(code || name);
+      const current = groups.get(key) || { key, code, name, total: 0, related: new Set(), type: "" };
+      current.total += getCOEMonthlyCost(item);
+      String(item.sourceProcessCodes || "")
+        .split(/[;,|\n]+/)
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .forEach((value) => current.related.add(value));
+      if (!current.type && item.transformationType) current.type = String(item.transformationType).trim();
+      groups.set(key, current);
+    });
+    return groups;
   };
-  const costFor = (item = {}) => {
-    const cost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"] ?? 0);
-    const frequency = parseNumericValue(item.frequency ?? item.frecuencia ?? item.FRECUENCIA ?? 1) || 1;
-    return cost * frequency;
-  };
-  const totalsByMonth = (rows = []) => rows.reduce((acc, item) => {
-    const month = normalizeMonth(item.month || item.mes || item.MES);
-    if (!month) return acc;
-    acc.set(month, (acc.get(month) || 0) + costFor(item));
-    return acc;
-  }, new Map());
 
-  const asIsMap = totalsByMonth(coeAsIs);
-  const toBeMap = totalsByMonth(coeToBe);
-  const monthLabels = [...new Set([...asIsMap.keys(), ...toBeMap.keys()])].slice(0, 6);
-
-  if (monthLabels.length) {
-    const asIsValues = monthLabels.map((month) => asIsMap.get(month) || 0);
-    const toBeValues = monthLabels.map((month) => toBeMap.get(month) || 0);
-    const hasRealCost = [...asIsValues, ...toBeValues].some((value) => value > 0);
-    if (hasRealCost) {
-      return <CanvaTrendSvg labels={monthLabels} asIsValues={asIsValues} toBeValues={toBeValues} />;
+  const asIsGroups = aggregate(coeAsIs);
+  const toBeGroups = aggregate(coeToBe);
+  const asIsByCode = new Map([...asIsGroups.values()].filter((item) => item.code).map((item) => [normalizeSystemName(item.code), item]));
+  const asIsByName = new Map([...asIsGroups.values()].map((item) => [normalizeSystemName(item.name), item]));
+  const referenced = new Set();
+  const groups = [...toBeGroups.values()].map((target) => {
+    let sources = [...target.related]
+      .map((reference) => asIsByCode.get(normalizeSystemName(reference)) || asIsByName.get(normalizeSystemName(reference)))
+      .filter(Boolean);
+    if (!sources.length) {
+      const sameCode = asIsByCode.get(normalizeSystemName(target.code));
+      const sameName = asIsByName.get(normalizeSystemName(target.name));
+      sources = [sameCode || sameName].filter(Boolean);
     }
-  }
+    sources = [...new Map(sources.map((item) => [item.key, item])).values()];
+    sources.forEach((item) => referenced.add(item.key));
+    const inferredType = sources.length > 1 ? "Unificación" : sources.length === 1 ? "Se mantiene" : "Nuevo";
+    return {
+      id: `tobe-${target.key}`,
+      label: target.code ? `${target.code} · ${target.name}` : target.name,
+      type: target.type || inferredType,
+      sources,
+      target,
+    };
+  });
 
-  const base = Number(asIs) || Math.max(40, 90 - progress);
-  const target = Number(toBe) || Math.max(15, base * 0.68);
-  const labels = ["Mes 1", "Mes 2", "Mes 3", "Mes 4", "Mes 5", "Mes 6"];
-  const asIsValues = labels.map((month, index) => base * (0.72 + Math.sin(index * 1.35) * 0.16 + (index === 3 ? 0.34 : 0)));
-  const toBeValues = labels.map((month, index) => target * (0.70 + Math.sin(index * 1.35) * 0.13 + (index === 3 ? 0.24 : 0)));
-  return <CanvaTrendSvg labels={labels} asIsValues={asIsValues} toBeValues={toBeValues} />;
+  asIsGroups.forEach((source) => {
+    if (!referenced.has(source.key)) {
+      groups.push({
+        id: `deleted-${source.key}`,
+        label: `${source.code || source.name} · Eliminado`,
+        type: "Eliminado",
+        sources: [source],
+        target: { code: "", name: "Sin proceso TO BE", total: 0 },
+      });
+    }
+  });
+
+  return groups.sort((a, b) => {
+    const totalA = Math.max(a.target.total, ...a.sources.map((item) => item.total), 0);
+    const totalB = Math.max(b.target.total, ...b.sources.map((item) => item.total), 0);
+    return totalB - totalA;
+  });
 }
 
-function CanvaTrendSvg({ labels = [], asIsValues = [], toBeValues = [] }) {
-  const max = Math.max(...asIsValues, ...toBeValues, 1);
-  const costLabel = (value) => {
-    if (value >= 1000) return `$${Math.round(value / 1000)}k`;
-    return `$${Math.round(value)}`;
-  };
-  const pointsFor = (values) => values.map((value, index) => {
-    const step = labels.length > 1 ? 220 / (labels.length - 1) : 44;
-    const x = 42 + index * step;
-    const y = 142 - (value / max) * 100;
-    return { x, y };
-  });
-  const pathFor = (values) => {
-    const points = pointsFor(values);
-    if (!points.length) return "";
-    if (points.length === 1) return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
-    return points.reduce((path, point, index) => {
-      if (index === 0) return `M ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
-      const previous = points[index - 1];
-      const previousControl = points[index - 2] || previous;
-      const nextControl = points[index + 1] || point;
-      const tension = 0.18;
-      const c1x = previous.x + (point.x - previousControl.x) * tension;
-      const c1y = previous.y + (point.y - previousControl.y) * tension;
-      const c2x = point.x - (nextControl.x - previous.x) * tension;
-      const c2y = point.y - (nextControl.y - previous.y) * tension;
-      return `${path} C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
-    }, "");
-  };
+function CanvaTrendChart({ coeAsIs = [], coeToBe = [] }) {
+  const groups = useMemo(() => buildCOETransformationGroups(coeAsIs, coeToBe), [coeAsIs, coeToBe]);
+  const topProcesses = useMemo(() => {
+    const rank = (rows) => {
+      const totals = new Map();
+      rows.forEach((item) => {
+        const code = String(item.code || "").trim();
+        const name = String(item.process || code || "Sin proceso").trim();
+        const key = normalizeSystemName(code || name);
+        const current = totals.get(key) || { key, code, name, total: 0 };
+        current.total += getCOEMonthlyCost(item);
+        totals.set(key, current);
+      });
+      return [...totals.values()].sort((a, b) => b.total - a.total).slice(0, 10);
+    };
+    return { asIs: rank(coeAsIs), toBe: rank(coeToBe) };
+  }, [coeAsIs, coeToBe]);
+  const [selectedId, setSelectedId] = useState("");
+  const selected = groups.find((item) => item.id === selectedId) || groups[0];
+
+  const renderTopList = (title, rows, side) => (
+    <div className={`canvaTopCostColumn ${side}`}>
+      <strong>{title}</strong>
+      {rows.length ? rows.map((item, index) => (
+        <div className="canvaTopCostRow" key={`${side}-${item.key}`}>
+          <span>{index + 1}</span>
+          <b title={item.name}>{item.code || item.name}</b>
+          <em>${formatCurrency(item.total)}</em>
+        </div>
+      )) : <small>Sin costos cargados</small>}
+    </div>
+  );
+
+  if (!selected) {
+    return (
+      <div className="canvaCoeAnalysis">
+        <div className="canvaTopCostGrid" aria-label="Procesos de mayor costo">
+          {renderTopList("Top 10 AS IS", topProcesses.asIs, "asIs")}
+          {renderTopList("Top 10 TO BE", topProcesses.toBe, "toBe")}
+        </div>
+        <div className="canvaCoeEmpty">Sin relaciones de transformación registradas.</div>
+      </div>
+    );
+  }
+
+  const rows = [
+    ...selected.sources.map((item) => ({ ...item, side: "AS IS" })),
+    { ...selected.target, side: "TO BE" },
+  ];
+  const max = Math.max(1, ...rows.map((item) => item.total));
 
   return (
-    <svg className="canvaTrendChart" viewBox="0 0 292 178" role="img" aria-label="Tendencia COE de seis meses">
-      <text className="axisTitle" x="8" y="18">CLI</text>
-      <line className="axisLine" x1="34" x2="34" y1="36" y2="144" />
-      <line className="axisLine" x1="34" x2="268" y1="144" y2="144" />
-      {[0, 1, 2].map((line) => {
-        const y = 48 + line * 42;
-        const value = max * (1 - (y - 42) / 100);
-        return (
-          <React.Fragment key={line}>
-            <line x1="34" x2="268" y1={y} y2={y} />
-            <text className="axisValue" x="4" y={y + 4}>{costLabel(Math.max(0, value))}</text>
-          </React.Fragment>
-        );
-      })}
-      <path d={pathFor(toBeValues)} className="toBe" />
-      <path d={pathFor(asIsValues)} className="asIs" />
-      {labels.map((month, index) => {
-        const step = labels.length > 1 ? 220 / (labels.length - 1) : 44;
-        return <text key={month} x={42 + index * step} y="164">{String(month).replace("Mes ", "")}</text>;
-      })}
-      <text x="242" y="172">Mes</text>
-    </svg>
+    <div className="canvaCoeAnalysis">
+      <div className="canvaTopCostGrid" aria-label="Procesos de mayor costo">
+        {renderTopList("Top 10 AS IS", topProcesses.asIs, "asIs")}
+        {renderTopList("Top 10 TO BE", topProcesses.toBe, "toBe")}
+      </div>
+      <div className="canvaProcessMatchChart" role="img" aria-label="Comparación de procesos AS IS relacionados con su proceso TO BE">
+        <div className="canvaProcessMatchHeader">
+          <span>Comparativo por transformación</span>
+          <select value={selected.id} onChange={(event) => setSelectedId(event.target.value)} aria-label="Proceso TO BE a comparar">
+            {groups.map((group) => <option key={group.id} value={group.id}>{group.label}</option>)}
+          </select>
+        </div>
+        <div className="canvaProcessMatchMeta">
+          <b>{selected.type}</b>
+          <small>{selected.sources.length} proceso{selected.sources.length === 1 ? "" : "s"} AS IS relacionado{selected.sources.length === 1 ? "" : "s"}</small>
+        </div>
+        <div className="canvaProcessMatchRows">
+          {rows.map((item, index) => (
+            <div className={`canvaProcessMatchRow ${item.side === "TO BE" ? "toBe" : "asIs"}`} key={`${item.side}-${item.key || item.code || index}`}>
+              <span><em>{item.side}</em>{item.code || item.name}</span>
+              <i><b style={{ width: `${(item.total / max) * 100}%` }} /></i>
+              <strong>${formatCurrency(item.total)}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -2852,6 +2930,324 @@ function ImplementationIndicators({ indicators = [] }) {
   );
 }
 
+function PersonnelMatrixSection({ rows = [] }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [managementFilter, setManagementFilter] = useState("Todos");
+  const [areaFilter, setAreaFilter] = useState("Todos");
+  const [positionFilter, setPositionFilter] = useState("Todos");
+  const [levelFilter, setLevelFilter] = useState("Todos");
+  const [hideNames, setHideNames] = useState(false);
+
+  const formatScore = (value) => {
+    if (value === null || value === undefined || value === "") return "—";
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return "—";
+    return `${Number(numeric.toFixed(1))}%`;
+  };
+
+  const getBand = (item = {}) => {
+    const app = Number(item.employmentLevel) || 0;
+    const edd = Number(item.performanceLevel) || 0;
+    if (app >= 90 && edd >= 90) return { key: "high", label: "Alto" };
+    if (app >= 70 && edd >= 77) return { key: "normal", label: "Normal" };
+    return { key: "low", label: "Bajo" };
+  };
+
+  const managementOptions = useMemo(() => [...new Set(rows.map((item) => item.management).filter(Boolean))], [rows]);
+  const areaOptions = useMemo(() => [...new Set(rows.map((item) => item.area).filter(Boolean))], [rows]);
+  const positionOptions = useMemo(() => [...new Set(rows.map((item) => item.position).filter(Boolean))], [rows]);
+
+  const filteredRows = useMemo(() => {
+    const query = normalizeSystemName(searchTerm);
+    return rows.filter((item) => {
+      const band = getBand(item);
+      const searchable = normalizeSystemName([
+        item.id,
+        item.name,
+        item.management,
+        item.area,
+        item.position,
+        item.occupationalGroup,
+        item.observation,
+      ].join(" "));
+      return (
+        (!query || searchable.includes(query)) &&
+        (managementFilter === "Todos" || item.management === managementFilter) &&
+        (areaFilter === "Todos" || item.area === areaFilter) &&
+        (positionFilter === "Todos" || item.position === positionFilter) &&
+        (levelFilter === "Todos" || band.label === levelFilter)
+      );
+    });
+  }, [rows, searchTerm, managementFilter, areaFilter, positionFilter, levelFilter]);
+
+  const metrics = [
+    { label: "APP al 60", value: getPersonnelAverage(rows, "app60"), detail: "Educación, experiencia y cursos" },
+    { label: "APP al 40", value: getPersonnelAverage(rows, "app40"), detail: "Cumplimiento de actividades" },
+    { label: "EDD al 20", value: getPersonnelAverage(rows, "edd20"), detail: "Componente EDD 20" },
+    { label: "EDD al 80", value: getPersonnelAverage(rows, "edd80"), detail: "Componente EDD 80" },
+    { label: "Nivel de empleabilidad", value: getPersonnelAverage(rows, "employmentLevel"), detail: "Mínimo esperado: 70%" },
+    { label: "Nivel de desempeño", value: getPersonnelAverage(rows, "performanceLevel"), detail: "Mínimo esperado: 77%" },
+  ];
+
+  return (
+    <section className="personnelMatrixSection">
+      <div className="personnelMetricGrid">
+        {metrics.map((metric) => (
+          <article className="personnelMetricCard" key={metric.label}>
+            <span>{metric.label}</span>
+            <strong>{formatScore(metric.value)}</strong>
+            <i aria-hidden="true"><b style={{ width: `${Math.max(0, Math.min(100, metric.value))}%` }} /></i>
+            <small>{metric.detail}</small>
+          </article>
+        ))}
+      </div>
+
+      <div className="personnelExplanations">
+        <article>
+          <strong>APP · Ajuste Persona–Puesto</strong>
+          <p>El 60% corresponde a la evaluación realizada por GSE sobre educación, experiencia y cursos. El 40% corresponde al cumplimiento de las actividades del cargo. El nivel de empleabilidad es el promedio de ambos componentes y debe alcanzar como mínimo 70%.</p>
+        </article>
+        <article>
+          <strong>EDD · Evaluación del desempeño</strong>
+          <p>Integra los componentes EDD 20 y EDD 80 para mostrar el nivel de desempeño del colaborador. El resultado se obtiene promediando ambos valores y debe alcanzar como mínimo 77%.</p>
+        </article>
+      </div>
+
+      <div className="premiumFilters personnelMatrixFilters">
+        <label className="searchFilter">
+          <span>Buscar</span>
+          <div className="searchInputWrap">
+            <Search size={18} />
+            <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar colaborador, cargo, área o gerencia" />
+          </div>
+        </label>
+        <FilterSelect label="Gerencia" value={managementFilter} onChange={setManagementFilter} options={managementOptions} />
+        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
+        <FilterSelect label="Cargo" value={positionFilter} onChange={setPositionFilter} options={positionOptions} />
+        <FilterSelect label="Nivel" value={levelFilter} onChange={setLevelFilter} options={["Bajo", "Normal", "Alto"]} />
+      </div>
+
+      <div className="processTableCard personnelMatrixCard">
+        <div className="processTableHeader">
+          <div>
+            <h3>Detalle por colaborador</h3>
+            <p>Aquí puede ver la lista completa de colaboradores. Deslice hacia la derecha para ver todos los campos.</p>
+          </div>
+          <div className="personnelTableTools">
+            <button
+              type="button"
+              className="personnelNameToggle"
+              onClick={() => setHideNames((current) => !current)}
+              aria-pressed={hideNames}
+              title={hideNames ? "Mostrar nombres" : "Ocultar nombres"}
+            >
+              {hideNames ? <Eye size={16} /> : <EyeOff size={16} />}
+              <span>{hideNames ? "Mostrar nombres" : "Ocultar nombres"}</span>
+            </button>
+            <div className="personnelLevelLegend" aria-label="Clasificación del indicador">
+              <span className="low"><AlertTriangle size={13} /> Bajo <small>No alcanza mínimos</small></span>
+              <span className="normal"><AlertTriangle size={13} /> Normal <small>Cumple mínimos</small></span>
+              <span className="high"><AlertTriangle size={13} /> Alto <small>90% o más</small></span>
+            </div>
+          </div>
+        </div>
+        <div className="processTableWrap personnelMatrixWrap">
+          <table className="processTable personnelMatrixTable">
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Nombre completo</th>
+                <th>Gerencia</th>
+                <th>Área</th>
+                <th>Cargo</th>
+                <th>Grupo ocupacional</th>
+                <th>Sueldo</th>
+                <th>APP/60</th>
+                <th>APP/40</th>
+                <th>Nivel de empleabilidad</th>
+                <th>EDD/20</th>
+                <th>EDD/80</th>
+                <th>Nivel de desempeño</th>
+                <th>Sueldo propuesto</th>
+                <th>Observación / recomendación TH</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRows.map((item, index) => {
+                const band = getBand(item);
+                return (
+                  <tr key={`${item.id}-${item.name}-${index}`}>
+                    <td>
+                      <span className="personnelRowNumber">
+                        <strong>{item.id}</strong>
+                        <span className={`personnelLevelIndicator ${band.key}`} title={`Nivel ${band.label}: APP ${formatScore(item.employmentLevel)} · EDD ${formatScore(item.performanceLevel)}`}>
+                          <AlertTriangle size={15} />
+                          <em>{band.label}</em>
+                        </span>
+                      </span>
+                    </td>
+                    <td className={`personnelNameCell ${hideNames ? "isBlurred" : ""}`}><strong>{item.name || "Sin nombre"}</strong></td>
+                    <td>{item.management || "—"}</td>
+                    <td>{item.area || "—"}</td>
+                    <td>{item.position || "—"}</td>
+                    <td>{item.occupationalGroup || "—"}</td>
+                    <td>{item.salary || "—"}</td>
+                    <td>{formatScore(item.app60)}</td>
+                    <td>{formatScore(item.app40)}</td>
+                    <td><b className={item.employmentLevel >= 70 ? "personnelScore pass" : "personnelScore low"}>{formatScore(item.employmentLevel)}</b></td>
+                    <td>{formatScore(item.edd20)}</td>
+                    <td>{formatScore(item.edd80)}</td>
+                    <td><b className={item.performanceLevel >= 77 ? "personnelScore pass" : "personnelScore low"}>{formatScore(item.performanceLevel)}</b></td>
+                    <td>{item.proposedSalary || "—"}</td>
+                    <td>{item.observation || "—"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {!filteredRows.length && <div className="emptyState">{rows.length ? "No hay colaboradores que coincidan con los filtros." : "No hay datos en la pestaña Matrizpersonal."}</div>}
+      </div>
+    </section>
+  );
+}
+
+function ConfidentialPersonnelMatrixView({ rows = [], project = {}, onCancel }) {
+  const [accessGranted, setAccessGranted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const session = getClientSession();
+  const [form, setForm] = useState(() => ({
+    fullName: project.contactName || session.nombre || session.usuario || "",
+    position: project.contactRole || session.rol || "",
+    company: project.companyClient || project.client || session.cliente || "",
+    accepted: false,
+  }));
+  const confidentialAccessEndpoint = "/api/confidential-access";
+
+  const updateField = (field, value) => {
+    setForm((current) => ({ ...current, [field]: value }));
+    setErrorMessage("");
+  };
+
+  const handleAccess = async (event) => {
+    event.preventDefault();
+    const fullName = form.fullName.trim();
+    const position = form.position.trim();
+    const company = form.company.trim();
+
+    if (!fullName || !position || !company || !form.accepted) {
+      setErrorMessage("Completa los tres datos y acepta las condiciones para continuar.");
+      return;
+    }
+    setSubmitting(true);
+    setErrorMessage("");
+    try {
+      const response = await fetch(confidentialAccessEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "registerConfidentialAccess",
+          spreadsheetId: getActiveSpreadsheetId(),
+          fullName,
+          position,
+          company,
+          accepted: true,
+          acceptedAt: new Date().toISOString(),
+          user: session.usuario || "",
+          declarationVersion: "RIV-TH-v1",
+          userAgent: window.navigator.userAgent,
+        }),
+      });
+      const text = await response.text();
+      let result = {};
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = { ok: response.ok, message: text };
+      }
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.message || "No se pudo registrar la autorización confidencial.");
+      }
+      setAccessGranted(true);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(error.message || "No se pudo registrar la autorización. Intenta nuevamente.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <section className={`confidentialPersonnelView ${accessGranted ? "isGranted" : "isLocked"}`}>
+      <div className="confidentialViewHeader">
+        <div>
+          <span>Talento Humano</span>
+          <h2>Optimización y Racionalización</h2>
+          <p>Análisis de ajuste persona–puesto, empleabilidad y desempeño de los colaboradores.</p>
+        </div>
+        <LockKeyhole size={28} aria-hidden="true" />
+      </div>
+
+      <div className="confidentialProtectedContent" aria-hidden={!accessGranted}>
+        <PersonnelMatrixSection rows={accessGranted ? rows : []} />
+      </div>
+
+      {!accessGranted && (
+        <div className="confidentialAccessOverlay" role="dialog" aria-modal="true" aria-labelledby="confidential-access-title">
+          <form className="confidentialAccessModal" onSubmit={handleAccess}>
+            <div className="confidentialAccessIcon"><LockKeyhole size={26} /></div>
+            <div className="confidentialAccessIntro">
+              <span>Acceso restringido</span>
+              <h2 id="confidential-access-title">Acceso a información confidencial de Talento Humano</h2>
+              <p>Esta sección contiene información personal y confidencial de colaboradores de la organización, incluyendo datos relacionados con cargos, compensación, ajuste persona–puesto, desempeño y otros resultados de gestión de talento humano.</p>
+            </div>
+
+            <fieldset className="confidentialIdentityFields">
+              <legend>Antes de continuar, por favor identifíquese:</legend>
+              <label>
+                <span>Nombre completo</span>
+                <input value={form.fullName} onChange={(event) => updateField("fullName", event.target.value)} autoComplete="name" required />
+              </label>
+              <label>
+                <span>Cargo</span>
+                <input value={form.position} onChange={(event) => updateField("position", event.target.value)} required />
+              </label>
+              <label>
+                <span>Empresa</span>
+                <input value={form.company} onChange={(event) => updateField("company", event.target.value)} required />
+              </label>
+            </fieldset>
+
+            <div className="confidentialTerms">
+              <p>Al continuar, declaro que cuento con autorización de mi organización para acceder a esta información y acepto las condiciones de confidencialidad, uso y responsabilidad establecidas para esta sección.</p>
+              <p>Reconozco que cualquier distribución, entrega, reenvío, reproducción o divulgación posterior de esta información realizada por la organización o por sus representantes será responsabilidad de la propia organización.</p>
+              <p>Asimismo, entiendo que una vez que la información sea descargada, exportada, compartida o distribuida fuera del entorno controlado del RIV, la responsabilidad sobre su custodia, acceso y uso posterior corresponderá a la organización.</p>
+            </div>
+
+            <label className="confidentialAcceptance">
+              <input type="checkbox" checked={form.accepted} onChange={(event) => updateField("accepted", event.target.checked)} />
+              <span>He leído, comprendo y acepto las condiciones de acceso, confidencialidad y responsabilidad sobre el uso de esta información.</span>
+            </label>
+
+            <div className="confidentialTimestamp">
+              <Clock3 size={16} /> La fecha y hora de aceptación se registrarán automáticamente.
+            </div>
+            {errorMessage && <div className="confidentialAccessError" role="alert">{errorMessage}</div>}
+
+            <div className="confidentialAccessActions">
+              <button type="button" className="secondaryButton" onClick={onCancel} disabled={submitting}>Cancelar</button>
+              <button type="submit" className="primaryButton" disabled={submitting || !form.accepted}>
+                {submitting ? "Registrando acceso..." : "Aceptar y acceder"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function StructureView({ project = {}, architectureRoles = [], architectureRolesToBe = [], deliverables = [], organizationProcesses = [], processesAsIs = [], processesToBe = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [gerenciaFilter, setGerenciaFilter] = useState("Todos");
@@ -3526,6 +3922,7 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
           </div>
         )}
       </div>
+
     </section>
   );
 }
@@ -4830,10 +5227,17 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
 }
 
 function parseNumericValue(value) {
-  const raw = String(value ?? "")
+  let raw = String(value ?? "")
     .replace(/\$/g, "")
-    .replace(/,/g, ".")
-    .replace(/[^0-9.-]/g, "");
+    .replace(/\s/g, "")
+    .replace(/[^0-9,.-]/g, "");
+  const comma = raw.lastIndexOf(",");
+  const dot = raw.lastIndexOf(".");
+  if (comma >= 0 && dot >= 0) {
+    raw = comma > dot ? raw.replace(/\./g, "").replace(/,/g, ".") : raw.replace(/,/g, "");
+  } else if (comma >= 0) {
+    raw = raw.replace(/,/g, ".");
+  }
   const number = Number(raw);
   return Number.isFinite(number) ? number : 0;
 }
@@ -4843,12 +5247,27 @@ function formatCurrency(value) {
   return number.toLocaleString("es-EC", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function getCOEMonthlyCost(item = {}) {
+  const explicitRaw = item.monthlyActivityCost ?? item.costoMensualActividad ?? item["COSTO MENSUAL ACTIVIDAD"];
+  if (String(explicitRaw ?? "").trim() !== "") return parseNumericValue(explicitRaw);
+
+  const totalMinutes = parseNumericValue(item.totalMinutes ?? item.totalMinutos ?? item["TOTAL MINUTOS/MES"]);
+  const minuteValue = parseNumericValue(item.minuteValue ?? item.valorMinuto ?? item["VALOR MINUTO"]);
+  if (totalMinutes && minuteValue) return totalMinutes * minuteValue;
+
+  const time = parseNumericValue(item.time ?? item.tiempo ?? item["TIEMPO (xmin)"]);
+  const frequency = parseNumericValue(item.frequency ?? item.frecuencia ?? item.FRECUENCIA) || 1;
+  if (time && minuteValue) return time * frequency * minuteValue;
+
+  const legacyCost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"]);
+  return legacyCost * frequency;
+}
+
 function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previousView = "portal" }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [processFilter, setProcessFilter] = useState("Todos");
-  const [typeFilter, setTypeFilter] = useState("Todos");
-  const [statusFilter, setStatusFilter] = useState("Todos");
-  const [navFilter, setNavFilter] = useState("Todos");
+  const [participantFilter, setParticipantFilter] = useState("Todos");
+  const [monthFilter, setMonthFilter] = useState("Todos");
   const [mobileActivitySide, setMobileActivitySide] = useState("asis");
   const [mobileNavSide, setMobileNavSide] = useState("asis");
   const [mobileProcessSide, setMobileProcessSide] = useState("asis");
@@ -4857,18 +5276,22 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
 
   const enrichRows = (rows) => rows.map((item) => {
     const time = parseNumericValue(item.time);
-    const cost = parseNumericValue(item.cost);
     const frequency = parseNumericValue(item.frequency) || 1;
+    const totalMinutes = parseNumericValue(item.totalMinutes) || time * frequency;
+    const minuteValue = parseNumericValue(item.minuteValue || item.cost);
     const observationStatus = String(item.observation || "").trim();
     return {
       ...item,
       timeValue: time,
-      costValue: cost,
       frequencyValue: frequency,
+      totalMinutesValue: totalMinutes,
+      monthlySalaryValue: parseNumericValue(item.monthlySalary),
+      hourlyValueNumber: parseNumericValue(item.hourlyValue),
+      minuteValueNumber: minuteValue,
       observationStatus,
       processType: String(item.processType || "").trim(),
       navStatus: String(item.nav || "").trim(),
-      totalCost: cost * frequency,
+      totalCost: getCOEMonthlyCost(item),
     };
   });
 
@@ -4876,33 +5299,36 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
   const toBeRows = useMemo(() => enrichRows(coeToBe), [coeToBe]);
   const allRows = useMemo(() => [...asIsRows, ...toBeRows], [asIsRows, toBeRows]);
   const processOptions = useMemo(() => allRows.map((item) => item.process).filter(Boolean), [allRows]);
-  const typeOptions = useMemo(() => allRows.map((item) => item.processType).filter(Boolean), [allRows]);
-  const statusOptions = useMemo(() => allRows.map((item) => item.observationStatus).filter(Boolean), [allRows]);
-  const navOptions = useMemo(() => allRows.map((item) => item.navStatus).filter(Boolean), [allRows]);
+  const participantOptions = useMemo(() => allRows.map((item) => item.participant).filter(Boolean), [allRows]);
+  const monthOptions = useMemo(() => allRows.map((item) => item.month).filter(Boolean), [allRows]);
 
   const filterRow = (item) => {
     const query = normalizeSystemName(searchTerm);
     const matchesProcess = processFilter === "Todos" || item.process === processFilter;
-    const matchesType = typeFilter === "Todos" || item.processType === typeFilter;
-    const matchesStatus = statusFilter === "Todos" || item.observationStatus === statusFilter;
-    const matchesNav = navFilter === "Todos" || item.navStatus === navFilter;
+    const matchesParticipant = participantFilter === "Todos" || item.participant === participantFilter;
+    const matchesMonth = monthFilter === "Todos" || String(item.month) === String(monthFilter);
     const searchable = normalizeSystemName([
+      item.sequence,
       item.code,
       item.process,
-      item.processType,
       item.activity,
       item.participant,
-      item.observation,
-      item.navStatus,
       item.time,
-      item.cost,
       item.frequency,
+      item.totalMinutes,
+      item.monthlySalary,
+      item.hourlyValue,
+      item.minuteValue,
+      item.monthlyActivityCost,
+      item.sourceProcessCodes,
+      item.transformationType,
+      item.month,
     ].join(" "));
-    return matchesProcess && matchesType && matchesStatus && matchesNav && (!query || searchable.includes(query));
+    return matchesProcess && matchesParticipant && matchesMonth && (!query || searchable.includes(query));
   };
 
-  const filteredAsIs = useMemo(() => asIsRows.filter(filterRow), [asIsRows, searchTerm, processFilter, typeFilter, statusFilter, navFilter]);
-  const filteredToBe = useMemo(() => toBeRows.filter(filterRow), [toBeRows, searchTerm, processFilter, typeFilter, statusFilter, navFilter]);
+  const filteredAsIs = useMemo(() => asIsRows.filter(filterRow), [asIsRows, searchTerm, processFilter, participantFilter, monthFilter]);
+  const filteredToBe = useMemo(() => toBeRows.filter(filterRow), [toBeRows, searchTerm, processFilter, participantFilter, monthFilter]);
 
   const totalsByProcess = (rows) => {
     const totals = new Map();
@@ -4922,6 +5348,21 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
   const difference = asIsTotal - toBeTotal;
   const reductionPercent = asIsTotal > 0 ? (difference / asIsTotal) * 100 : 0;
   const maxProcessCost = Math.max(1, ...asIsProcesses.map((item) => item.total), ...toBeProcesses.map((item) => item.total));
+  const summarizeOperation = (rows) => {
+    const totalMinutes = rows.reduce((sum, item) => sum + item.totalMinutesValue, 0);
+    const withMinuteValue = rows.filter((item) => item.minuteValueNumber > 0);
+    const withHourlyValue = rows.filter((item) => item.hourlyValueNumber > 0);
+    return {
+      activities: rows.length,
+      totalMinutes,
+      totalHours: totalMinutes / 60,
+      averageMinuteValue: withMinuteValue.length ? withMinuteValue.reduce((sum, item) => sum + item.minuteValueNumber, 0) / withMinuteValue.length : 0,
+      averageHourlyValue: withHourlyValue.length ? withHourlyValue.reduce((sum, item) => sum + item.hourlyValueNumber, 0) / withHourlyValue.length : 0,
+      monthlyCost: rows.reduce((sum, item) => sum + item.totalCost, 0),
+    };
+  };
+  const asIsOperation = useMemo(() => summarizeOperation(filteredAsIs), [filteredAsIs]);
+  const toBeOperation = useMemo(() => summarizeOperation(filteredToBe), [filteredToBe]);
 
   const summarizeActivities = (rows) => {
     const isMatch = (value, words) => words.some((word) => normalizeSystemName(value).includes(word));
@@ -5048,33 +5489,41 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
         <table className="processTable coeTable matrixInternalScrollTable">
           <thead>
             <tr>
+              <th>N°</th>
               <th>CÓDIGO</th>
               <th>PROCESO</th>
-              <th>TIPO</th>
               <th>ACTIVIDAD</th>
-              <th>INTERVINIENTE</th>
-              <th>OBSERVACIÓN / STATUS</th>
-              <th>NAV</th>
+              <th>RESPONSABLE</th>
               <th>TIEMPO (xmin)</th>
-              <th>COSTO (xmin)</th>
               <th>FRECUENCIA</th>
-              <th>TOTAL</th>
+              <th>TOTAL MINUTOS/MES</th>
+              <th>SUELDO MENSUAL</th>
+              <th>VALOR HORA</th>
+              <th>VALOR MINUTO</th>
+              <th>COSTO MENSUAL ACTIVIDAD</th>
+              <th>TIPO TRANSFORMACIÓN</th>
+              <th>PROCESOS AS IS RELACIONADOS</th>
+              <th>MES</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((item, index) => (
               <tr key={`${title}-${item.code}-${item.activity}-${index}`}>
+                <td>{item.sequence || index + 1}</td>
                 <td>{item.code}</td>
                 <td><strong>{item.process}</strong></td>
-                <td>{item.processType}</td>
                 <td>{item.activity}</td>
                 <td>{item.participant}</td>
-                <td>{item.observation}</td>
-                <td>{item.navStatus}</td>
                 <td>{item.time}</td>
-                <td>{item.cost}</td>
                 <td>{item.frequency}</td>
+                <td>{item.totalMinutes || item.totalMinutesValue}</td>
+                <td>{item.monthlySalary || "—"}</td>
+                <td>{item.hourlyValue || "—"}</td>
+                <td>{item.minuteValue || "—"}</td>
                 <td><strong>${formatCurrency(item.totalCost)}</strong></td>
+                <td>{item.transformationType || "—"}</td>
+                <td>{item.sourceProcessCodes || "—"}</td>
+                <td>{item.month || "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -5104,11 +5553,11 @@ const coeBackView = previousView === "ruta" ? "ruta" : "portal";
     setMobileCoeTouchStart(null);
   };
 
-  const MobileBarMetric = ({ label, value, max }) => (
+  const MobileBarMetric = ({ label, value, max, displayValue }) => (
     <div className="mobileCoeBarMetric">
       <span>{label}</span>
       <div><i style={{ width: `${Math.max(value > 0 ? 4 : 0, (value / Math.max(1, max)) * 100)}%` }} /></div>
-      <strong>{value}</strong>
+      <strong>{displayValue ?? value}</strong>
     </div>
   );
 
@@ -5221,7 +5670,7 @@ const coeBackView = previousView === "ruta" ? "ruta" : "portal";
       <div className="mobileCoeBody">
         <div className="mobileCoeKpis">
           <article><i /><span>Costo procesos AS IS</span><strong><ChevronRight size={16} />${formatCurrency(asIsTotal)}</strong></article>
-          <article><i /><span>COE mensual</span><strong><ChevronRight size={16} />${formatCurrency(Math.abs(difference))}</strong></article>
+          <article><i /><span>Ahorro mensual estimado</span><strong><ChevronRight size={16} />${formatCurrency(Math.abs(difference))}</strong></article>
           <article><i /><span>Costo procesos TO BE</span><strong><ChevronRight size={16} />${formatCurrency(toBeTotal)}</strong></article>
         </div>
 
@@ -5231,31 +5680,32 @@ const coeBackView = previousView === "ruta" ? "ruta" : "portal";
           <strong>{Math.abs(reductionPercent).toFixed(0)}%</strong>
         </article>
 
-        <h2 className="mobileCoeSectionTitle">Actividades</h2>
+        <h2 className="mobileCoeSectionTitle">Carga operativa</h2>
         <MobileInsightCard
-          title={`Actividades ${mobileActivitySide === "asis" ? "AS IS" : "TO BE"}`}
+          title={`Carga operativa ${mobileActivitySide === "asis" ? "AS IS" : "TO BE"}`}
           badge={`${mobileActivitySide === "asis" ? filteredAsIs.length : filteredToBe.length} actividades`}
-          sideLabel={mobileActivitySide === "asis" ? "Actividades actuales" : "Actividades propuestas"}
+          sideLabel="Tiempo mensual requerido por la operación"
           onPrev={() => toggleSide(mobileActivitySide, setMobileActivitySide)}
           onNext={() => toggleSide(mobileActivitySide, setMobileActivitySide)}
-          nextLabel={`Actividades ${mobileActivitySide === "asis" ? "TO BE" : "AS IS"}`}
+          nextLabel={`Carga ${mobileActivitySide === "asis" ? "TO BE" : "AS IS"}`}
         >
-          <MobileBarMetric label="Mantenidas" value={(mobileActivitySide === "asis" ? asIsActivityStatusSummary : toBeActivityStatusSummary).maintained} max={maxActivityCount} />
-          <MobileBarMetric label="Eliminadas" value={(mobileActivitySide === "asis" ? asIsActivityStatusSummary : toBeActivityStatusSummary).deleted} max={maxActivityCount} />
-          <MobileBarMetric label="Agregadas" value={(mobileActivitySide === "asis" ? asIsActivityStatusSummary : toBeActivityStatusSummary).added} max={maxActivityCount} />
+          <MobileBarMetric label="Actividades" value={(mobileActivitySide === "asis" ? asIsOperation : toBeOperation).activities} max={Math.max(1, asIsOperation.activities, toBeOperation.activities)} />
+          <MobileBarMetric label="Minutos/mes" value={(mobileActivitySide === "asis" ? asIsOperation : toBeOperation).totalMinutes} max={Math.max(1, asIsOperation.totalMinutes, toBeOperation.totalMinutes)} displayValue={formatCurrency((mobileActivitySide === "asis" ? asIsOperation : toBeOperation).totalMinutes)} />
+          <MobileBarMetric label="Horas/mes" value={(mobileActivitySide === "asis" ? asIsOperation : toBeOperation).totalHours} max={Math.max(1, asIsOperation.totalHours, toBeOperation.totalHours)} displayValue={formatCurrency((mobileActivitySide === "asis" ? asIsOperation : toBeOperation).totalHours)} />
         </MobileInsightCard>
 
-        <h2 className="mobileCoeSectionTitle">NAV</h2>
+        <h2 className="mobileCoeSectionTitle">Costo operativo</h2>
         <MobileInsightCard
-          title={`NAV ${mobileNavSide === "asis" ? "AS IS" : "TO BE"}`}
+          title={`Costo operativo ${mobileNavSide === "asis" ? "AS IS" : "TO BE"}`}
           badge={`${mobileNavSide === "asis" ? filteredAsIs.length : filteredToBe.length} actividades`}
-          sideLabel="Clasificación de actividades que generan o no generan valor"
+          sideLabel="Costo calculado con la nueva matriz COE"
           onPrev={() => toggleSide(mobileNavSide, setMobileNavSide)}
           onNext={() => toggleSide(mobileNavSide, setMobileNavSide)}
-          nextLabel={`NAV ${mobileNavSide === "asis" ? "TO BE" : "AS IS"}`}
+          nextLabel={`Costo ${mobileNavSide === "asis" ? "TO BE" : "AS IS"}`}
         >
-          <MobileBarMetric label="Generan Valor" value={(mobileNavSide === "asis" ? asIsNavSummary : toBeNavSummary).value} max={maxNavCount} />
-          <MobileBarMetric label="No Generan Valor" value={(mobileNavSide === "asis" ? asIsNavSummary : toBeNavSummary).noValue} max={maxNavCount} />
+          <MobileBarMetric label="Valor minuto" value={(mobileNavSide === "asis" ? asIsOperation : toBeOperation).averageMinuteValue} max={Math.max(1, asIsOperation.averageMinuteValue, toBeOperation.averageMinuteValue)} displayValue={`$${formatCurrency((mobileNavSide === "asis" ? asIsOperation : toBeOperation).averageMinuteValue)}`} />
+          <MobileBarMetric label="Valor hora" value={(mobileNavSide === "asis" ? asIsOperation : toBeOperation).averageHourlyValue} max={Math.max(1, asIsOperation.averageHourlyValue, toBeOperation.averageHourlyValue)} displayValue={`$${formatCurrency((mobileNavSide === "asis" ? asIsOperation : toBeOperation).averageHourlyValue)}`} />
+          <MobileBarMetric label="Costo mensual" value={(mobileNavSide === "asis" ? asIsOperation : toBeOperation).monthlyCost} max={Math.max(1, asIsOperation.monthlyCost, toBeOperation.monthlyCost)} displayValue={`$${formatCurrency((mobileNavSide === "asis" ? asIsOperation : toBeOperation).monthlyCost)}`} />
         </MobileInsightCard>
 
         <h2 className="mobileCoeSectionTitle">Procesos</h2>
@@ -5272,9 +5722,8 @@ const coeBackView = previousView === "ruta" ? "ruta" : "portal";
 
         <div className="mobileCoeFilters">
           <FilterSelect label="Proceso" value={processFilter} onChange={setProcessFilter} options={processOptions} />
-          <FilterSelect label="Tipo" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
-          <FilterSelect label="Status" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
-          <FilterSelect label="NAV" value={navFilter} onChange={setNavFilter} options={navOptions} />
+          <FilterSelect label="Responsable" value={participantFilter} onChange={setParticipantFilter} options={participantOptions} />
+          <FilterSelect label="Mes" value={monthFilter} onChange={setMonthFilter} options={monthOptions} />
         </div>
 
         <MobileMatrix title="Matriz COE AS IS" subtitle="Actividades levantadas en la situación actual." rows={filteredAsIs} />
@@ -5316,7 +5765,7 @@ const coeBackView = previousView === "ruta" ? "ruta" : "portal";
           <p>Total mensual estimado de la situación actual.</p>
         </article>
         <article className="coeExecutiveCard coeDifferenceCard difference">
-          <span>COE mensual</span>
+          <span>Ahorro mensual estimado</span>
           <strong>${formatCurrency(Math.abs(difference))}</strong>
           <em>{Math.abs(reductionPercent).toFixed(1)}%</em>
           <p>{difference >= 0 ? "Reducción estimada frente al AS IS." : "Incremento estimado frente al AS IS."}</p>
@@ -5330,17 +5779,21 @@ const coeBackView = previousView === "ruta" ? "ruta" : "portal";
 
       <div className="coeInsightGrid">
         <article className="coeInsightCard coeActivitiesCard">
-          <span>Actividades</span>
-          <ActivitySummaryRow title="Actividades AS IS" summary={asIsActivityStatusSummary} />
-          <ActivitySummaryRow title="Actividades TO BE" summary={toBeActivityStatusSummary} />
-          <p>Según la columna Observación.</p>
+          <span>Carga operativa</span>
+          <div className="coeOperationalComparison">
+            <div><b>AS IS</b><strong>{asIsOperation.activities}</strong><small>actividades</small><strong>{formatCurrency(asIsOperation.totalMinutes)}</strong><small>minutos/mes</small><strong>{formatCurrency(asIsOperation.totalHours)}</strong><small>horas/mes</small></div>
+            <div><b>TO BE</b><strong>{toBeOperation.activities}</strong><small>actividades</small><strong>{formatCurrency(toBeOperation.totalMinutes)}</strong><small>minutos/mes</small><strong>{formatCurrency(toBeOperation.totalHours)}</strong><small>horas/mes</small></div>
+          </div>
+          <p>Comparación de tiempo mensual requerido por la operación.</p>
         </article>
 
         <article className="coeInsightCard coeNavCard">
-          <span>NAV</span>
-          <NavSummaryRow title="NAV AS IS" summary={asIsNavSummary} />
-          <NavSummaryRow title="NAV TO BE" summary={toBeNavSummary} />
-          <p>Clasificación de actividades que generan o no generan valor.</p>
+          <span>Costo operativo</span>
+          <div className="coeOperationalComparison cost">
+            <div><b>AS IS</b><strong>${formatCurrency(asIsOperation.averageMinuteValue)}</strong><small>valor minuto promedio</small><strong>${formatCurrency(asIsOperation.averageHourlyValue)}</strong><small>valor hora promedio</small></div>
+            <div><b>TO BE</b><strong>${formatCurrency(toBeOperation.averageMinuteValue)}</strong><small>valor minuto promedio</small><strong>${formatCurrency(toBeOperation.averageHourlyValue)}</strong><small>valor hora promedio</small></div>
+          </div>
+          <p>Valores calculados desde las nuevas columnas de la matriz COE.</p>
         </article>
       </div>
 
@@ -5362,9 +5815,8 @@ const coeBackView = previousView === "ruta" ? "ruta" : "portal";
           </div>
         </label>
         <FilterSelect label="Proceso" value={processFilter} onChange={setProcessFilter} options={processOptions} />
-        <FilterSelect label="Tipo" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
-        <FilterSelect label="Status" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
-        <FilterSelect label="NAV" value={navFilter} onChange={setNavFilter} options={navOptions} />
+        <FilterSelect label="Responsable" value={participantFilter} onChange={setParticipantFilter} options={participantOptions} />
+        <FilterSelect label="Mes" value={monthFilter} onChange={setMonthFilter} options={monthOptions} />
       </div>
 
       <div className="processTablesStack coeTablesStack">
@@ -6967,6 +7419,123 @@ function ClientDeliverables({ findings = [], project = {} }) {
   );
 }
 
+function Repository({ repository = [] }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("Todos");
+
+  const getRepositoryType = (value = "") => {
+    const normalized = normalizeSystemName(value);
+    if (normalized.includes("metodologia")) return "Metodología";
+    if (normalized.includes("politica")) return "Política";
+    if (normalized.includes("formato")) return "Formato";
+    return String(value || "Sin tipo").trim() || "Sin tipo";
+  };
+
+  const documents = useMemo(() => repository.map((item) => ({
+    ...item,
+    displayType: getRepositoryType(item.type),
+    documentUrl: safeUrl(item.link),
+  })), [repository]);
+
+  const typeTotals = useMemo(() => ({
+    Metodología: documents.filter((item) => item.displayType === "Metodología").length,
+    Política: documents.filter((item) => item.displayType === "Política").length,
+    Formato: documents.filter((item) => item.displayType === "Formato").length,
+  }), [documents]);
+
+  const typeOptions = useMemo(() => [...new Set(documents.map((item) => item.displayType).filter(Boolean))], [documents]);
+  const filteredDocuments = useMemo(() => {
+    const query = normalizeSystemName(searchTerm);
+    return documents.filter((item) => {
+      const searchable = normalizeSystemName(`${item.code} ${item.name} ${item.description} ${item.updatedAt} ${item.displayType}`);
+      return (typeFilter === "Todos" || item.displayType === typeFilter) && (!query || searchable.includes(query));
+    });
+  }, [documents, searchTerm, typeFilter]);
+
+  const summaryCards = [
+    { label: "Metodologías", value: typeTotals.Metodología, icon: BookOpen },
+    { label: "Políticas", value: typeTotals.Política, icon: ShieldCheck },
+    { label: "Formatos", value: typeTotals.Formato, icon: FileText },
+  ];
+
+  return (
+    <section className="repositorySection">
+      <div className="sectionHeader repositoryHeader">
+        <div>
+          <h2>Repositorio</h2>
+          <p>Documentos, políticas, metodologías y formatos validados disponibles para consulta.</p>
+        </div>
+        <span className="repositoryTotal">{documents.length} documentos</span>
+      </div>
+
+      <div className="repositorySummaryGrid">
+        {summaryCards.map(({ label, value, icon: Icon }) => (
+          <article className="repositorySummaryCard" key={label}>
+            <Icon size={24} aria-hidden="true" />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </article>
+        ))}
+      </div>
+
+      <div className="repositoryFilters">
+        <label className="searchFilter">
+          <span>Buscar</span>
+          <div className="searchInputWrap">
+            <Search size={18} />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar por código, nombre o descripción"
+            />
+          </div>
+        </label>
+        <FilterSelect label="Tipo" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
+      </div>
+
+      <div className="repositoryListHeader">
+        <div>
+          <h3>Documentos validados</h3>
+          <p>{filteredDocuments.length} de {documents.length} documentos visibles</p>
+        </div>
+      </div>
+
+      <div className="repositoryDocumentGrid">
+        {filteredDocuments.map((item, index) => (
+          <article className="repositoryDocumentCard" key={item.id || `${item.code}-${index}`}>
+            <div className="repositoryDocumentTop">
+              <span className={`repositoryType type-${normalizeSystemName(item.displayType)}`}>{item.displayType}</span>
+              <FolderOpen size={22} aria-hidden="true" />
+            </div>
+            <span className="repositoryCode">{item.code || "Sin código"}</span>
+            <h3>{item.name || "Documento sin nombre"}</h3>
+            <p>{item.description || "Sin descripción registrada."}</p>
+            <div className="repositoryDocumentMeta">
+              <span>Actualización</span>
+              <strong>{item.updatedAt || "Sin fecha"}</strong>
+            </div>
+            {item.documentUrl ? (
+              <a href={item.documentUrl} target="_blank" rel="noreferrer" className="repositoryOpenLink">
+                Abrir documento <ExternalLink size={16} />
+              </a>
+            ) : (
+              <span className="repositoryNoLink">Enlace pendiente</span>
+            )}
+          </article>
+        ))}
+      </div>
+
+      {!filteredDocuments.length && (
+        <div className="repositoryEmpty">
+          <FolderOpen size={30} aria-hidden="true" />
+          <strong>No hay documentos para mostrar</strong>
+          <span>Ajusta la búsqueda o revisa los registros de la pestaña Repositorio.</span>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliverable, compact = false, setView, previousView = "portal", pending = [] }) {
   const [systemFilter, setSystemFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
@@ -8359,7 +8928,7 @@ useEffect(() => {
   );
 }
 
-function MobilePortalHome({ project, milestones = [], pending = [], meetings = [], updates = [], findings = [], deliverables = [], documents = [], education = [], tutorials = [], architectureRoles = [], coeAsIs = [], coeToBe = [], setView }) {
+function MobilePortalHome({ project, milestones = [], pending = [], meetings = [], updates = [], findings = [], deliverables = [], documents = [], education = [], tutorials = [], architectureRolesToBe = [], personnelMatrix = [], coeAsIs = [], coeToBe = [], setView }) {
   const [mobileSearch, setMobileSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [openMobilePanel, setOpenMobilePanel] = useState("");
@@ -8370,13 +8939,8 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
   const disorder = Math.max(0, 100 - progress);
   const completedMilestones = milestones.filter((item) => isCompletedStatus(item.status)).length;
   const activePending = pending.filter(isPendingActive).length;
-const costFor = (item = {}) => {
-    const cost = parseNumericValue(item.cost ?? item.costo ?? item["COSTO (xmin)"] ?? 0);
-    const frequency = parseNumericValue(item.frequency ?? item.frecuencia ?? item.FRECUENCIA ?? 1) || 1;
-    return cost * frequency;
-  };
-  const totalAsIs = coeAsIs.reduce((sum, item) => sum + costFor(item), 0);
-  const totalToBe = coeToBe.reduce((sum, item) => sum + costFor(item), 0);
+  const totalAsIs = coeAsIs.reduce((sum, item) => sum + getCOEMonthlyCost(item), 0);
+  const totalToBe = coeToBe.reduce((sum, item) => sum + getCOEMonthlyCost(item), 0);
   const coePercent = totalAsIs > 0 ? ((totalAsIs - totalToBe) / totalAsIs) * 100 : 0;
   const meetUrl = safeUrl(project?.linkMeet);
   const meetingItems = [
@@ -8430,12 +8994,14 @@ const costFor = (item = {}) => {
   });
   const topRouteItems = routeItems.slice(0, 6);
   const bottomRouteItems = routeItems.slice(6, 13);
-  const profileCompletedCount = architectureRoles.filter((item) => isCompletedStatus(item.status) || isCheckedSheetValue(item.validated)).length;
+  const profileCompletedCount = architectureRolesToBe.filter((item) => isCompletedStatus(item.status) || isCheckedSheetValue(item.validated)).length;
+  const employmentAverage = getPersonnelAverage(personnelMatrix, "employmentLevel");
+  const performanceAverage = getPersonnelAverage(personnelMatrix, "performanceLevel");
   const systemMetrics = [
     { label: "Hallazgos", total: findings.length, value: findings.filter((item) => isCompletedStatus(item.status)).length, note: "Completado" },
-    { label: "Perfiles", total: architectureRoles.length, value: profileCompletedCount, note: architectureRoles.length ? "Validado" : "Pendiente de datos" },
-    { label: "Nivel de empleabilidad", total: 0, value: 0, note: "Pendiente de datos" },
-    { label: "Desempeño", total: 0, value: 0, note: "Pendiente de datos" },
+    { label: "Perfiles", total: architectureRolesToBe.length, value: profileCompletedCount, note: architectureRolesToBe.length ? "Validado TO BE" : "Pendiente de datos" },
+    { label: "Nivel de empleabilidad", total: personnelMatrix.length ? 100 : 0, value: employmentAverage, note: personnelMatrix.length ? "Promedio APP" : "Pendiente de datos" },
+    { label: "Desempeño", total: personnelMatrix.length ? 100 : 0, value: performanceAverage, note: personnelMatrix.length ? "Promedio EDD" : "Pendiente de datos" },
     { label: "Masa Salarial", total: 0, value: 0, note: "Pendiente de datos" },
   ];
   const unlockedIndex = Math.max(0, routeItems.findLastIndex((item) => item.unlocked));
@@ -8592,7 +9158,7 @@ const costFor = (item = {}) => {
 
         <div className="mobileCoeMetricCards">
           <button type="button" onClick={() => setView("coe")}><i /><span>Total AS IS</span><strong>${formatCurrency(totalAsIs)}</strong></button>
-          <button type="button" onClick={() => setView("coe")}><i /><span>COE mensual</span><strong>{Math.abs(coePercent).toFixed(0)}%</strong></button>
+          <button type="button" onClick={() => setView("coe")}><i /><span>Reducción estimada</span><strong>{Math.abs(coePercent).toFixed(0)}%</strong></button>
           <button type="button" onClick={() => setView("coe")}><i /><span>Total TO BE</span><strong>${formatCurrency(totalToBe)}</strong></button>
         </div>
 
@@ -11146,7 +11712,7 @@ function App() {
     return () => window.clearTimeout(timer);
   }, [loadingData, session?.sheetId]);
 
-  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], documents = [], architectureRoles = [], architectureRolesToBe = [], organizationProcesses = [], indicators = [], qualityCommittee = [], clientExperience = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
+  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], repository = [], documents = [], architectureRoles = [], architectureRolesToBe = [], personnelMatrix = [], organizationProcesses = [], indicators = [], qualityCommittee = [], clientExperience = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
   const completedText = useMemo(() => {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
@@ -11218,6 +11784,7 @@ function App() {
           milestones={milestones}
           findings={findings}
           deliverables={deliverables}
+          repository={repository}
           documents={documents}
           education={education}
           tutorials={tutorials}
@@ -11237,11 +11804,13 @@ function App() {
               ["calendario", "Calendario"],
               ["ruta", "Ruta"],
               ["procesos", "Procesos"],
+              ["optimizacion-racionalizacion", "Optimización y Racionalización"],
               ["coe", "COE"],
               ["hallazgos", "Hallazgos"],
               ["pendientes", "Pendientes"],
               ["entregables", "Entregables"],
               ["entregables-clientes", "Entregables clientes"],
+              ["repositorio", "Repositorio"],
               ["indicadores", "Indicadores"],
               ["comite-calidad", "Comité de Calidad"],
               ["documentos", "Documentos"],
@@ -11270,7 +11839,8 @@ function App() {
                 documents={documents}
                 education={education}
                 tutorials={tutorials}
-                architectureRoles={architectureRoles}
+                architectureRolesToBe={architectureRolesToBe}
+                personnelMatrix={personnelMatrix}
                 coeAsIs={coeAsIs}
                 coeToBe={coeToBe}
                 setView={navigate}
@@ -11286,7 +11856,8 @@ function App() {
               pending={pending}
               findings={findings}
               deliverables={deliverables}
-              architectureRoles={architectureRoles}
+              architectureRolesToBe={architectureRolesToBe}
+              personnelMatrix={personnelMatrix}
               processesAsIs={processesAsIs}
               processesToBe={processesToBe}
               coeAsIs={coeAsIs}
@@ -11319,6 +11890,13 @@ function App() {
               processesToBe={processesToBe}
             />
           )}
+          {view === "optimizacion-racionalizacion" && (
+            <ConfidentialPersonnelMatrixView
+              rows={personnelMatrix}
+              project={project}
+              onCancel={() => navigate("estructura")}
+            />
+          )}
           {view === "indicadores" && <ImplementationIndicators indicators={indicators} />}
           {view === "comite-calidad" && <QualityCommittee committee={qualityCommittee} />}
           {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
@@ -11326,6 +11904,7 @@ function App() {
           {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} onPendingValidationChange={handlePendingValidationChange} />}
           {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "entregables-clientes" && <ClientDeliverables findings={findings} project={project} />}
+          {view === "repositorio" && <Repository repository={repository} />}
           {view === "documentos" && <DocumentsUpload documents={documents} project={project} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "educacion" && <Education education={education} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "tutoriales" && <Tutorials tutorials={tutorials} setView={navigate} previousView={previousView} pending={pending} />}
