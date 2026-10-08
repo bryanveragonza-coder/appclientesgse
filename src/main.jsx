@@ -234,7 +234,7 @@ function Sidebar({ view, setView, project }) {
   ];
 
   const company = project.companyClient || project.client;
-  const sidebarLogoHorizontal = getDrivePreviewUrl(project.logoGSEhorizontal || "");
+  const sidebarLogoHorizontal = getDrivePreviewUrl(project.logoGSEhorizontalColor || project.logoGSEhorizontal || "");
   const contact = project.contactName || project.generalManager || project.responsibleClient;
   const role = project.contactRole || "cargo de empresa";
   const handleSidebarWheel = (event) => {
@@ -1270,234 +1270,194 @@ function getPersonnelAverage(rows = [], field) {
   return Number(average.toFixed(1));
 }
 
-function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], deliverables = [], architectureRolesToBe = [], personnelMatrix = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], updates = [], meetings = [], setView }) {
-  const [openPanel, setOpenPanel] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const projectProgress = Number(project?.progress) || 0;
-  const disorder = Math.max(0, 100 - projectProgress);
-  const completedMilestones = milestones.filter((item) => isCompletedStatus(item.status)).length;
-  const activePending = pending.filter(isPendingActive).length;
-const meetUrl = safeUrl(project?.linkMeet);
-
-  const meetingItems = [
-    ...meetings.map((item) => ({
-      title: item.title || "Reunión",
-      date: [item.date, item.time].filter(Boolean).join(" · ") || "Por definir",
-      link: safeUrl(item.link) || meetUrl,
-      status: item.status,
-      observation: item.observation,
-    })),
-    {
-      title: project?.nextStep || "Próxima reunión",
-      date: project?.nextDate || "Por definir",
-      link: meetUrl,
-    },
-    ...updates
-      .filter((item) => normalizeSystemName(`${item.target || ""} ${item.title || ""} ${item.text || ""}`).includes("reunion"))
-      .slice(0, 3)
-      .map((item) => ({ title: item.title || "Reunión", date: item.text || "Por definir", link: meetUrl })),
-  ].filter((item) => item.title || item.date);
-
-  const pendingItems = pending.filter(isPendingActive).slice(0, 8);
-  const isMilestoneOpen = (item = {}, index = 0) => {
-    const explicit = normalizeSystemName(item.open || item.abierto || "");
-    if (explicit) return explicit === "si" || explicit === "sí" || explicit.includes("abierto") || explicit.includes("disponible");
-    return index < 4 || isCompletedStatus(item.status);
+function formatSummaryDate(value = "") {
+  const text = String(value || "").trim();
+  if (!text) return "Por definir";
+  const monthShort = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  const numericDate = text.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+  if (numericDate) return `${Number(numericDate[1])} ${monthShort[Math.max(0, Math.min(11, Number(numericDate[2]) - 1))]}`;
+  const months = {
+    enero: "ene", febrero: "feb", marzo: "mar", abril: "abr", mayo: "may", junio: "jun",
+    julio: "jul", agosto: "ago", septiembre: "sep", setiembre: "sep", octubre: "oct",
+    noviembre: "nov", diciembre: "dic",
   };
-  const routeSource = milestones.slice(0, 13);
-  const allMilestones = Array.from({ length: 13 }, (_, index) => {
-    const item = routeSource[index] || {};
-    const code = item.id || `E${index}`;
-    const title = item.title || "Por definir";
-    const status = item.status || (index < 4 ? "Abierto" : "Cerrado");
-    const unlocked = isMilestoneOpen(item, index);
-    return {
-      ...item,
-      id: code,
-      title,
-      status,
-      date: item.targetDate || item.date || "Fecha",
-      unlocked,
-      completed: isCompletedStatus(status),
-    };
-  });
-  const visibleCompletedMilestones = allMilestones.filter((item) => isCompletedStatus(item.status)).length;
-  const pinIndex = Math.max(0, allMilestones.findLastIndex((item) => item.unlocked));
-  const unlockedMilestoneRaw = allMilestones[pinIndex]?.id ?? pinIndex;
-  const unlockedMilestoneCode = String(unlockedMilestoneRaw).replace(/^E/i, "").replace(".0", "") || "0";
+  return Object.entries(months).reduce((result, [month, short]) => (
+    result.replace(new RegExp(`\\s+de\\s+${month}`, "gi"), ` ${short}`)
+  ), text);
+}
 
-  const totalCost = (rows = []) => rows.reduce((sum, item) => {
-    return sum + getCOEMonthlyCost(item);
-  }, 0);
+function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], architectureRolesToBe = [], personnelMatrix = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], charges = [], setView }) {
+  const [milestoneFilter, setMilestoneFilter] = useState("all");
+  const [processView, setProcessView] = useState("asIs");
+  const projectProgress = Number(project?.progress) || 0;
+  const activePending = pending.filter(isPendingActive);
+  const completedMilestones = milestones.filter((item) => isCompletedStatus(item.status)).length;
+  const currentMilestoneIndex = Math.max(0, milestones.findIndex((item) => !isCompletedStatus(item.status)));
+  const currentMilestone = milestones[currentMilestoneIndex] || milestones.at(-1) || {};
+  const openMilestones = milestones.filter((item) => {
+    const value = normalizeSystemName(item.open || item.abierto || "");
+    return value === "si" || value === "sí" || value === "1" || value === "true" || value.includes("abierto") || value.includes("disponible");
+  });
+  const lastOpenMilestone = openMilestones.at(-1) || milestones[0] || {};
+  const totalCost = (rows = []) => rows.reduce((sum, item) => sum + getCOEMonthlyCost(item), 0);
   const asIsCOE = totalCost(coeAsIs);
   const toBeCOE = totalCost(coeToBe);
-  const coeDelta = asIsCOE - toBeCOE;
-  const coePercent = asIsCOE > 0 ? (coeDelta / asIsCOE) * 100 : 0;
   const employmentAverage = getPersonnelAverage(personnelMatrix, "employmentLevel");
   const performanceAverage = getPersonnelAverage(personnelMatrix, "performanceLevel");
 
-  const statusClass = (status = "") => {
-    const text = normalizeSystemName(status);
-    if (text.includes("cerrado")) return "closed";
-    if (isCompletedStatus(status)) return "done";
-    if (text.includes("desarrollo") || text.includes("proceso")) return "active";
-    return "pending";
-  };
-  const countByStatus = (rows = []) => {
-    const buckets = new Map();
-    rows.forEach((item) => {
-      const label = item.status || "Sin estado";
-      buckets.set(label, (buckets.get(label) || 0) + 1);
+  const processIndex = useMemo(() => {
+    const map = new Map();
+    [...processesAsIs, ...processesToBe].forEach((item) => {
+      const code = String(item.code || item.processCode || "").trim();
+      if (code) map.set(normalizeSystemName(code), item);
     });
-    return Array.from(buckets.entries()).map(([label, value]) => {
-      const text = normalizeSystemName(label);
-      const color = text.includes("complet") || text.includes("finaliz") || text.includes("aprob")
-        ? "#00b8b5"
-        : text.includes("desarrollo") || text.includes("proceso")
-          ? "#53676b"
-          : text.includes("pendiente")
-            ? "#b9c4c6"
-            : "#102f37";
-      return { label, value, color };
+    return map;
+  }, [processesAsIs, processesToBe]);
+
+  const enrichCoeRows = (rows, side) => rows.map((item) => {
+    const process = processIndex.get(normalizeSystemName(item.code || "")) || {};
+    return {
+      ...item,
+      process: item.process || process.processName || process.name || item.code,
+      transformationType: item.transformationType || process.transformationStatus || "",
+      sourceProcessCodes: item.sourceProcessCodes || process.relatedProcessCode || "",
+      side,
+    };
+  });
+  const enrichedAsIs = useMemo(() => enrichCoeRows(coeAsIs, "AS IS"), [coeAsIs, processIndex]);
+  const enrichedToBe = useMemo(() => enrichCoeRows(coeToBe, "TO BE"), [coeToBe, processIndex]);
+
+  const transformations = useMemo(() => {
+    const summarize = (rows) => {
+    const counts = { expands: 0, merges: 0, removes: 0, unchanged: 0 };
+      rows.forEach((item) => {
+      const status = normalizeSystemName(item.transformationStatus || "");
+      if (status.includes("ampl") || status.includes("crece") || status.includes("nuevo")) counts.expands += 1;
+      else if (status.includes("unific") || status.includes("fusion")) counts.merges += 1;
+      else if (status.includes("elimin") || status.includes("suprim")) counts.removes += 1;
+      else counts.unchanged += 1;
     });
-  };
+    return counts;
+    };
+    return { asIs: summarize(processesAsIs), toBe: summarize(processesToBe) };
+  }, [processesAsIs, processesToBe]);
 
-  const systemMetrics = [
-    {
-      label: "Hallazgos",
-      total: findings.length,
-      value: findings.filter((item) => isCompletedStatus(item.status)).length,
-      note: "Completado",
-      accent: true,
-    },
-    {
-      label: "Perfiles",
-      total: architectureRolesToBe.length,
-      value: architectureRolesToBe.length,
-      note: architectureRolesToBe.length ? "Realizado" : "Pendiente de datos",
-      accent: architectureRolesToBe.length > 0,
-    },
-    {
-      label: "Nivel de empleabilidad",
-      total: personnelMatrix.length,
-      value: employmentAverage,
-      ringTotal: 100,
-      note: personnelMatrix.length ? "Promedio APP" : "Pendiente de datos",
-      accent: personnelMatrix.length > 0,
-    },
-    {
-      label: "Desempeño",
-      total: personnelMatrix.length,
-      value: performanceAverage,
-      ringTotal: 100,
-      note: personnelMatrix.length ? "Promedio EDD" : "Pendiente de datos",
-      accent: personnelMatrix.length > 0,
-    },
-    {
-      label: "Masa Salarial",
-      total: "Pendiente",
-      value: 0,
-      displayValue: "—",
-      note: "Pendiente de datos",
-      pending: true,
-    },
-  ];
-
-  const filteredDetail = milestones.filter((item) => {
-    const query = normalizeSystemName(searchTerm);
-    if (!query) return true;
-    return normalizeSystemName(`${item.id} ${item.title} ${item.status} ${item.system}`).includes(query);
+  const filteredMilestones = milestones.filter((item) => {
+    if (milestoneFilter === "done") return isCompletedStatus(item.status);
+    if (milestoneFilter === "active") return !isCompletedStatus(item.status) && Number(item.progress) > 0;
+    if (milestoneFilter === "next") return !isCompletedStatus(item.status) && Number(item.progress) <= 0;
+    return true;
   });
 
+  const systemMetrics = [
+    { label: "Hallazgos", value: findings.length, note: `${findings.filter((item) => isCompletedStatus(item.status)).length} completados`, progress: findings.length ? findings.filter((item) => isCompletedStatus(item.status)).length / findings.length * 100 : 0 },
+    { label: "Perfiles", value: architectureRolesToBe.length, note: `${architectureRolesToBe.length} realizados`, progress: architectureRolesToBe.length ? 100 : 0 },
+    { label: "Nivel de empleabilidad", value: employmentAverage || "—", note: `Colaboradores: ${personnelMatrix.length}`, progress: employmentAverage },
+    { label: "Desempeño", value: performanceAverage || "—", note: `Colaboradores: ${personnelMatrix.length}`, progress: performanceAverage },
+    { label: "Masa salarial", value: "—", note: "Pendiente de datos", progress: 0 },
+  ];
+
+  const transformation = transformations[processView];
+  const transformationRows = processView === "asIs" ? processesAsIs : processesToBe;
+  const transformationTotal = Math.max(1, transformationRows.length);
+  const nextDates = milestones.filter((item) => !isCompletedStatus(item.status)).slice(0, 4);
+  const nextCharge = charges.find((item) => !isPaidCharge(item)) || charges.at(-1) || {};
+  const nextPaymentDate = nextCharge.adjustedDueDate || nextCharge.originalDueDate || project?.paymentDate || "Por definir";
+  const nextPaymentStatus = nextCharge.paymentStatus || nextCharge.cutStatus || project?.paymentStatus || "Pendiente";
+  const paymentPaid = normalizeSystemName(nextPaymentStatus).includes("pagado") || normalizeSystemName(nextPaymentStatus).includes("cobrado") || normalizeSystemName(nextPaymentStatus).includes("cancelado");
+
   return (
-    <section className="canvaSummary">
-      <div className="canvaWelcome">
-        <h2>Hola, {project?.contactName || project?.companyClient || project?.client || "Nombre del Cliente"}</h2>
-        <p>Bienvenido a tu Ruta de Implementación Visible (RIV)</p>
+    <section className="canvaSummary summaryV3">
+      <div className="summaryV3Welcome">
+        <h2>Hola, {project?.contactName || project?.companyClient || project?.client || "Cliente"}</h2>
+        <p>Tu Ruta de Implementación Visible: estás en el hito {currentMilestone.id || currentMilestoneIndex + 1} y tienes {activePending.length} pendientes por resolver.</p>
       </div>
 
-      <div className="canvaKpiRow">
-        <button className="canvaKpiCard" onClick={() => setView?.("ruta")}>
-          <div><span>Avance General</span><strong>{projectProgress}%</strong></div>
+      <div className="summaryV3HeroGrid">
+        <button className="summaryV3Card summaryV3ProgressCard" onClick={() => setView?.("ruta")}>
+          <span className="summaryV3Gauge" style={{ "--progress": `${projectProgress * 3.6}deg` }}><strong>{projectProgress}%</strong></span>
+          <span><small>Avance general</small><strong>Hito actual: {currentMilestone.id || currentMilestoneIndex + 1} · {currentMilestone.title || "Por definir"}</strong><em>Falta {Math.max(0, 100 - projectProgress)}% para cerrar</em></span>
         </button>
-        <button className="canvaKpiCard">
-          <div><span>Avance Pendiente</span><strong>{Math.round(disorder)}%</strong></div>
-        </button>
-        <button className="canvaKpiCard" onClick={() => setView?.("pendientes")}>
-          <div><span>Pendientes Cliente</span><strong>{activePending}</strong></div>
+        <article className="summaryV3Card summaryV3Unlocked">
+          <span>Hitos abiertos</span><strong>E{lastOpenMilestone.id ?? openMilestones.length} <em>/ E{milestones.length || 12}</em></strong><small>{Math.max(0, milestones.length - openMilestones.length)} etapas por desbloquear</small><div className="summaryV3Payment"><span>Próximo pago · {formatSummaryDate(nextPaymentDate)}</span><em className={paymentPaid ? "paid" : "pending"}>{paymentPaid ? "Pagado" : "Pendiente"}</em></div>
+        </article>
+        <button className="summaryV3Card summaryV3Pending" onClick={() => setView?.("pendientes")}>
+          <span>Pendientes del cliente</span><strong>{activePending.length}</strong><small>Revisar ahora <ArrowRight size={15} /></small>
         </button>
       </div>
 
-      <div className="canvaMainGrid">
-        <article className="canvaPanel canvaMilestonePanel">
-          <div className="canvaPanelHeader">
-            <div>
-              <h3>Hitos Completados</h3>
-              <strong>{visibleCompletedMilestones}/{allMilestones.length}</strong>
-            </div>
-            <div>
-              <span>Desbloqueado hasta</span>
-              <strong>E{unlockedMilestoneCode}/E12</strong>
-            </div>
-          </div>
-          <div className="canvaRouteScroll">
-            <CanvaMilestonePath milestones={allMilestones} pinIndex={pinIndex} statusClass={statusClass} setView={setView} />
+      <article className="summaryV3Card summaryV3Transformation">
+        <div className="summaryV3SectionTitle"><span><ArrowRight size={17} /></span><h3>Transformación de procesos</h3><button onClick={() => setView?.("procesos")}>Ver AS IS / TO BE</button></div>
+        <div className="summaryV3TransformationBody">
+          <div className="summaryV3ProcessTotals"><button className={processView === "asIs" ? "active" : ""} onClick={() => setProcessView("asIs")}><span>Procesos AS IS</span><strong>{processesAsIs.length}</strong></button><ArrowRight /><button className={processView === "toBe" ? "active" : ""} onClick={() => setProcessView("toBe")}><span>Procesos TO BE</span><strong>{processesToBe.length}</strong></button></div>
+          <div className="summaryV3Reduction"><span>Reducción</span><strong>{processesToBe.length - processesAsIs.length > 0 ? "+" : ""}{processesToBe.length - processesAsIs.length} <em>procesos</em></strong><small>{processesAsIs.length ? (((processesToBe.length - processesAsIs.length) / processesAsIs.length) * 100).toFixed(1) : 0}% frente al estado actual</small></div>
+          <div className="summaryV3Status"><span>Estado de los {transformationRows.length} procesos {processView === "asIs" ? "AS IS" : "TO BE"}</span><div className="summaryV3StatusBar">{Object.entries(transformation).map(([key, value]) => <i key={key} className={key} style={{ width: `${value / transformationTotal * 100}%` }} />)}</div><div className="summaryV3Legend"><span className="expands">Se amplía <b>{transformation.expands}</b></span><span className="merges">Se unifica <b>{transformation.merges}</b></span><span className="removes">Se elimina <b>{transformation.removes}</b></span><span className="unchanged">Sin cambios <b>{transformation.unchanged}</b></span></div></div>
+        </div>
+      </article>
+
+      <div className="summaryV3MainGrid">
+        <article className="summaryV3Card summaryV3Milestones">
+          <div className="summaryV3SectionTitle"><h3>Hitos</h3><button onClick={() => setView?.("ruta")}>Ver los {milestones.length}</button></div>
+          <div className="summaryV3MilestoneTrack">{milestones.map((item, index) => <i key={`${item.id}-${index}`} className={isCompletedStatus(item.status) ? "done" : index === currentMilestoneIndex ? "active" : ""} />)}</div>
+          <p>{completedMilestones} finalizados · {milestones.filter((item) => !isCompletedStatus(item.status) && Number(item.progress) > 0).length} en desarrollo · resto por iniciar</p>
+          <div className="summaryV3Tabs">{[["all", "Todos"], ["active", "En curso"], ["next", "Próximos"], ["done", "Finalizados"]].map(([key, label]) => <button className={milestoneFilter === key ? "active" : ""} key={key} onClick={() => setMilestoneFilter(key)}>{label}</button>)}</div>
+          <div className="summaryV3Table">
+            <div className="summaryV3TableHead"><span>ID</span><span>Nombre</span><span>Estado</span><span>%</span><span>Progreso</span><span>Fecha</span></div>
+            {filteredMilestones.map((item, index) => { const progress = Number(item.progress) || 0; const current = milestones.indexOf(item) === currentMilestoneIndex; return <button className={current ? "current" : ""} key={`${item.id}-${index}`} onClick={() => setView?.("ruta")}><span>{item.id}</span><strong>{item.title}</strong><em className={isCompletedStatus(item.status) ? "done" : current ? "active" : "next"}>{current ? "Hito actual" : item.status || "Próximo"}</em><span>{progress || "—"}{progress ? "%" : ""}</span><i><b style={{ width: `${Math.min(100, progress)}%` }} /></i><span>{formatSummaryDate(item.targetDate || item.date || "—")}</span></button> })}
           </div>
         </article>
 
-        <article className="canvaPanel canvaCoePanel">
-          <div className="canvaPanelHeader">
-            <div className="canvaCoeHeadline">
-              <h3>COE</h3>
-              <strong className="asIsValue">AS IS ${formatCurrency(asIsCOE)}</strong>
-              <strong className="toBeValue">TO BE ${formatCurrency(toBeCOE)}</strong>
-              <small>{Math.abs(coePercent).toFixed(0)}% de variación</small>
-            </div>
-          </div>
-          <CanvaTrendChart coeAsIs={coeAsIs} coeToBe={coeToBe} asIs={asIsCOE} toBe={toBeCOE} progress={projectProgress} />
-        </article>
-
-        <article className="canvaPanel canvaSystemsPanel">
-          <h3>Avances</h3>
-          <div className="canvaSystemGrid">
-            {systemMetrics.map((item) => (
-              <div className="canvaSystemMetric" key={item.label}>
-                <strong>{item.total}</strong>
-                <span>{item.label}</span>
-                <CanvaRing
-                  value={item.value}
-                  total={item.ringTotal || Math.max(Number(item.total) || 0, item.value, 1)}
-                  label={item.note}
-                  accent={item.accent}
-                  pending={item.pending}
-                  displayValue={item.displayValue}
-                />
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="canvaPanel canvaDetailPanel">
-          <h3>Detalle de Avance Hitos</h3>
-          <div className="canvaDetailTable">
-            <div className="canvaDetailHead"><span>ID</span><span>Nombre</span><span>Estado</span><span>Avance</span><span>Progreso</span></div>
-            {(filteredDetail.length ? filteredDetail : milestones).map((item, index) => (
-              <button className="canvaDetailRow" key={`${item.id}-${index}`} onClick={() => setView?.("ruta")}>
-                <span>{item.id}</span>
-                <span>{item.title}</span>
-                <em className={statusClass(item.status)}>{item.status || "Pendiente"}</em>
-                <strong>{Number(item.progress) || 0}%</strong>
-                <i className="canvaDetailProgress" aria-hidden="true">
-                  <b style={{ width: `${Math.max(0, Math.min(100, Number(item.progress) || 0))}%` }} />
-                </i>
-              </button>
-            ))}
-          </div>
-        </article>
+        <SummaryCoeCard asIs={enrichedAsIs} toBe={enrichedToBe} asIsTotal={asIsCOE} toBeTotal={toBeCOE} setView={setView} />
       </div>
+
+      <div className="summaryV3LowerGrid">
+        <article className="summaryV3Card"><div className="summaryV3SectionTitle"><h3>Pendientes del cliente</h3><button onClick={() => setView?.("pendientes")}>Ver los {activePending.length}</button></div><div className="summaryV3SimpleList">{activePending.slice(0, 3).map((item, index) => <button key={`${item.request}-${index}`} onClick={() => setView?.("pendientes")}><strong>{item.request || item.title}</strong><span>{item.responsible || item.area || "Por asignar"}</span><span>{formatSummaryDate(item.dueDate || "Por definir")}</span><em className={isPendingBlocked(item) ? "urgent" : "onTime"}>{isPendingBlocked(item) ? "Urgente" : "En plazo"}</em></button>)}</div></article>
+        <article className="summaryV3Card"><div className="summaryV3SectionTitle"><h3>Próximas fechas clave</h3></div><div className="summaryV3Dates">{nextDates.map((item, index) => <button key={`${item.id}-${index}`} onClick={() => setView?.("ruta")}><strong>{item.targetDate || item.date || "Por definir"}</strong><span>{item.title}</span></button>)}</div></article>
+      </div>
+
+      <article className="summaryV3Card summaryV3Advances"><div className="summaryV3SectionTitle"><h3>Avances</h3></div><div>{systemMetrics.map((item) => <section key={item.label}><span>{item.label}</span><strong>{item.value}</strong><i><b style={{ width: `${Math.min(100, Number(item.progress) || 0)}%` }} /></i><small>{item.note}</small></section>)}</div></article>
     </section>
   );
+}
+
+function SummaryCoeCard({ asIs = [], toBe = [], asIsTotal = 0, toBeTotal = 0, setView }) {
+  const [mode, setMode] = useState("asIs");
+  const [selectedId, setSelectedId] = useState("");
+  const groups = useMemo(() => buildCOETransformationGroups(asIs, toBe), [asIs, toBe]);
+  const selected = groups.find((item) => item.id === selectedId) || groups[0];
+  const rank = (rows) => {
+    const totals = new Map();
+    rows.forEach((item) => { const key = normalizeSystemName(item.code || item.process); const current = totals.get(key) || { code: item.code, name: item.process || item.code, total: 0 }; current.total += getCOEMonthlyCost(item); totals.set(key, current); });
+    return [...totals.values()].sort((a, b) => b.total - a.total).slice(0, 7);
+  };
+  const asIsRanked = rank(asIs);
+  const toBeRanked = rank(toBe);
+  const ranked = mode === "toBe" ? toBeRanked : asIsRanked;
+  const max = Math.max(1, ...ranked.map((item) => item.total));
+  const variation = asIsTotal ? ((toBeTotal - asIsTotal) / asIsTotal) * 100 : 0;
+  const comparisonRows = Array.from({ length: Math.max(asIsRanked.length, toBeRanked.length) }, (_, index) => ({
+    asIs: asIsRanked[index],
+    toBe: toBeRanked[index],
+  }));
+
+  return <article className="summaryV3Card summaryV3Coe">
+    <div className="summaryV3SectionTitle"><h3>Costo operativo estructural (COE)</h3><button onClick={() => setView?.("coe")}>Ver todos los procesos</button></div>
+    <div className="summaryV3CoeTotals">
+      <button className={mode === "asIs" ? "active" : ""} onClick={() => setMode("asIs")}><span>AS IS</span><strong>${formatCurrency(asIsTotal)}</strong></button>
+      <button className={mode === "toBe" ? "active" : ""} onClick={() => setMode("toBe")}><span>TO BE</span><strong>${formatCurrency(toBeTotal)}</strong></button>
+      <button className={mode === "compare" ? "active compare" : "compare"} onClick={() => setMode("compare")}><span>Comparativa</span><small>{Math.abs(variation).toFixed(1)}% variación</small></button>
+    </div>
+    <div className="summaryV3CoeContent"><h4>Costo por proceso</h4>
+      {mode !== "compare" ? <div className="summaryV3CoeRanking">{ranked.map((item) => <div className="summaryCoeProcessRow" data-tooltip={item.name} key={`${mode}-${item.code || item.name}`}><b>{item.code || "S/C"}</b><i><span style={{ width: `${item.total / max * 100}%` }} /></i><strong>${formatCurrency(item.total)}</strong></div>)}</div> : <div className="summaryV3CoeListCompare">
+        <div className="summaryV3CoeListHead"><span>AS IS</span><span>TO BE</span></div>
+        {comparisonRows.map((row, index) => <div className="summaryV3CoeListRow" key={`comparison-${index}`}><span data-tooltip={row.asIs?.name || "Sin proceso"}><b>{row.asIs?.code || "—"}</b><em>{row.asIs ? `$${formatCurrency(row.asIs.total)}` : "—"}</em></span><span data-tooltip={row.toBe?.name || "Sin proceso"}><b>{row.toBe?.code || "—"}</b><em>{row.toBe ? `$${formatCurrency(row.toBe.total)}` : "—"}</em></span></div>)}
+      </div>}
+    </div>
+    <div className="summaryV3CoeExplorer">
+      <strong>Comparativo por transformación</strong>
+      {selected ? <><select value={selected.id} onChange={(event) => setSelectedId(event.target.value)}>{groups.map((group) => <option key={group.id} value={group.id}>{group.label}</option>)}</select><div className="summaryV3CompareStatus">{selected.type} · {selected.sources.length} proceso{selected.sources.length === 1 ? "" : "s"} relacionado{selected.sources.length === 1 ? "" : "s"}</div><div className="summaryV3CompareRows">{[...selected.sources.map((item) => ({ ...item, side: "AS IS" })), { ...selected.target, side: "TO BE" }].map((item, index, rows) => { const rowMax = Math.max(1, ...rows.map((row) => row.total)); return <div className="summaryCoeProcessRow" data-tooltip={item.name} key={`${item.side}-${item.code}-${index}`}><b>{item.side} · {item.code || "S/C"}</b><i><span style={{ width: `${item.total / rowMax * 100}%` }} /></i><strong>${formatCurrency(item.total)}</strong></div> })}</div></> : <p>Sin relaciones registradas.</p>}
+    </div>
+  </article>;
 }
 
 function CanvaRing({ value = 0, total = 1, segments = [], label = "", accent = false, pending = false, displayValue }) {
@@ -1595,17 +1555,24 @@ function buildCOETransformationGroups(coeAsIs = [], coeToBe = []) {
       .map((reference) => asIsByCode.get(normalizeSystemName(reference)) || asIsByName.get(normalizeSystemName(reference)))
       .filter(Boolean);
     if (!sources.length) {
+      sources = [...asIsGroups.values()].filter((source) => [...source.related].some((reference) => {
+        const normalized = normalizeSystemName(reference);
+        return normalized === normalizeSystemName(target.code) || normalized === normalizeSystemName(target.name);
+      }));
+    }
+    if (!sources.length) {
       const sameCode = asIsByCode.get(normalizeSystemName(target.code));
       const sameName = asIsByName.get(normalizeSystemName(target.name));
       sources = [sameCode || sameName].filter(Boolean);
     }
     sources = [...new Map(sources.map((item) => [item.key, item])).values()];
     sources.forEach((item) => referenced.add(item.key));
+    const sourceType = sources.find((item) => item.type)?.type || "";
     const inferredType = sources.length > 1 ? "Unificación" : sources.length === 1 ? "Se mantiene" : "Nuevo";
     return {
       id: `tobe-${target.key}`,
       label: target.code ? `${target.code} · ${target.name}` : target.name,
-      type: target.type || inferredType,
+      type: target.type || sourceType || inferredType,
       sources,
       target,
     };
@@ -11712,7 +11679,7 @@ function App() {
     return () => window.clearTimeout(timer);
   }, [loadingData, session?.sheetId]);
 
-  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], repository = [], documents = [], architectureRoles = [], architectureRolesToBe = [], personnelMatrix = [], organizationProcesses = [], indicators = [], qualityCommittee = [], clientExperience = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
+  const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], charges = [], repository = [], documents = [], architectureRoles = [], architectureRolesToBe = [], personnelMatrix = [], organizationProcesses = [], indicators = [], qualityCommittee = [], clientExperience = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
 
   const completedText = useMemo(() => {
     const completed = milestones.filter((m) => m.status === "Finalizado" || m.status === "Aprobado").length;
@@ -11862,6 +11829,7 @@ function App() {
               processesToBe={processesToBe}
               coeAsIs={coeAsIs}
               coeToBe={coeToBe}
+              charges={charges}
               updates={updates}
               meetings={meetings}
               setView={navigate}
