@@ -6,6 +6,7 @@ import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   AlertTriangle,
+  ArrowDown,
   ArrowRight,
   BarChart3,
   Bell,
@@ -15,6 +16,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardCheck,
+  Copy,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -24,6 +26,7 @@ import {
   EyeOff,
   ExternalLink,
   FolderOpen,
+  FileSpreadsheet,
   FileText,
   UploadCloud,
   Flag,
@@ -33,6 +36,7 @@ import {
   LockKeyhole,
   LogIn,
   MapPin,
+  Maximize2,
   Mic,
   Monitor,
   Rocket,
@@ -104,6 +108,32 @@ function getDocumentEmbedUrl(url = "") {
   }
 
   return clean;
+}
+
+function getProcessAssetPreviewUrl(url = "", assetType = "flow") {
+  const clean = safeUrl(url);
+  if (!clean) return "";
+
+  if (/drive\.google\.com/i.test(clean)) return getDocumentEmbedUrl(clean);
+
+  if (/sharepoint\.com|1drv\.ms|onedrive\.live\.com/i.test(clean)) {
+    try {
+      const parsed = new URL(clean);
+      parsed.searchParams.set("download", "1");
+      const directUrl = parsed.toString();
+      return assetType === "sheet"
+        ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(directUrl)}`
+        : directUrl;
+    } catch {
+      return clean;
+    }
+  }
+
+  if (assetType === "sheet" && /\.(xlsx?|docx?|pptx?)(?:$|[?#])/i.test(clean)) {
+    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(clean)}`;
+  }
+
+  return getDocumentEmbedUrl(clean);
 }
 
 function getYouTubeVideoId(url = "") {
@@ -199,42 +229,50 @@ function Logo({ src, fallback, className = "" }) {
 function Sidebar({ view, setView, project }) {
   const [sidebarTooltip, setSidebarTooltip] = useState(null);
   const groups = [
-    { title: "", items: [[Sparkles, "Portal del proyecto", "portal"], [Video, "¿Necesitas ayuda?", "tutoriales"]] },
     {
       title: "Seguimiento",
       items: [
         [BarChart3, "Resumen", "resumen"],
-        [CalendarDays, "Calendario", "calendario"],
-        [Target, "Ruta del proyecto", "ruta"],
+        [CalendarDays, "Agenda y pendientes", "calendario"],
         [BarChart3, "COE", "coe"],
         [Search, "Modelo de negocio y hallazgos", "hallazgos"],
-        [AlertTriangle, "Pendientes cliente", "pendientes"],
       ],
     },
     {
       title: "Procesos",
       items: [
         [ClipboardCheck, "Mapa y lista maestra de procesos", "procesos"],
-        [Building2, "Estructura y perfil", "estructura"],
+        [Building2, "Estructura y perfiles", "estructura"],
         [LockKeyhole, "Optimización y Racionalización", "optimizacion-racionalizacion"],
       ],
     },
-    { title: "Implementación", items: [[Target, "Indicadores", "indicadores"], [Users, "Comité de Calidad", "comite-calidad"]] },
+    { title: "Implementación", items: [[Target, "Indicadores", "indicadores"]] },
     {
       title: "Documentacion",
       items: [
         [FileText, "Entregables GSE", "entregables"],
-        [ClipboardCheck, "Entregables clientes", "entregables-clientes"],
         [FolderOpen, "Repositorio", "repositorio"],
         [UploadCloud, "Carga de documentos", "documentos"],
       ],
     },
-    { title: "Informacion", items: [[BookOpen, "Lo que vas a recibir", "educacion"]] },
     { title: "Experiencia clientes", items: [[MessageCircle, "Tu experiencia", "experiencia"]] },
   ];
 
   const company = project.companyClient || project.client;
-  const sidebarLogoHorizontal = getDrivePreviewUrl(project.logoGSEhorizontalColor || project.logoGSEhorizontal || "");
+  const sidebarSession = getStoredClientSession() || {};
+  const sidebarCachedAssets = getCachedLoginAssets();
+  const sidebarLogoHorizontal = getDrivePreviewUrl(
+    project.logoGSEhorizontalColor
+      || project.logoGSEhorizontal
+      || project.logoGSE
+      || sidebarSession.logoGSEhorizontalColor
+      || sidebarSession.LogoGSEhorizontalcolor
+      || sidebarSession.logoGSEhorizontal
+      || sidebarSession.logoGSE
+      || sidebarCachedAssets.logoGSEhorizontalColor
+      || sidebarCachedAssets.LogoGSEhorizontalcolor
+      || ""
+  );
   const contact = project.contactName || project.generalManager || project.responsibleClient;
   const role = project.contactRole || "cargo de empresa";
   const handleSidebarWheel = (event) => {
@@ -265,7 +303,9 @@ function Sidebar({ view, setView, project }) {
         <div className="brand premiumBrand sidebarHorizontalBrand">
           {sidebarLogoHorizontal ? (
             <img src={sidebarLogoHorizontal} alt="GSE&CO" className="sidebarHorizontalLogo" />
-          ) : null}
+          ) : (
+            <div className="sidebarWordmarkFallback" aria-label="GSE&CO"><i />gse&amp;co</div>
+          )}
         </div>
 
         <div className="clientProfile">
@@ -806,6 +846,7 @@ function isPendingCompleted(item = {}) {
     status.includes("completado") ||
     validation.includes("validado") ||
     validation.includes("implementado") ||
+    validation.includes("realizado") ||
     validation.includes("implemento") ||
     validation.includes("completado")
   );
@@ -1123,13 +1164,6 @@ const meetingItems = [
       view: "documentos",
       haystack: `${item.title} ${item.item} ${item.category} ${item.status} ${item.detail}`,
     })),
-    ...education.map((item) => ({
-      type: "Info",
-      title: item.deliverable,
-      detail: [item.system, item.status].filter(Boolean).join(" - "),
-      view: "educacion",
-      haystack: `${item.deliverable} ${item.system} ${item.milestone} ${item.whatIs} ${item.purpose}`,
-    })),
     ...tutorials.map((item) => ({
       type: "Tutorial",
       title: item.title,
@@ -1286,9 +1320,10 @@ function formatSummaryDate(value = "") {
   ), text);
 }
 
-function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], architectureRolesToBe = [], personnelMatrix = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], charges = [], setView }) {
+function SummaryCanvaDashboard({ project, milestones = [], pending = [], findings = [], deliverables = [], architectureRolesToBe = [], personnelMatrix = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [], charges = [], setView }) {
   const [milestoneFilter, setMilestoneFilter] = useState("all");
   const [processView, setProcessView] = useState("asIs");
+  const [selectedMilestone, setSelectedMilestone] = useState(null);
   const projectProgress = Number(project?.progress) || 0;
   const activePending = pending.filter(isPendingActive);
   const completedMilestones = milestones.filter((item) => isCompletedStatus(item.status)).length;
@@ -1329,10 +1364,11 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
 
   const transformations = useMemo(() => {
     const summarize = (rows) => {
-    const counts = { expands: 0, merges: 0, removes: 0, unchanged: 0 };
+    const counts = { expands: 0, merges: 0, removes: 0, newItems: 0, unchanged: 0 };
       rows.forEach((item) => {
       const status = normalizeSystemName(item.transformationStatus || "");
-      if (status.includes("ampl") || status.includes("crece") || status.includes("nuevo")) counts.expands += 1;
+      if (status.includes("nuevo")) counts.newItems += 1;
+      else if (status.includes("ampl") || status.includes("crece")) counts.expands += 1;
       else if (status.includes("unific") || status.includes("fusion")) counts.merges += 1;
       else if (status.includes("elimin") || status.includes("suprim")) counts.removes += 1;
       else counts.unchanged += 1;
@@ -1366,22 +1402,26 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
   const nextPaymentStatus = nextCharge.paymentStatus || nextCharge.cutStatus || project?.paymentStatus || "Pendiente";
   const paymentPaid = normalizeSystemName(nextPaymentStatus).includes("pagado") || normalizeSystemName(nextPaymentStatus).includes("cobrado") || normalizeSystemName(nextPaymentStatus).includes("cancelado");
 
+  if (selectedMilestone) {
+    return <MilestoneDetailView milestone={selectedMilestone} milestones={milestones} deliverables={deliverables} pending={pending} processesAsIs={processesAsIs} processesToBe={processesToBe} asIsCOE={asIsCOE} toBeCOE={toBeCOE} onBack={() => setSelectedMilestone(null)} />;
+  }
+
   return (
     <section className="canvaSummary summaryV3">
       <div className="summaryV3Welcome">
         <h2>Hola, {project?.contactName || project?.companyClient || project?.client || "Cliente"}</h2>
-        <p>Tu Ruta de Implementación Visible: estás en el hito {currentMilestone.id || currentMilestoneIndex + 1} y tienes {activePending.length} pendientes por resolver.</p>
+        <p>Hito {currentMilestone.id || currentMilestoneIndex + 1}: {currentMilestone.title || "Por definir"} · {activePending.length} pendientes por resolver.</p>
       </div>
 
       <div className="summaryV3HeroGrid">
-        <button className="summaryV3Card summaryV3ProgressCard" onClick={() => setView?.("ruta")}>
+        <button type="button" className="summaryV3Card summaryV3ProgressCard" onClick={() => setView?.("ruta")}>
           <span className="summaryV3Gauge" style={{ "--progress": `${projectProgress * 3.6}deg` }}><strong>{projectProgress}%</strong></span>
           <span><small>Avance general</small><strong>Hito actual: {currentMilestone.id || currentMilestoneIndex + 1} · {currentMilestone.title || "Por definir"}</strong><em>Falta {Math.max(0, 100 - projectProgress)}% para cerrar</em></span>
         </button>
         <article className="summaryV3Card summaryV3Unlocked">
           <span>Hitos abiertos</span><strong>E{lastOpenMilestone.id ?? openMilestones.length} <em>/ E{milestones.length || 12}</em></strong><small>{Math.max(0, milestones.length - openMilestones.length)} etapas por desbloquear</small><div className="summaryV3Payment"><span>Próximo pago · {formatSummaryDate(nextPaymentDate)}</span><em className={paymentPaid ? "paid" : "pending"}>{paymentPaid ? "Pagado" : "Pendiente"}</em></div>
         </article>
-        <button className="summaryV3Card summaryV3Pending" onClick={() => setView?.("pendientes")}>
+        <button type="button" className="summaryV3Card summaryV3Pending" onClick={() => setView?.("pendientes")}>
           <span>Pendientes del cliente</span><strong>{activePending.length}</strong><small>Revisar ahora <ArrowRight size={15} /></small>
         </button>
       </div>
@@ -1389,9 +1429,9 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
       <article className="summaryV3Card summaryV3Transformation">
         <div className="summaryV3SectionTitle"><span><ArrowRight size={17} /></span><h3>Transformación de procesos</h3><button onClick={() => setView?.("procesos")}>Ver AS IS / TO BE</button></div>
         <div className="summaryV3TransformationBody">
-          <div className="summaryV3ProcessTotals"><button className={processView === "asIs" ? "active" : ""} onClick={() => setProcessView("asIs")}><span>Procesos AS IS</span><strong>{processesAsIs.length}</strong></button><ArrowRight /><button className={processView === "toBe" ? "active" : ""} onClick={() => setProcessView("toBe")}><span>Procesos TO BE</span><strong>{processesToBe.length}</strong></button></div>
+          <div className="summaryV3ProcessTotals"><button type="button" aria-pressed={processView === "asIs"} className={processView === "asIs" ? "active" : ""} onClick={() => setProcessView("asIs")}><span>Procesos AS IS</span><strong>{processesAsIs.length}</strong></button><ArrowRight /><button type="button" aria-pressed={processView === "toBe"} className={processView === "toBe" ? "active" : ""} onClick={() => setProcessView("toBe")}><span>Procesos TO BE</span><strong>{processesToBe.length}</strong></button></div>
           <div className="summaryV3Reduction"><span>Reducción</span><strong>{processesToBe.length - processesAsIs.length > 0 ? "+" : ""}{processesToBe.length - processesAsIs.length} <em>procesos</em></strong><small>{processesAsIs.length ? (((processesToBe.length - processesAsIs.length) / processesAsIs.length) * 100).toFixed(1) : 0}% frente al estado actual</small></div>
-          <div className="summaryV3Status"><span>Estado de los {transformationRows.length} procesos {processView === "asIs" ? "AS IS" : "TO BE"}</span><div className="summaryV3StatusBar">{Object.entries(transformation).map(([key, value]) => <i key={key} className={key} style={{ width: `${value / transformationTotal * 100}%` }} />)}</div><div className="summaryV3Legend"><span className="expands">Se amplía <b>{transformation.expands}</b></span><span className="merges">Se unifica <b>{transformation.merges}</b></span><span className="removes">Se elimina <b>{transformation.removes}</b></span><span className="unchanged">Sin cambios <b>{transformation.unchanged}</b></span></div></div>
+          <div className="summaryV3Status"><span>Estado de los {transformationRows.length} procesos {processView === "asIs" ? "AS IS" : "TO BE"}</span><div className="summaryV3StatusBar" key={processView}>{Object.entries(transformation).map(([key, value]) => <i key={key} className={key} style={{ width: `${value / transformationTotal * 100}%` }} />)}</div><div className="summaryV3Legend"><span className="expands">Se amplía <b>{transformation.expands}</b></span><span className="merges">Se unifica <b>{transformation.merges}</b></span><span className="removes">Se elimina <b>{transformation.removes}</b></span><span className="newItems">Nuevo <b>{transformation.newItems}</b></span><span className="unchanged">Sin cambios <b>{transformation.unchanged}</b></span></div></div>
         </div>
       </article>
 
@@ -1400,10 +1440,10 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
           <div className="summaryV3SectionTitle"><h3>Hitos</h3><button onClick={() => setView?.("ruta")}>Ver los {milestones.length}</button></div>
           <div className="summaryV3MilestoneTrack">{milestones.map((item, index) => <i key={`${item.id}-${index}`} className={isCompletedStatus(item.status) ? "done" : index === currentMilestoneIndex ? "active" : ""} />)}</div>
           <p>{completedMilestones} finalizados · {milestones.filter((item) => !isCompletedStatus(item.status) && Number(item.progress) > 0).length} en desarrollo · resto por iniciar</p>
-          <div className="summaryV3Tabs">{[["all", "Todos"], ["active", "En curso"], ["next", "Próximos"], ["done", "Finalizados"]].map(([key, label]) => <button className={milestoneFilter === key ? "active" : ""} key={key} onClick={() => setMilestoneFilter(key)}>{label}</button>)}</div>
+          <div className="summaryV3Tabs">{[["all", "Todos"], ["active", "En curso"], ["next", "Próximos"], ["done", "Finalizados"]].map(([key, label]) => <button type="button" aria-pressed={milestoneFilter === key} className={milestoneFilter === key ? "active" : ""} key={key} onClick={() => setMilestoneFilter(key)}>{label}</button>)}</div>
           <div className="summaryV3Table">
             <div className="summaryV3TableHead"><span>ID</span><span>Nombre</span><span>Estado</span><span>%</span><span>Progreso</span><span>Fecha</span></div>
-            {filteredMilestones.map((item, index) => { const progress = Number(item.progress) || 0; const current = milestones.indexOf(item) === currentMilestoneIndex; return <button className={current ? "current" : ""} key={`${item.id}-${index}`} onClick={() => setView?.("ruta")}><span>{item.id}</span><strong>{item.title}</strong><em className={isCompletedStatus(item.status) ? "done" : current ? "active" : "next"}>{current ? "Hito actual" : item.status || "Próximo"}</em><span>{progress || "—"}{progress ? "%" : ""}</span><i><b style={{ width: `${Math.min(100, progress)}%` }} /></i><span>{formatSummaryDate(item.targetDate || item.date || "—")}</span></button> })}
+            {filteredMilestones.map((item, index) => { const progress = Number(item.progress) || 0; const current = milestones.indexOf(item) === currentMilestoneIndex; return <button type="button" aria-label={`Abrir hito ${item.id}: ${item.title}`} className={current ? "current" : ""} key={`${item.id}-${index}`} onClick={() => setSelectedMilestone(item)}><span>{item.id}</span><strong>{item.title}</strong><em className={isCompletedStatus(item.status) ? "done" : current ? "active" : "next"}>{current ? "Hito actual" : item.status || "Próximo"}</em><span>{progress || "—"}{progress ? "%" : ""}</span><i><b style={{ width: `${Math.min(100, progress)}%` }} /></i><span>{formatSummaryDate(item.targetDate || item.date || "—")}</span></button> })}
           </div>
         </article>
 
@@ -1418,6 +1458,55 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
       <article className="summaryV3Card summaryV3Advances"><div className="summaryV3SectionTitle"><h3>Avances</h3></div><div>{systemMetrics.map((item) => <section key={item.label}><span>{item.label}</span><strong>{item.value}</strong><i><b style={{ width: `${Math.min(100, Number(item.progress) || 0)}%` }} /></i><small>{item.note}</small></section>)}</div></article>
     </section>
   );
+}
+
+function milestoneReferenceMatches(value = "", milestone = {}) {
+  const reference = normalizeSystemName(value);
+  const title = normalizeSystemName(milestone.title || "");
+  const id = normalizeSystemName(String(milestone.id ?? ""));
+  if (!reference) return false;
+  return (title && (reference === title || reference.includes(title))) ||
+    (id && (reference === id || reference === `e${id}` || reference.includes(`hito ${id}`) || reference.includes(`e${id} `)));
+}
+
+function MilestoneDetailView({ milestone = {}, milestones = [], deliverables = [], pending = [], processesAsIs = [], processesToBe = [], asIsCOE = 0, toBeCOE = 0, onBack }) {
+  const milestoneDeliverables = deliverables.filter((item) => milestoneReferenceMatches(item.milestone, milestone));
+  const milestonePending = pending.filter((item) => milestoneReferenceMatches(`${item.milestone || ""} ${item.request || ""} ${item.description || ""}`, milestone) && isPendingActive(item));
+  const completedDeliverables = milestoneDeliverables.filter((item) => isCompletedStatus(item.status) || Number(item.progress) >= 100);
+  const incompleteDeliverables = milestoneDeliverables.filter((item) => !completedDeliverables.includes(item));
+  const progress = Math.max(0, Math.min(100, Number(milestone.progress) || 0));
+  const milestoneIndex = Math.max(0, milestones.indexOf(milestone));
+  const isCurrent = !isCompletedStatus(milestone.status) && progress > 0;
+  const includes = formatSheetText(milestone.includes || milestone.includesClient || "").split("\n").map((item) => item.trim()).filter(Boolean);
+
+  return <section className="milestoneDetailView">
+    <div className="milestoneDetailBreadcrumb"><button onClick={onBack}>Resumen</button><span>/</span><span>Hitos</span><span>/</span><strong>{milestone.id} · {milestone.title}</strong></div>
+    <div className="milestoneDetailHeader">
+      <div><div className="milestoneDetailTitle"><h2>{milestone.title}</h2><em className={isCurrent ? "current" : isCompletedStatus(milestone.status) ? "done" : "next"}>{isCurrent ? "Hito actual" : milestone.status || "Próximo"}</em></div><p>Hito {milestone.id} de {milestones.length} · Fecha objetivo {milestone.targetDate || milestone.date || "Por definir"} · {milestone.system || "Proyecto"}</p></div>
+      <button className="milestoneDetailBack" onClick={onBack}>Ver todos los hitos</button>
+    </div>
+
+    <article className="milestoneDetailTrack"><div>{milestones.map((item, index) => <i key={`${item.id}-${index}`} className={isCompletedStatus(item.status) ? "done" : index === milestoneIndex ? "active" : ""} />)}</div><p>Hito {milestone.id} de {milestones.length} · {milestoneIndex} anteriores · {Math.max(0, milestones.length - milestoneIndex - 1)} por iniciar</p></article>
+
+    <div className="milestoneDetailKpis">
+      <article><span>Avance del hito</span><strong>{progress}%</strong><i><b style={{ width: `${progress}%` }} /></i></article>
+      <article><span>Entregables</span><strong>{completedDeliverables.length} <em>/ {milestoneDeliverables.length}</em></strong><small>{Math.max(0, milestoneDeliverables.length - completedDeliverables.length)} por completar</small></article>
+      <article><span>Fecha objetivo</span><strong>{milestone.targetDate || milestone.date || "Por definir"}</strong><small>{milestone.status || "Sin estado"}</small></article>
+      <article className="accent"><span>Pendientes del cliente</span><strong>{milestonePending.length}</strong><small>{milestonePending.length ? "Bloquean el cierre" : "Sin bloqueos asociados"}</small></article>
+    </div>
+
+    <div className="milestoneDetailGrid">
+      <div className="milestoneDetailMain">
+        <article className="milestoneDetailCard"><div className="milestoneDetailCardTitle"><h3>Entregables</h3><span>{milestoneDeliverables.length} asociados</span></div><div className="milestoneDeliverablesTable"><div className="head"><span>Nombre</span><span>Responsable</span><span>Estado</span><span>%</span></div>{milestoneDeliverables.length ? milestoneDeliverables.map((item, index) => <div className="row" key={`${item.deliverable}-${index}`}><strong>{item.deliverable}</strong><span>{item.responsible || "Por asignar"}</span><em className={isCompletedStatus(item.status) ? "done" : Number(item.progress) > 0 ? "active" : "next"}>{item.status || "Pendiente"}</em><b>{Number(item.progress) || (isCompletedStatus(item.status) ? 100 : 0)}</b></div>) : <p className="milestoneDetailEmpty">No hay entregables asociados a este hito en la pestaña Entregables.</p>}</div></article>
+        <article className="milestoneDetailCard"><h3>Impacto de este hito</h3><div className="milestoneImpactGrid"><span>Procesos AS IS → TO BE<strong>{processesAsIs.length} → <b>{processesToBe.length}</b></strong></span><span>COE AS IS<strong>${formatCurrency(asIsCOE)}</strong></span><span>COE TO BE<strong>{toBeCOE ? `$${formatCurrency(toBeCOE)}` : "En construcción"}</strong></span></div></article>
+        {(milestone.description || includes.length) && <article className="milestoneDetailCard"><h3>Alcance del hito</h3>{milestone.description && <p>{milestone.description}</p>}{includes.length > 0 && <ul>{includes.map((item) => <li key={item}>{item}</li>)}</ul>}</article>}
+      </div>
+      <aside className="milestoneDetailAside">
+        <article className="milestoneDetailCard"><h3>Qué falta para cerrar</h3><div className="milestoneChecklist">{incompleteDeliverables.length ? incompleteDeliverables.map((item, index) => <div key={`${item.deliverable}-${index}`}><i /><span><strong>{item.deliverable}</strong><small>{item.responsible || "Por asignar"}{item.date ? ` · ${item.date}` : ""}</small></span></div>) : <p className="milestoneDetailEmpty">Todos los entregables asociados están completados.</p>}</div></article>
+        {milestonePending.length > 0 && <article className="milestoneDetailCard"><h3>Pendientes asociados</h3><div className="milestoneChecklist">{milestonePending.map((item, index) => <div key={`${item.request}-${index}`}><i /><span><strong>{item.request}</strong><small>{item.owner || "Cliente"}{item.dueDate ? ` · ${item.dueDate}` : ""}</small></span></div>)}</div></article>}
+      </aside>
+    </div>
+  </section>;
 }
 
 function SummaryCoeCard({ asIs = [], toBe = [], asIsTotal = 0, toBeTotal = 0, setView }) {
@@ -1441,11 +1530,11 @@ function SummaryCoeCard({ asIs = [], toBe = [], asIsTotal = 0, toBeTotal = 0, se
   }));
 
   return <article className="summaryV3Card summaryV3Coe">
-    <div className="summaryV3SectionTitle"><h3>Costo operativo estructural (COE)</h3><button onClick={() => setView?.("coe")}>Ver todos los procesos</button></div>
+    <div className="summaryV3SectionTitle"><h3>Costo operativo estructural (COE)</h3><button type="button" onClick={() => setView?.("coe")}>Ver todos los procesos</button></div>
     <div className="summaryV3CoeTotals">
-      <button className={mode === "asIs" ? "active" : ""} onClick={() => setMode("asIs")}><span>AS IS</span><strong>${formatCurrency(asIsTotal)}</strong></button>
-      <button className={mode === "toBe" ? "active" : ""} onClick={() => setMode("toBe")}><span>TO BE</span><strong>${formatCurrency(toBeTotal)}</strong></button>
-      <button className={mode === "compare" ? "active compare" : "compare"} onClick={() => setMode("compare")}><span>Comparativa</span><small>{Math.abs(variation).toFixed(1)}% variación</small></button>
+      <button type="button" aria-pressed={mode === "asIs"} className={mode === "asIs" ? "active" : ""} onClick={() => setMode("asIs")}><span>AS IS</span><strong>${formatCurrency(asIsTotal)}</strong></button>
+      <button type="button" aria-pressed={mode === "toBe"} className={mode === "toBe" ? "active" : ""} onClick={() => setMode("toBe")}><span>TO BE</span><strong>${formatCurrency(toBeTotal)}</strong></button>
+      <button type="button" aria-pressed={mode === "compare"} className={mode === "compare" ? "active compare" : "compare"} onClick={() => setMode("compare")}><span>Comparativa</span><small>{Math.abs(variation).toFixed(1)}% variación</small></button>
     </div>
     <div className="summaryV3CoeContent"><h4>Costo por proceso</h4>
       {mode !== "compare" ? <div className="summaryV3CoeRanking">{ranked.map((item) => <div className="summaryCoeProcessRow" data-tooltip={item.name} key={`${mode}-${item.code || item.name}`}><b>{item.code || "S/C"}</b><i><span style={{ width: `${item.total / max * 100}%` }} /></i><strong>${formatCurrency(item.total)}</strong></div>)}</div> : <div className="summaryV3CoeListCompare">
@@ -1455,7 +1544,7 @@ function SummaryCoeCard({ asIs = [], toBe = [], asIsTotal = 0, toBeTotal = 0, se
     </div>
     <div className="summaryV3CoeExplorer">
       <strong>Comparativo por transformación</strong>
-      {selected ? <><select value={selected.id} onChange={(event) => setSelectedId(event.target.value)}>{groups.map((group) => <option key={group.id} value={group.id}>{group.label}</option>)}</select><div className="summaryV3CompareStatus">{selected.type} · {selected.sources.length} proceso{selected.sources.length === 1 ? "" : "s"} relacionado{selected.sources.length === 1 ? "" : "s"}</div><div className="summaryV3CompareRows">{[...selected.sources.map((item) => ({ ...item, side: "AS IS" })), { ...selected.target, side: "TO BE" }].map((item, index, rows) => { const rowMax = Math.max(1, ...rows.map((row) => row.total)); return <div className="summaryCoeProcessRow" data-tooltip={item.name} key={`${item.side}-${item.code}-${index}`}><b>{item.side} · {item.code || "S/C"}</b><i><span style={{ width: `${item.total / rowMax * 100}%` }} /></i><strong>${formatCurrency(item.total)}</strong></div> })}</div></> : <p>Sin relaciones registradas.</p>}
+      {selected ? <><select value={selected.id} onChange={(event) => setSelectedId(event.target.value)}>{groups.map((group) => <option key={group.id} value={group.id}>{group.label}</option>)}</select><div className="summaryV3CompareStatus">{selected.type} · {selected.sources.length} proceso{selected.sources.length === 1 ? "" : "s"} relacionado{selected.sources.length === 1 ? "" : "s"}</div><div className="summaryV3CompareRows">{[...selected.sources.map((item) => ({ ...item, side: "AS IS" })), { ...selected.target, side: "TO BE" }].map((item, index, rows) => { const rowMax = Math.max(1, ...rows.map((row) => row.total)); return <div className={`summaryCoeProcessRow ${item.side === "AS IS" ? "isAsIs" : "isToBe"}`} data-tooltip={item.name} key={`${item.side}-${item.code}-${index}`}><b>{item.side} · {item.code || "S/C"}</b><i><span style={{ width: `${item.total / rowMax * 100}%` }} /></i><strong>${formatCurrency(item.total)}</strong></div> })}</div></> : <p>Sin relaciones registradas.</p>}
     </div>
   </article>;
 }
@@ -2033,6 +2122,12 @@ function parseCalendarDate(value = "") {
     const year = Number(match[3].length === 2 ? `20${match[3]}` : match[3]);
     return new Date(year, month, day);
   }
+  const normalized = normalizeCalendarTerm(raw);
+  const spanishDate = normalized.match(/(\d{1,2})\s+(?:de\s+)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)(?:\s+(?:de\s+)?(\d{4}))?/);
+  if (spanishDate) {
+    const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    return new Date(Number(spanishDate[3]) || new Date().getFullYear(), months.indexOf(spanishDate[2]), Number(spanishDate[1]));
+  }
   const parsed = new Date(raw);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
@@ -2056,6 +2151,39 @@ function sameCalendarDay(a, b) {
   return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
+async function persistPendingClientValidation(item, value = "Realizado") {
+  const pendingWebhookUrl = safeUrl(import.meta.env.VITE_PENDING_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
+  if (!pendingWebhookUrl) throw new Error("Falta configurar el webhook para guardar esta validación.");
+
+  const response = await fetch(pendingWebhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      action: "updatePending",
+      tipo: "pendiente",
+      spreadsheetId: getActiveSpreadsheetId(),
+      sheetName: "PendientesCliente",
+      pendiente: item.request,
+      responsable: item.owner,
+      fecha: item.dueDate,
+      campo: "ValidacionDeCliente",
+      valor: value,
+      validacionCliente: value,
+      fechaValidacion: new Date().toISOString(),
+    }),
+  });
+
+  const text = await response.text();
+  let result = {};
+  try {
+    result = JSON.parse(text);
+  } catch {
+    result = { ok: response.ok, message: text };
+  }
+  if (!response.ok || result.ok === false) throw new Error(result.message || "No se pudo registrar la validación.");
+  return result;
+}
+
 function normalizeCalendarTerm(value) {
   return String(value || "")
     .toLowerCase()
@@ -2063,185 +2191,193 @@ function normalizeCalendarTerm(value) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-function CalendarView({ meetings = [] }) {
+function CalendarView({ meetings = [], pending = [], setView, onPendingValidationChange }) {
   const today = new Date();
-  const [mode, setMode] = useState("Semana");
-  const [cursorDate, setCursorDate] = useState(today);
-  const [selectedMeeting, setSelectedMeeting] = useState(null);
-  const [calendarSearch, setCalendarSearch] = useState("");
+  today.setHours(0, 0, 0, 0);
+  const datedAgendaItems = [...meetings.map((item) => parseCalendarDate(item.date)), ...pending.map((item) => parseCalendarDate(item.dueDate))].filter(Boolean).sort((a, b) => a - b);
+  const initialAgendaDate = datedAgendaItems.find((date) => date >= today) || datedAgendaItems[datedAgendaItems.length - 1] || today;
+  const [cursorDate, setCursorDate] = useState(initialAgendaDate);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [pendingFilter, setPendingFilter] = useState("all");
+  const [pendingValidation, setPendingValidation] = useState({});
+  const [savingPending, setSavingPending] = useState({});
+  const [pendingMessage, setPendingMessage] = useState({});
 
-  const calendarMeetings = useMemo(() => meetings.map((meeting) => {
-    const date = parseCalendarDate(meeting.date);
-    return { ...meeting, dateObject: date, hour: parseCalendarHour(meeting.time) };
-  }).filter((meeting) => meeting.dateObject), [meetings]);
+  const calendarMeetings = useMemo(() => meetings.map((meeting, index) => ({
+    ...meeting,
+    agendaId: `meeting-${meeting.id || index}`,
+    kind: "meeting",
+    title: meeting.title || "Reunión",
+    dateObject: parseCalendarDate(meeting.date),
+    hour: parseCalendarHour(meeting.time),
+  })), [meetings]);
 
-  const visibleMeetings = useMemo(() => {
-    const query = normalizeCalendarTerm(calendarSearch);
-    if (!query) return calendarMeetings;
-    return calendarMeetings.filter((meeting) => normalizeCalendarTerm([
-      meeting.title,
-      meeting.description,
-      meeting.status,
-      meeting.observation,
-      meeting.invited,
-    ].join(" ")).includes(query));
-  }, [calendarMeetings, calendarSearch]);
+  const calendarPending = useMemo(() => pending.map((item, index) => ({
+    ...item,
+    agendaId: `pending-${item.id || item.request || index}`,
+    kind: "pending",
+    title: item.request || item.title || "Pendiente del cliente",
+    dateObject: parseCalendarDate(item.dueDate),
+    responsible: item.responsible || item.owner || item.area || "Por asignar",
+    validationState: (() => {
+      const key = item.request || item.id || index;
+      const value = normalizeCalendarTerm(pendingValidation[key] ?? item.validationClient ?? item.validacionCliente ?? item.implemento ?? item.implementado ?? "");
+      return value.includes("realizado") || value.includes("implementado") || value.includes("validado") || value.includes("completado") || value.includes("finalizado") ? "done" : "todo";
+    })(),
+    statusState: (() => {
+      const value = normalizeCalendarTerm(item.status || "");
+      if (value.includes("terminado") || value.includes("finalizado") || value.includes("completado")) return "done";
+      if (value.includes("revision") || value.includes("desarrollo") || value.includes("proceso")) return "review";
+      if (value.includes("bloqueado")) return "blocked";
+      return "pending";
+    })(),
+  })), [pending, pendingValidation]);
 
-  useEffect(() => {
-    const query = normalizeCalendarTerm(calendarSearch);
-    const firstMatch = visibleMeetings[0];
-    if (query && firstMatch?.dateObject && !sameCalendarDay(firstMatch.dateObject, cursorDate)) {
-      setCursorDate(new Date(firstMatch.dateObject));
+  const markPendingRealized = async (item) => {
+    const key = item.request || item.id || item.agendaId;
+    const previous = pendingValidation[key] ?? item.validationClient ?? item.validacionCliente ?? "";
+    setPendingValidation((current) => ({ ...current, [key]: "Realizado" }));
+    onPendingValidationChange?.(item, "Realizado");
+    setSavingPending((current) => ({ ...current, [key]: true }));
+    setPendingMessage((current) => ({ ...current, [key]: "Guardando..." }));
+    try {
+      await persistPendingClientValidation(item, "Realizado");
+      setPendingMessage((current) => ({ ...current, [key]: "Registrado" }));
+    } catch (error) {
+      console.error(error);
+      setPendingValidation((current) => ({ ...current, [key]: previous }));
+      onPendingValidationChange?.(item, previous);
+      setPendingMessage((current) => ({ ...current, [key]: error.message || "No se pudo guardar." }));
+    } finally {
+      setSavingPending((current) => ({ ...current, [key]: false }));
     }
-  }, [calendarSearch, visibleMeetings, cursorDate]);
-
-  const monthStart = new Date(cursorDate.getFullYear(), cursorDate.getMonth(), 1);
-  const monthLabel = formatCalendarDate(cursorDate, { month: "long", year: "numeric" });
-  const weekStart = new Date(cursorDate);
-  weekStart.setDate(cursorDate.getDate() - ((cursorDate.getDay() + 6) % 7));
-  const visibleDays = mode === "Día"
-    ? [new Date(cursorDate)]
-    : Array.from({ length: mode === "Semana" ? 7 : 35 }, (_, index) => {
-        const base = mode === "Semana" ? new Date(weekStart) : new Date(monthStart.getFullYear(), monthStart.getMonth(), 1 - ((monthStart.getDay() + 6) % 7));
-        base.setDate(base.getDate() + index);
-        return base;
-      });
-
-  const meetingsByStatus = visibleMeetings.reduce((acc, meeting) => {
-    const key = meeting.status || "Sin estado";
-    acc[key] = (acc[key] || 0) + 1;
-    return acc;
-  }, {});
-  const maxStatus = Math.max(1, ...Object.values(meetingsByStatus));
-  const hours = Array.from({ length: 12 }, (_, index) => index + 8);
-
-  const moveCursor = (direction) => {
-    const next = new Date(cursorDate);
-    next.setDate(next.getDate() + direction * (mode === "Día" ? 1 : mode === "Semana" ? 7 : 30));
-    setCursorDate(next);
   };
 
+  const completedMeetings = calendarMeetings.filter((item) => {
+    const status = normalizeCalendarTerm(item.status || "");
+    return status.includes("realizada") || status.includes("finalizada") || status.includes("completada") || (item.dateObject && item.dateObject < today);
+  }).length;
+  const realizedPending = calendarPending.filter((item) => item.validationState === "done").length;
+  const pendingWithoutDate = calendarPending.filter((item) => !item.dateObject && item.validationState !== "done").length;
+  const pendingCounts = calendarPending.reduce((counts, item) => {
+    counts[item.statusState] += 1;
+    return counts;
+  }, { pending: 0, review: 0, done: 0, blocked: 0 });
+
+  const weekStart = new Date(cursorDate);
+  weekStart.setDate(cursorDate.getDate() - ((cursorDate.getDay() + 6) % 7));
+  weekStart.setHours(0, 0, 0, 0);
+  const weekDays = Array.from({ length: 5 }, (_, index) => {
+    const day = new Date(weekStart);
+    day.setDate(weekStart.getDate() + index);
+    return day;
+  });
+  const hours = Array.from({ length: 10 }, (_, index) => index + 8);
+  const monthLabel = formatCalendarDate(cursorDate, { month: "long", year: "numeric" });
+  const weekLabel = `${formatCalendarDate(weekDays[0], { day: "numeric", month: "short" })} - ${formatCalendarDate(weekDays[4], { day: "numeric", month: "short" })}`;
+  const filteredPending = calendarPending.filter((item) => pendingFilter === "all" || item.statusState === pendingFilter);
+  const showMeetings = typeFilter === "all" || typeFilter === "meeting";
+  const showDeadlines = typeFilter === "all" || typeFilter === "deadline";
+  const moveWeek = (direction) => {
+    const next = new Date(cursorDate);
+    next.setDate(next.getDate() + direction * 7);
+    setCursorDate(next);
+  };
+  const meetingStatusLabel = (item) => {
+    const status = normalizeCalendarTerm(item.status || "");
+    if (status.includes("realizada") || status.includes("finalizada") || status.includes("completada") || (item.dateObject && item.dateObject < today)) return "Realizada";
+    if (status.includes("curso")) return "En curso";
+    return item.status || "Programada";
+  };
+  const statusLabel = (item) => ({ pending: "Pendiente", review: "En revisión", done: "Terminado", blocked: "Bloqueado" }[item.statusState]);
+
   return (
-    <section className="calendarPage">
-      <aside className="calendarSidebarPanel">
-        <div className="calendarTitle"><CalendarDays size={24} /><h2>Calendario</h2></div>
-        <div className="miniCalendarCard">
-          <div className="miniCalendarHeader">{monthLabel}</div>
-          <div className="miniCalendarGrid miniCalendarWeekdays">{["L", "M", "M", "J", "V", "S", "D"].map((day) => <span key={day}>{day}</span>)}</div>
-          <div className="miniCalendarGrid">
-            {Array.from({ length: 35 }, (_, index) => {
-              const first = new Date(monthStart.getFullYear(), monthStart.getMonth(), 1 - ((monthStart.getDay() + 6) % 7));
-              first.setDate(first.getDate() + index);
-              const hasMeeting = calendarMeetings.some((meeting) => sameCalendarDay(meeting.dateObject, first));
-              return (
-                <button key={first.toISOString()} className={`${sameCalendarDay(first, cursorDate) ? "active" : ""} ${hasMeeting ? "hasMeeting" : ""}`} onClick={() => setCursorDate(first)}>
-                  {first.getDate()}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <label className="calendarSearchField">
-          <Search size={16} />
-          <input
-            value={calendarSearch}
-            onChange={(event) => setCalendarSearch(event.target.value)}
-            placeholder="Buscar reunión"
-          />
-        </label>
-        <div className="calendarMetricCard">
-          <span>Reuniones totales</span>
-          <strong><ChevronRight size={22} />{visibleMeetings.length}</strong>
-        </div>
-        <div className="calendarStatusCard">
-          <h3>Estado reuniones</h3>
-          {Object.entries(meetingsByStatus).map(([status, count]) => (
-            <div className="calendarStatusRow" key={status}>
-              <span>{status}</span>
-              <div><i style={{ width: `${(count / maxStatus) * 100}%` }} /></div>
-              <b>{count}</b>
-            </div>
-          ))}
-        </div>
-      </aside>
+    <section className="calendarAgenda calendarAgendaWeekly">
+      <header className="calendarAgendaHeader">
+        <div><h2>Agenda</h2><p>Reuniones y pendientes del cliente en un solo lugar: lo que viene, lo que bloquea y qué falta por programar.</p></div>
+        <button type="button" className="calendarAgendaPrimaryAction" onClick={() => { setCursorDate(new Date(today)); setTypeFilter("meeting"); }}>Ver reuniones</button>
+      </header>
 
-      <div className="calendarMainPanel">
-        <div className="calendarToolbar">
-          <button onClick={() => setCursorDate(new Date())}>Hoy</button>
-          <button onClick={() => moveCursor(-1)}><ChevronLeft size={16} /></button>
-          <button onClick={() => moveCursor(1)}><ChevronRight size={16} /></button>
-          <h3>{mode === "Día" ? formatCalendarDate(cursorDate, { day: "numeric", month: "long", year: "numeric" }) : monthLabel}</h3>
-          <select value={mode} onChange={(event) => setMode(event.target.value)}>
-            <option>Día</option>
-            <option>Semana</option>
-            <option>Mes</option>
-          </select>
-        </div>
-
-        {mode === "Mes" ? (
-          <div className="calendarMonthGrid">
-            {visibleDays.map((day) => (
-              <div className={`calendarMonthCell ${day.getMonth() !== cursorDate.getMonth() ? "muted" : ""}`} key={day.toISOString()}>
-                <button onClick={() => { setCursorDate(day); setMode("Día"); }}>{day.getDate()}</button>
-                {visibleMeetings.filter((meeting) => sameCalendarDay(meeting.dateObject, day)).slice(0, 3).map((meeting) => (
-                  <button className="calendarMonthEvent" key={meeting.id} onClick={() => setSelectedMeeting(meeting)}>{meeting.title || "Reunión"}</button>
-                ))}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="calendarWeekGrid" style={{ gridTemplateColumns: `72px repeat(${visibleDays.length}, minmax(130px, 1fr))` }}>
-            <div className="calendarCorner">GMT-05</div>
-            {visibleDays.map((day) => (
-              <div className="calendarDayHeader" key={day.toISOString()}>
-                <span>{formatCalendarDate(day, { weekday: "short" })}</span>
-                <strong className={sameCalendarDay(day, today) ? "today" : ""}>{day.getDate()}</strong>
-              </div>
-            ))}
-            {hours.map((hour) => (
-              <Fragment key={hour}>
-                <div className="calendarHour">{hour > 12 ? hour - 12 : hour} {hour >= 12 ? "PM" : "AM"}</div>
-                {visibleDays.map((day) => {
-                  const events = visibleMeetings.filter((meeting) => sameCalendarDay(meeting.dateObject, day) && meeting.hour === hour);
-                  return (
-                    <div className="calendarSlot" key={`${day.toISOString()}-${hour}`}>
-                      {events.map((meeting) => (
-                        <button className="calendarEvent" key={meeting.id} onClick={() => setSelectedMeeting(meeting)}>
-                          <strong>{meeting.title || "Reunión"}</strong>
-                          <span>{meeting.time || "Hora por definir"}</span>
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })}
-              </Fragment>
-            ))}
-          </div>
-        )}
+      <div className="calendarAgendaMetrics calendarAgendaMetricCards">
+        <article><span>Reuniones</span><div><strong>{calendarMeetings.length}</strong><small>{completedMeetings} realizadas · {Math.max(0, calendarMeetings.length - completedMeetings)} pendientes</small></div><i><b style={{ width: `${calendarMeetings.length ? (completedMeetings / calendarMeetings.length) * 100 : 0}%` }} /></i></article>
+        <article><span>Pendientes del cliente</span><div><strong>{calendarPending.length}</strong><small>{pendingCounts.pending + pendingCounts.blocked} pendientes · {pendingCounts.review} en revisión · {pendingCounts.done} terminados</small></div><i className="segmented"><b style={{ width: `${calendarPending.length ? ((pendingCounts.pending + pendingCounts.blocked) / calendarPending.length) * 100 : 0}%` }} /><b className="review" style={{ width: `${calendarPending.length ? (pendingCounts.review / calendarPending.length) * 100 : 0}%` }} /><b className="done" style={{ width: `${calendarPending.length ? (pendingCounts.done / calendarPending.length) * 100 : 0}%` }} /></i></article>
+        <article className="calendarAgendaRealized"><span>Realizados</span><div><strong>{realizedPending} <em>/ {calendarPending.length}</em></strong><small>{Math.max(0, calendarPending.length - realizedPending)} por realizar</small></div><i><b style={{ width: `${calendarPending.length ? (realizedPending / calendarPending.length) * 100 : 0}%` }} /></i></article>
       </div>
 
-      {selectedMeeting && (
-        <div className="calendarModalBackdrop" onClick={() => setSelectedMeeting(null)}>
-          <article className="calendarMeetingModal" onClick={(event) => event.stopPropagation()}>
-            <button className="calendarModalClose" onClick={() => setSelectedMeeting(null)}><X size={16} /></button>
-            <Badge status={selectedMeeting.status}>{selectedMeeting.status || "Sin estado"}</Badge>
-            <h3>{selectedMeeting.title || "Reunión"}</h3>
-            <p>{formatCalendarDate(selectedMeeting.dateObject, { weekday: "long", day: "numeric", month: "long", year: "numeric" })} · {selectedMeeting.time || "Hora por definir"}</p>
-            <div className="calendarModalDetails">
-              <div><b>Fecha</b><span>{selectedMeeting.date || "Por definir"}</span></div>
-              <div><b>Hora</b><span>{selectedMeeting.time || "Por definir"}</span></div>
-              <div><b>Estado</b><span>{selectedMeeting.status || "Sin estado"}</span></div>
+      <div className="calendarAgendaGrid">
+        <article className="calendarWeekPanel">
+          <div className="calendarWeekToolbar">
+            <div className="calendarWeekNavigation">
+              <button type="button" onClick={() => setCursorDate(new Date(today))}>Hoy</button>
+              <button type="button" onClick={() => moveWeek(-1)} aria-label="Semana anterior"><ChevronLeft size={17} /></button>
+              <button type="button" onClick={() => moveWeek(1)} aria-label="Semana siguiente"><ChevronRight size={17} /></button>
+              <span><strong>{monthLabel}</strong><small>{weekLabel}</small></span>
             </div>
-            {selectedMeeting.description && <div className="calendarModalBlock"><b>Descripción</b><span>{selectedMeeting.description}</span></div>}
-            {selectedMeeting.invited && <div className="calendarModalBlock"><b>Invitados</b><span>{selectedMeeting.invited}</span></div>}
-            {selectedMeeting.observation && <div className="calendarModalBlock"><b>Observación</b><span>{selectedMeeting.observation}</span></div>}
-            <div className="calendarModalLinks">
-              {selectedMeeting.link && <a href={safeUrl(selectedMeeting.link)} target="_blank" rel="noreferrer">Entrar a la reunión <ExternalLink size={15} /></a>}
-              {selectedMeeting.minutesLink && <a href={safeUrl(selectedMeeting.minutesLink)} target="_blank" rel="noreferrer">Acta de reunión <ExternalLink size={15} /></a>}
+            <div className="calendarAgendaFilters" aria-label="Filtrar calendario">
+              {[["all", "Todo"], ["meeting", "Reuniones"], ["deadline", "Vencimientos"]].map(([key, label]) => <button type="button" key={key} aria-pressed={typeFilter === key} className={typeFilter === key ? "active" : ""} onClick={() => setTypeFilter(key)}>{label}</button>)}
             </div>
-          </article>
-        </div>
-      )}
+          </div>
+          <div className="calendarWeekScroll">
+            <div className="calendarWeekGrid">
+              <div className="calendarWeekCorner" />
+              {weekDays.map((day) => <div className={`calendarWeekDay ${sameCalendarDay(day, today) ? "today" : ""}`} key={day.toISOString()}><span>{formatCalendarDate(day, { weekday: "short" })}</span><strong>{day.getDate()}</strong></div>)}
+              <div className="calendarWeekLabel">Vencen</div>
+              {weekDays.map((day) => <div className="calendarDeadlineCell" key={`deadline-${day.toISOString()}`}>{showDeadlines && calendarPending.filter((item) => sameCalendarDay(item.dateObject, day) && item.validationState !== "done").slice(0, 2).map((item) => <button type="button" key={item.agendaId} onClick={() => setSelectedItem(item)}><span>Vence: {item.title}</span></button>)}</div>)}
+              {hours.map((hour) => <Fragment key={hour}>
+                <div className="calendarWeekHour">{hour > 12 ? hour - 12 : hour} {hour >= 12 ? "PM" : "AM"}</div>
+                {weekDays.map((day) => {
+                  const slotMeetings = showMeetings ? calendarMeetings.filter((item) => sameCalendarDay(item.dateObject, day) && item.hour === hour) : [];
+                  return <div className="calendarWeekSlot" key={`${day.toISOString()}-${hour}`}>{slotMeetings.slice(0, 2).map((item) => <button type="button" className={`calendarWeekMeeting ${normalizeCalendarTerm(meetingStatusLabel(item)).replace(/\s+/g, "-")}`} key={item.agendaId} onClick={() => setSelectedItem(item)}><strong>{item.title}</strong><small>{item.time || `${hour}:00`} · {meetingStatusLabel(item)}</small></button>)}</div>;
+                })}
+              </Fragment>)}
+            </div>
+          </div>
+        </article>
+
+        <aside className="calendarPendingPanel">
+          <div className="calendarPendingHeader"><h3>Pendientes del cliente</h3><button type="button" onClick={() => setView?.("pendientes")}>Ver los {calendarPending.length}</button></div>
+          <div className="calendarPendingFilters">
+            {[["all", `Todos ${calendarPending.length}`], ["pending", `Pendientes ${pendingCounts.pending + pendingCounts.blocked}`], ["review", `En revisión ${pendingCounts.review}`], ["done", `Terminados ${pendingCounts.done}`]].map(([key, label]) => <button type="button" key={key} className={pendingFilter === key ? "active" : ""} onClick={() => setPendingFilter(key)}>{label}</button>)}
+          </div>
+          {pendingWithoutDate > 0 && <div className="calendarPendingWarning"><AlertTriangle size={17} /><span><strong>{pendingWithoutDate} pendientes no tienen fecha.</strong> Asígnales una y aparecerán en el calendario.</span></div>}
+          <div className="calendarPendingList">
+            {filteredPending.length ? filteredPending.map((item) => <article key={item.agendaId} className="calendarPendingCard">
+              <button type="button" className="calendarPendingCardMain" onClick={() => setSelectedItem(item)}>
+                <strong>{item.title}</strong>
+                <p>{item.blocks ? `Bloquea: ${item.blocks}` : item.description || "Sin impacto registrado."}</p>
+              </button>
+              <div className="calendarPendingMeta"><span>Responsable: <strong>{item.responsible}</strong></span>{item.dateObject ? <span>Fecha: <strong>{formatCalendarDate(item.dateObject, { day: "numeric", month: "long" })}</strong></span> : <button type="button" onClick={() => setView?.("pendientes")}>Asignar fecha</button>}</div>
+              <div className="calendarPendingBadges">
+                <span className={`status ${item.statusState}`}>{statusLabel(item)}</span>
+                {item.validationState === "done" ? (
+                  <span className="validation done">Realizado</span>
+                ) : (
+                  <button type="button" className="calendarPendingRealized" disabled={Boolean(savingPending[item.request || item.id || item.agendaId])} onClick={() => markPendingRealized(item)}>
+                    {savingPending[item.request || item.id || item.agendaId] ? "Guardando..." : "Realizado"}
+                  </button>
+                )}
+                {pendingMessage[item.request || item.id || item.agendaId] && <small className="calendarPendingSaveMessage">{pendingMessage[item.request || item.id || item.agendaId]}</small>}
+              </div>
+            </article>) : <div className="calendarAgendaEmpty"><CheckCircle2 size={26} /><strong>No hay pendientes en este estado</strong></div>}
+          </div>
+        </aside>
+      </div>
+
+      {selectedItem && <div className="calendarModalBackdrop" onClick={() => setSelectedItem(null)}>
+        <article className="calendarMeetingModal calendarAgendaDetail" onClick={(event) => event.stopPropagation()}>
+          <button className="calendarModalClose" type="button" onClick={() => setSelectedItem(null)} aria-label="Cerrar"><X size={16} /></button>
+          <span className={`calendarAgendaKind ${selectedItem.kind}`}>{selectedItem.kind === "pending" ? <AlertTriangle size={16} /> : <Video size={16} />}{selectedItem.kind === "pending" ? "Pendiente del cliente" : "Reunión"}</span>
+          <h3>{selectedItem.title}</h3>
+          <p>{selectedItem.dateObject ? formatCalendarDate(selectedItem.dateObject, { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "Fecha por definir"}{selectedItem.kind === "meeting" ? ` · ${selectedItem.time || "Hora por definir"}` : ""}</p>
+          <div className="calendarModalDetails"><div><b>Fecha</b><span>{selectedItem.kind === "meeting" ? selectedItem.date : selectedItem.dueDate || "Por definir"}</span></div><div><b>{selectedItem.kind === "meeting" ? "Hora" : "Responsable"}</b><span>{selectedItem.kind === "meeting" ? selectedItem.time || "Por definir" : selectedItem.responsible}</span></div><div><b>Estado</b><span>{selectedItem.status || "Pendiente"}</span></div></div>
+          {selectedItem.description && <div className="calendarModalBlock"><b>Descripción</b><span>{selectedItem.description}</span></div>}
+          {selectedItem.invited && <div className="calendarModalBlock"><b>Invitados</b><span>{selectedItem.invited}</span></div>}
+          {selectedItem.blocks && <div className="calendarModalBlock"><b>Impacto</b><span>{selectedItem.blocks}</span></div>}
+          {selectedItem.observation && <div className="calendarModalBlock"><b>Observación</b><span>{selectedItem.observation}</span></div>}
+          <div className="calendarModalLinks">{selectedItem.kind === "pending" && <button type="button" onClick={() => setView?.("pendientes")}>Ver todos los pendientes <ArrowRight size={15} /></button>}{selectedItem.kind === "meeting" && selectedItem.link && <a href={safeUrl(selectedItem.link)} target="_blank" rel="noreferrer">Entrar a la reunión <ExternalLink size={15} /></a>}{selectedItem.kind === "meeting" && selectedItem.minutesLink && <a href={safeUrl(selectedItem.minutesLink)} target="_blank" rel="noreferrer">Acta de reunión <ExternalLink size={15} /></a>}</div>
+        </article>
+      </div>}
     </section>
   );
 }
@@ -2535,10 +2671,15 @@ function Timeline({ milestones, deliverables = [], detailed = false, setView, se
 }
 
 function ImplementationIndicators({ indicators = [] }) {
+  const [indicatorView, setIndicatorView] = useState("summary");
   const [searchTerm, setSearchTerm] = useState("");
   const [areaFilter, setAreaFilter] = useState("Todos");
   const [processFilter, setProcessFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
+  const [onlyMissing, setOnlyMissing] = useState(false);
+  const [expandedIndicatorId, setExpandedIndicatorId] = useState("");
+  const [summaryGroupMode, setSummaryGroupMode] = useState("process");
+  const [visibleIndicators, setVisibleIndicators] = useState(12);
   const [localIndicators, setLocalIndicators] = useState(indicators);
   const [savingCells, setSavingCells] = useState({});
 
@@ -2563,6 +2704,9 @@ function ImplementationIndicators({ indicators = [] }) {
     if (normalized.includes("curso") || normalized.includes("proceso") || normalized.includes("desarrollo") || normalized.includes("seguimiento")) return "curso";
     return "pendiente";
   };
+
+  const hasValue = (value) => String(value ?? "").trim() !== "";
+  const hasCapturedData = (item) => [item.baseline, item.month1, item.month2, item.month3].some(hasValue);
 
   const statusOptions = statusBuckets.map((bucket) => bucket.label);
   const getStatusLabel = (status = "") => statusBuckets.find((bucket) => bucket.key === getStatusBucket(status))?.label || "Pendiente";
@@ -2653,13 +2797,55 @@ function ImplementationIndicators({ indicators = [] }) {
       months: monthBars,
     };
   };
+
+  const getReadableTrendChart = (item) => {
+    const rawValues = [item.baseline, item.month1, item.month2, item.month3];
+    const values = rawValues.map(parseNumericValue);
+    const goal = parseNumericValue(item.goal);
+    const baseline = parseNumericValue(item.baseline);
+    const scaleRawMax = Math.max(...values.map(Math.abs), Math.abs(goal), 1);
+    const scaleStep = scaleRawMax <= 10 ? 2 : scaleRawMax <= 50 ? 10 : scaleRawMax <= 100 ? 20 : scaleRawMax <= 250 ? 50 : 100;
+    const scaleMax = Math.max(scaleStep, Math.ceil(scaleRawMax / scaleStep) * scaleStep);
+    const plot = { left: 44, right: 344, top: 22, bottom: 154 };
+    const xValues = [plot.left, 144, 244, plot.right];
+    const toY = (value) => plot.bottom - (Math.max(0, value) / scaleMax) * (plot.bottom - plot.top);
+    const points = values.map((value, index) => ({
+      x: xValues[index],
+      y: toY(value),
+      value,
+      label: rawValues[index] === "" || rawValues[index] === null || rawValues[index] === undefined ? "—" : String(rawValues[index]).replace(/%/g, "").trim(),
+    }));
+    const ticks = [scaleMax, scaleMax * .75, scaleMax * .5, scaleMax * .25, 0].map((value) => ({
+      value,
+      y: toY(value),
+      label: Number.isInteger(value) ? String(value) : value.toFixed(1).replace(".", ","),
+    }));
+    const trendText = normalizeSystemName(item.trend);
+    const lowerIsBetter = trendText.includes("dismin") || trendText.includes("menor") || trendText.includes("baja") || trendText.includes("reduce");
+    return {
+      ...plot,
+      baseline,
+      goal,
+      goalY: toY(goal),
+      baselineY: toY(baseline),
+      points,
+      ticks,
+      lowerIsBetter,
+      polyline: points.map((point) => `${point.x},${point.y}`).join(" "),
+      area: `${plot.left},${plot.bottom} ${points.map((point) => `${point.x},${point.y}`).join(" ")} ${plot.right},${plot.bottom}`,
+    };
+  };
   const summary = useMemo(() => {
     const total = localIndicators.length;
     const statuses = statusBuckets.map((bucket) => ({
       ...bucket,
       count: localIndicators.filter((item) => getStatusBucket(item.status) === bucket.key).length,
     }));
-    return { total, statuses };
+    const loaded = localIndicators.filter(hasCapturedData).length;
+    const monthCounts = ["month1", "month2", "month3"].map((field) => (
+      localIndicators.filter((item) => hasValue(item[field])).length
+    ));
+    return { total, statuses, loaded, monthCounts };
   }, [localIndicators]);
 
   const filteredIndicators = useMemo(() => {
@@ -2689,9 +2875,78 @@ function ImplementationIndicators({ indicators = [] }) {
         item.endDate,
         item.status,
       ].join(" "));
-      return matchesArea && matchesProcess && matchesStatus && (!query || searchable.includes(query));
+      const matchesMissing = !onlyMissing || !hasCapturedData(item);
+      return matchesArea && matchesProcess && matchesStatus && matchesMissing && (!query || searchable.includes(query));
     });
-  }, [localIndicators, searchTerm, areaFilter, processFilter, statusFilter]);
+  }, [localIndicators, searchTerm, areaFilter, processFilter, statusFilter, onlyMissing]);
+
+  const summaryGroups = useMemo(() => {
+    const groups = new Map();
+    localIndicators.forEach((item) => {
+      const name = String(summaryGroupMode === "area" ? item.area : item.process).trim() || "Sin clasificar";
+      if (!groups.has(name)) groups.set(name, []);
+      groups.get(name).push(item);
+    });
+    return [...groups.entries()].map(([name, items]) => {
+      const statuses = statusBuckets.reduce((acc, bucket) => ({
+        ...acc,
+        [bucket.key]: items.filter((item) => getStatusBucket(item.status) === bucket.key).length,
+      }), {});
+      return {
+        name,
+        items,
+        total: items.length,
+        loaded: items.filter(hasCapturedData).length,
+        statuses,
+      };
+    }).sort((a, b) => (
+      b.statuses.riesgo - a.statuses.riesgo || b.loaded - a.loaded || a.name.localeCompare(b.name)
+    ));
+  }, [localIndicators, summaryGroupMode]);
+
+  const captureGroups = useMemo(() => {
+    const groups = new Map();
+    filteredIndicators.slice(0, visibleIndicators).forEach((item) => {
+      const name = String(item.process || "Proceso sin definir").trim();
+      if (!groups.has(name)) groups.set(name, []);
+      groups.get(name).push(item);
+    });
+    return [...groups.entries()];
+  }, [filteredIndicators, visibleIndicators]);
+
+  const riskIndicators = useMemo(() => (
+    localIndicators.filter((item) => getStatusBucket(item.status) === "riesgo").slice(0, 5)
+  ), [localIndicators]);
+
+  const emptyGroups = useMemo(() => (
+    summaryGroups.filter((group) => group.loaded === 0).slice(0, 6)
+  ), [summaryGroups]);
+
+  const capturePercentage = summary.total ? Math.round((summary.loaded / summary.total) * 100) : 0;
+  const maxMonthCount = Math.max(...summary.monthCounts, 1);
+  const monthScaleStep = maxMonthCount <= 10 ? 2 : maxMonthCount <= 25 ? 5 : 10;
+  const monthScaleMax = Math.max(monthScaleStep, Math.ceil(maxMonthCount / monthScaleStep) * monthScaleStep);
+  const monthTrendData = summary.monthCounts.map((count, index) => {
+    const x = [48, 166, 284][index];
+    const y = 112 - (count / monthScaleMax) * 80;
+    return { x, y: Math.max(24, y), count };
+  });
+  const monthTrendPoints = monthTrendData.map((point) => `${point.x},${point.y}`).join(" ");
+  const monthTrendArea = `48,112 ${monthTrendPoints} 284,112`;
+  const donutCircumference = 263.89;
+  let donutOffset = 0;
+  const donutSegments = summary.statuses.map((bucket) => {
+    const length = summary.total ? (bucket.count / summary.total) * donutCircumference : 0;
+    const segment = { ...bucket, length, offset: -donutOffset };
+    donutOffset += length;
+    return segment;
+  });
+
+  useEffect(() => {
+    if (indicatorView === "capture" && !expandedIndicatorId && filteredIndicators.length) {
+      setExpandedIndicatorId(filteredIndicators.find(hasCapturedData)?.id || filteredIndicators[0].id);
+    }
+  }, [indicatorView, expandedIndicatorId, filteredIndicators]);
 
   const updateLocalIndicator = (indicatorId, field, value) => {
     setLocalIndicators((current) => current.map((item) => (
@@ -2751,6 +3006,278 @@ function ImplementationIndicators({ indicators = [] }) {
       />
     );
   };
+
+  const openSummaryGroup = (group) => {
+    if (summaryGroupMode === "area") {
+      setAreaFilter(group.name);
+      setProcessFilter("Todos");
+    } else {
+      setProcessFilter(group.name);
+      setAreaFilter("Todos");
+    }
+    setSearchTerm("");
+    setStatusFilter("Todos");
+    setOnlyMissing(false);
+    setIndicatorView("capture");
+  };
+
+  return (
+    <section className="indicatorsV2" aria-labelledby="indicators-title">
+      <header className="indicatorsV2Header">
+        <div>
+          <h2 id="indicators-title">Indicadores</h2>
+          <p>Registra la línea base, la meta y el avance mensual para entender qué mejora y qué necesita una decisión.</p>
+        </div>
+        <div className="indicatorsViewSwitch" role="tablist" aria-label="Vistas de indicadores">
+          <button type="button" role="tab" aria-selected={indicatorView === "summary"} className={indicatorView === "summary" ? "active" : ""} onClick={() => setIndicatorView("summary")}>Resumen</button>
+          <button type="button" role="tab" aria-selected={indicatorView === "capture"} className={indicatorView === "capture" ? "active" : ""} onClick={() => setIndicatorView("capture")}>Captura</button>
+        </div>
+      </header>
+
+      <section className="indicatorOverviewBand" aria-label="Estado general de indicadores">
+        <div className="indicatorOverviewTotal">
+          <span>Total de indicadores</span>
+          <strong>{summary.total}</strong>
+        </div>
+        <div className="indicatorOverviewStatus">
+          <span>Estado de los indicadores</span>
+          <div className="indicatorStackedBar" aria-hidden="true">
+            {summary.statuses.map((bucket) => (
+              <i key={`overview-${bucket.key}`} className={`is-${bucket.key}`} style={{ width: `${summary.total ? (bucket.count / summary.total) * 100 : 0}%` }} />
+            ))}
+          </div>
+          <div className="indicatorOverviewLegend">
+            {summary.statuses.map((bucket) => <span key={`legend-${bucket.key}`} className={`is-${bucket.key}`}>{bucket.label} <b>{bucket.count}</b></span>)}
+          </div>
+        </div>
+        <div className="indicatorOverviewLoaded">
+          <span>Con datos cargados</span>
+          <strong>{summary.loaded} <small>de {summary.total} · {capturePercentage}%</small></strong>
+          <div><i style={{ width: `${capturePercentage}%` }} /></div>
+        </div>
+      </section>
+
+      {indicatorView === "summary" ? (
+        <div className="indicatorSummaryView">
+          <section className="indicatorSummaryCards" aria-label="Resumen visual">
+            <article className="indicatorInsightCard indicatorStatusDonutCard">
+              <span className="indicatorCardEyebrow">Estado de los indicadores</span>
+              <div className="indicatorDonutLayout">
+                <div className="indicatorDonut">
+                  <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <circle className="indicatorDonutTrack" cx="50" cy="50" r="42" />
+                    {donutSegments.map((segment) => (
+                      <circle key={`donut-${segment.key}`} className={`indicatorDonutSegment is-${segment.key}`} cx="50" cy="50" r="42" pathLength={donutCircumference} strokeDasharray={`${segment.length} ${donutCircumference - segment.length}`} strokeDashoffset={segment.offset} />
+                    ))}
+                  </svg>
+                  <strong>{summary.total}<small>indicadores</small></strong>
+                </div>
+                <div className="indicatorDonutLegend">
+                  {summary.statuses.map((bucket) => <span key={`donut-label-${bucket.key}`} className={`is-${bucket.key}`}>{bucket.label}<b>{bucket.count}</b></span>)}
+                </div>
+              </div>
+            </article>
+
+            <article className="indicatorInsightCard indicatorCaptureGaugeCard">
+              <span className="indicatorCardEyebrow">Captura de datos</span>
+              <div className="indicatorCaptureGauge" style={{ "--capture-angle": `${capturePercentage * 1.8}deg` }}>
+                <svg viewBox="0 0 160 88" aria-hidden="true">
+                  <path className="indicatorGaugeTrack" d="M18 78 A62 62 0 0 1 142 78" pathLength="100" />
+                  <path className="indicatorGaugeValue" d="M18 78 A62 62 0 0 1 142 78" pathLength="100" strokeDasharray={`${capturePercentage} 100`} />
+                </svg>
+                <strong>{capturePercentage}%<small>con datos</small></strong>
+              </div>
+              <p>{summary.loaded} de {summary.total} indicadores tienen información registrada.</p>
+            </article>
+
+            <article className="indicatorInsightCard indicatorMonthlyCard">
+              <span className="indicatorCardEyebrow">Indicadores con datos por mes</span>
+              <div className="indicatorMonthlyMetric"><strong>{summary.monthCounts[2] || 0}</strong><span>avance acumulado</span></div>
+              <svg className="indicatorMonthlyChart" viewBox="0 0 320 142" aria-label="Evolución de indicadores con datos">
+                {[monthScaleMax, monthScaleMax / 2, 0].map((tick, index) => {
+                  const y = [32, 72, 112][index];
+                  return <g key={`month-axis-${tick}`}><line x1="42" y1={y} x2="294" y2={y} /><text x="34" y={y + 3} textAnchor="end">{tick}</text></g>;
+                })}
+                <polygon className="indicatorMonthlyArea" points={monthTrendArea} />
+                <polyline className="indicatorMonthlyLine" points={monthTrendPoints} />
+                {monthTrendData.map((point, index) => (
+                  <g key={`month-point-${index}`}>
+                    <circle cx={point.x} cy={point.y} r="5" />
+                    <text className="indicatorMonthlyValue" x={point.x} y={point.y - 10} textAnchor="middle">{point.count}</text>
+                  </g>
+                ))}
+              </svg>
+              <div className="indicatorMonthlyLabels">
+                {summary.monthCounts.map((count, index) => <span key={`month-count-${index}`}><b>{count}</b>Mes {index + 1}</span>)}
+              </div>
+            </article>
+          </section>
+
+          <section className="indicatorDecisionPanel">
+            <div className="indicatorPanelHeader">
+              <div>
+                <h3>Resumen para decidir</h3>
+                <p>Compara dónde hay avance, dónde existe riesgo y dónde todavía falta comenzar.</p>
+              </div>
+              <div className="indicatorGroupSwitch" role="group" aria-label="Agrupar resumen">
+                <span>Agrupar por</span>
+                <button type="button" className={summaryGroupMode === "process" ? "active" : ""} onClick={() => setSummaryGroupMode("process")}>Macroproceso</button>
+                <button type="button" className={summaryGroupMode === "area" ? "active" : ""} onClick={() => setSummaryGroupMode("area")}>Área</button>
+              </div>
+            </div>
+            <div className="indicatorDecisionTable" role="table">
+              <div className="indicatorDecisionHead" role="row">
+                <span>{summaryGroupMode === "area" ? "Área" : "Macroproceso"}</span><span>Indicadores</span><span>Con datos</span><span>Estado</span><span>Cumplido</span><span>En riesgo</span><span>Lectura</span>
+              </div>
+              {summaryGroups.slice(0, 10).map((group) => {
+                const loadedPercent = group.total ? Math.round((group.loaded / group.total) * 100) : 0;
+                const reading = group.statuses.riesgo ? `Atender · ${group.statuses.riesgo} en riesgo` : group.loaded ? "Va bien" : "Sin datos";
+                return (
+                  <button type="button" className="indicatorDecisionRow" role="row" key={`summary-group-${group.name}`} onClick={() => openSummaryGroup(group)}>
+                    <strong>{group.name}</strong>
+                    <b>{group.total}</b>
+                    <span className="indicatorGroupLoaded"><b>{group.loaded} · {loadedPercent}%</b><i><em style={{ width: `${loadedPercent}%` }} /></i></span>
+                    <span className="indicatorMiniStack" aria-label={`Estado de ${group.name}`}>
+                      {statusBuckets.map((bucket) => <i key={`${group.name}-${bucket.key}`} className={`is-${bucket.key}`} style={{ width: `${group.total ? (group.statuses[bucket.key] / group.total) * 100 : 0}%` }} />)}
+                    </span>
+                    <b className="is-good">{group.statuses.cumplido}</b>
+                    <b className={group.statuses.riesgo ? "is-risk" : "is-muted"}>{group.statuses.riesgo}</b>
+                    <span className={`indicatorReading ${group.statuses.riesgo ? "risk" : group.loaded ? "good" : "empty"}`}>{reading}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="indicatorDecisionLegend">
+              {statusBuckets.map((bucket) => <span key={`decision-legend-${bucket.key}`} className={`is-${bucket.key}`}>{bucket.label}</span>)}
+              <small>Mostrando 10 de {summaryGroups.length} grupos · ordenado por prioridad.</small>
+            </div>
+          </section>
+
+          <section className="indicatorActionGrid">
+            <article className="indicatorRiskPanel">
+              <div className="indicatorPanelHeader compact">
+                <div><h3>Requieren una decisión</h3><p>{riskIndicators.length} indicadores necesitan atención.</p></div>
+                <span className="indicatorRiskCount">{riskIndicators.length} en riesgo</span>
+              </div>
+              {riskIndicators.length ? riskIndicators.map((item) => {
+                const latest = parseNumericValue(getLatestValue(item));
+                const goal = parseNumericValue(item.goal);
+                const baseline = parseNumericValue(item.baseline);
+                const scale = Math.max(Math.abs(latest), Math.abs(goal), Math.abs(baseline), 1);
+                return (
+                  <button type="button" className="indicatorRiskItem" key={`risk-${item.id}`} onClick={() => { setSearchTerm(item.id || item.name); setIndicatorView("capture"); }}>
+                    <span><strong>{item.name || "Indicador sin nombre"}</strong><small>{item.process || "Proceso sin definir"} · Resp.: {item.responsible || "Por definir"}</small></span>
+                    <b>{getLatestValue(item)} <small>de meta {item.goal || "—"}</small></b>
+                    <div className="indicatorRiskScale">
+                      <i style={{ width: `${Math.min(100, Math.abs(latest) / scale * 100)}%` }} />
+                      <em className="baseline" style={{ left: `${Math.min(100, Math.abs(baseline) / scale * 100)}%` }} />
+                      <em className="goal" style={{ left: `${Math.min(100, Math.abs(goal) / scale * 100)}%` }} />
+                    </div>
+                    <p>Plan: {item.actionPlan || "Definir acciones y responsables para recuperar el indicador."}</p>
+                  </button>
+                );
+              }) : <div className="indicatorPositiveState"><CheckCircle2 size={22} /><strong>No hay indicadores en riesgo</strong><span>El seguimiento no registra alertas activas.</span></div>}
+            </article>
+
+            <article className="indicatorEmptyPanel">
+              <div className="indicatorPanelHeader compact"><div><h3>Aún sin datos</h3><p>Grupos sin ningún indicador cargado.</p></div></div>
+              {emptyGroups.length ? emptyGroups.map((group) => (
+                <button type="button" key={`empty-${group.name}`} onClick={() => openSummaryGroup(group)}><strong>{group.name}</strong><span>{group.total} por llenar</span><ArrowRight size={16} /></button>
+              )) : <div className="indicatorPositiveState"><CheckCircle2 size={22} /><strong>Todos comenzaron</strong><span>Cada grupo ya registra al menos un dato.</span></div>}
+              <button type="button" className="indicatorGoCapture" onClick={() => { setOnlyMissing(true); setIndicatorView("capture"); }}>Ir a llenar los pendientes <ArrowRight size={16} /></button>
+            </article>
+          </section>
+        </div>
+      ) : (
+        <section className="indicatorCapturePanel">
+          <div className="indicatorPanelHeader indicatorCaptureTitle">
+            <div><h3>Captura de indicadores</h3><p>Escribe en las casillas; el estado se conserva desde la hoja y cada cambio se guarda al salir del campo.</p></div>
+            <span className="indicatorAutosave"><CheckCircle2 size={16} /> Guardado automático</span>
+          </div>
+
+          <div className="indicatorAreaTabs" aria-label="Filtrar indicadores por área">
+            <button type="button" className={areaFilter === "Todos" ? "active" : ""} onClick={() => setAreaFilter("Todos")}>Todas <b>{localIndicators.length}</b></button>
+            {areaOptions.map((area) => {
+              const count = localIndicators.filter((item) => item.area === area).length;
+              return <button type="button" key={area} className={areaFilter === area ? "active" : ""} onClick={() => setAreaFilter(area)}>{area} <b>{count}</b></button>;
+            })}
+          </div>
+
+          <div className="indicatorCaptureToolbar">
+            <label className="indicatorSearch"><Search size={17} /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar por proceso, indicador, fórmula o responsable..." /></label>
+            <FilterSelect label="Proceso" value={processFilter} onChange={setProcessFilter} options={processOptions} />
+            <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
+            <label className="indicatorMissingToggle"><input type="checkbox" checked={onlyMissing} onChange={(event) => setOnlyMissing(event.target.checked)} /><span /> Solo por llenar <b>{localIndicators.filter((item) => !hasCapturedData(item)).length}</b></label>
+          </div>
+
+          <div className="indicatorCaptureColumns" aria-hidden="true"><span>Indicador</span><span>Línea base</span><span>Meta</span><span>Mes 1</span><span>Mes 2</span><span>Mes 3</span><span>Tendencia</span><span>Estado</span><span /></div>
+          <div className="indicatorCaptureGroups">
+            {captureGroups.map(([groupName, items]) => (
+              <section className="indicatorCaptureGroup" key={`capture-${groupName}`}>
+                <header><strong>{groupName}</strong><span>{items.filter(hasCapturedData).length} de {items.length} con datos</span></header>
+                {items.map((item) => {
+                  const statusKey = getStatusBucket(item.status);
+                  const isExpanded = expandedIndicatorId === item.id;
+                  const chart = getChartBars(item);
+                  const readableChart = getReadableTrendChart(item);
+                  return (
+                    <div className={`indicatorCaptureItem ${isExpanded ? "expanded" : ""}`} key={`capture-row-${item.id}`}>
+                      <div className="indicatorCaptureRow">
+                        <button type="button" className="indicatorNameCell" onClick={() => setExpandedIndicatorId(isExpanded ? "" : item.id)}><strong>{item.name || "Indicador sin nombre"}</strong><small>{item.unit || "Unidad por definir"} · Resp.: {item.responsible || "Por definir"}</small></button>
+                        <label data-label="Línea base">{renderEditableInput(item, "baseline")}</label>
+                        <label data-label="Meta" className="goalCell">{renderEditableInput(item, "goal")}</label>
+                        <label data-label="Mes 1">{renderEditableInput(item, "month1")}</label>
+                        <label data-label="Mes 2">{renderEditableInput(item, "month2")}</label>
+                        <label data-label="Mes 3">{renderEditableInput(item, "month3")}</label>
+                        <svg className={`indicatorRowSparkline is-${statusKey}`} viewBox="0 0 100 54" aria-hidden="true"><polyline points={getLinePoints(item)} /><circle cx={getLinePoints(item).split(" ").at(-1).split(",")[0]} cy={getLinePoints(item).split(" ").at(-1).split(",")[1]} r="3" /></svg>
+                        <span className={`indicatorStatusPill is-${statusKey}`}>{getStatusLabel(item.status)}</span>
+                        <button type="button" className="indicatorExpandButton" aria-label={isExpanded ? "Cerrar detalle" : "Ver detalle"} onClick={() => setExpandedIndicatorId(isExpanded ? "" : item.id)}>{isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}</button>
+                      </div>
+                      {isExpanded && (
+                        <div className="indicatorExpandedDetail">
+                          <div className="indicatorDetailChartCard">
+                            <div className="indicatorDetailMetric"><span>Último valor</span><strong>{getLatestValue(item)}{chart.isPercentage && getLatestValue(item) !== "Sin dato" ? "%" : ""}</strong><em>{Math.round(getCompletion(item))}% hacia la meta</em></div>
+                            <svg className="indicatorDetailChart" viewBox="0 0 370 190" aria-label={`Evolución de ${item.name}`}>
+                              <rect className={`indicatorGoalZone ${readableChart.lowerIsBetter ? "lower" : "higher"}`} x={readableChart.left} y={readableChart.lowerIsBetter ? readableChart.goalY : readableChart.top} width={readableChart.right - readableChart.left} height={readableChart.lowerIsBetter ? readableChart.bottom - readableChart.goalY : readableChart.goalY - readableChart.top} />
+                              <text className="indicatorGoalZoneLabel" x={readableChart.left + 7} y={readableChart.lowerIsBetter ? readableChart.bottom - 8 : readableChart.top + 12}>Zona de meta</text>
+                              {readableChart.ticks.map((tick) => <g key={`detail-tick-${tick.label}`}><line className="indicatorChartGridLine" x1={readableChart.left} y1={tick.y} x2={readableChart.right} y2={tick.y} /><text className="indicatorAxisValue" x={readableChart.left - 9} y={tick.y + 3} textAnchor="end">{tick.label}</text></g>)}
+                              <line className="indicatorGoalLine" x1={readableChart.left} y1={readableChart.goalY} x2={readableChart.right} y2={readableChart.goalY} />
+                              <line className="indicatorBaselineLine" x1={readableChart.left} y1={readableChart.baselineY} x2={readableChart.right} y2={readableChart.baselineY} />
+                              <polygon className="indicatorDetailArea" points={readableChart.area} />
+                              <polyline className="indicatorDetailLine" points={readableChart.polyline} />
+                              {readableChart.points.map((point, index) => (
+                                <g key={`detail-point-${index}`}>
+                                  <circle className={index === readableChart.points.length - 1 ? "latest" : ""} cx={point.x} cy={point.y} r={index === readableChart.points.length - 1 ? 5 : 4} />
+                                  <text className="indicatorPointValue" x={point.x} y={point.y - 10} textAnchor="middle">{point.label}</text>
+                                </g>
+                              ))}
+                              <g className="indicatorGoalTag" transform={`translate(${Math.max(readableChart.left + 4, readableChart.right - 58)},${Math.max(readableChart.top + 2, readableChart.goalY - 18)})`}><rect width="54" height="16" rx="4" /><text x="27" y="11" textAnchor="middle">Meta {item.goal || "—"}</text></g>
+                            </svg>
+                            <div className="indicatorDetailChartLabels"><span>Línea base</span><span>Mes 1</span><span>Mes 2</span><span>Mes 3</span></div>
+                            <div className="indicatorDetailLegend"><span className="real">Real</span><span className="baseline">Línea base</span><span className="goal">Meta</span></div>
+                          </div>
+                          <div className="indicatorNarrative">
+                            <div><strong>Fórmula</strong><p>{item.formula || "Por definir"}</p></div>
+                            <div><strong>Descripción</strong><p>{item.description || "Por definir"}</p></div>
+                            <div><strong>Plan de acción</strong><p>{item.actionPlan || "Por definir"}</p></div>
+                          </div>
+                          <dl className="indicatorMetadata">
+                            <div><dt>Proceso</dt><dd>{item.process || "Por definir"}</dd></div><div><dt>Área</dt><dd>{item.area || "Por definir"}</dd></div><div><dt>Unidad de medida</dt><dd>{item.unit || "Por definir"}</dd></div><div><dt>Responsable</dt><dd>{item.responsible || "Por definir"}</dd></div><div><dt>Frecuencia</dt><dd>{item.frequency || "Por definir"}</dd></div><div><dt>Fecha de término</dt><dd>{item.endDate || "Por definir"}</dd></div>
+                          </dl>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </section>
+            ))}
+          </div>
+          {filteredIndicators.length > visibleIndicators && <button type="button" className="indicatorLoadMore" onClick={() => setVisibleIndicators((count) => count + 12)}>Mostrando {visibleIndicators} de {filteredIndicators.length} · Ver más</button>}
+          {!filteredIndicators.length && <div className="emptyState">No hay indicadores que coincidan con los filtros seleccionados.</div>}
+        </section>
+      )}
+    </section>
+  );
 
   return (
     <section className="card premiumSectionCard indicatorsSection">
@@ -2904,6 +3431,7 @@ function PersonnelMatrixSection({ rows = [] }) {
   const [positionFilter, setPositionFilter] = useState("Todos");
   const [levelFilter, setLevelFilter] = useState("Todos");
   const [hideNames, setHideNames] = useState(false);
+  const [selectedRowKey, setSelectedRowKey] = useState("");
 
   const formatScore = (value) => {
     if (value === null || value === undefined || value === "") return "—";
@@ -2919,6 +3447,9 @@ function PersonnelMatrixSection({ rows = [] }) {
     if (app >= 70 && edd >= 77) return { key: "normal", label: "Normal" };
     return { key: "low", label: "Bajo" };
   };
+
+  const getRowKey = (item = {}, index = 0) => `${item.id || index}-${item.name || item.position || index}`;
+  const clampScore = (value) => Math.max(0, Math.min(100, Number(value) || 0));
 
   const managementOptions = useMemo(() => [...new Set(rows.map((item) => item.management).filter(Boolean))], [rows]);
   const areaOptions = useMemo(() => [...new Set(rows.map((item) => item.area).filter(Boolean))], [rows]);
@@ -2947,38 +3478,79 @@ function PersonnelMatrixSection({ rows = [] }) {
     });
   }, [rows, searchTerm, managementFilter, areaFilter, positionFilter, levelFilter]);
 
-  const metrics = [
-    { label: "APP al 60", value: getPersonnelAverage(rows, "app60"), detail: "Educación, experiencia y cursos" },
-    { label: "APP al 40", value: getPersonnelAverage(rows, "app40"), detail: "Cumplimiento de actividades" },
-    { label: "EDD al 20", value: getPersonnelAverage(rows, "edd20"), detail: "Componente EDD 20" },
-    { label: "EDD al 80", value: getPersonnelAverage(rows, "edd80"), detail: "Componente EDD 80" },
-    { label: "Nivel de empleabilidad", value: getPersonnelAverage(rows, "employmentLevel"), detail: "Mínimo esperado: 70%" },
-    { label: "Nivel de desempeño", value: getPersonnelAverage(rows, "performanceLevel"), detail: "Mínimo esperado: 77%" },
-  ];
+  const bandCounts = useMemo(() => rows.reduce((totals, item) => {
+    const key = getBand(item).key;
+    totals[key] += 1;
+    return totals;
+  }, { low: 0, normal: 0, high: 0 }), [rows]);
+  const evaluatedCount = useMemo(() => rows.filter((item) =>
+    Number(item.employmentLevel) > 0 || Number(item.performanceLevel) > 0
+  ).length, [rows]);
+  const employmentAverage = getPersonnelAverage(rows, "employmentLevel");
+  const performanceAverage = getPersonnelAverage(rows, "performanceLevel");
+  const selectedRowIndex = Math.max(0, filteredRows.findIndex((item, index) => getRowKey(item, index) === selectedRowKey));
+  const selectedRow = filteredRows[selectedRowIndex] || filteredRows[0] || null;
+  const selectedBand = selectedRow ? getBand(selectedRow) : null;
+  const hasActiveFilters = Boolean(searchTerm || managementFilter !== "Todos" || areaFilter !== "Todos" || positionFilter !== "Todos" || levelFilter !== "Todos");
+
+  const resetFilters = () => {
+    setSearchTerm("");
+    setManagementFilter("Todos");
+    setAreaFilter("Todos");
+    setPositionFilter("Todos");
+    setLevelFilter("Todos");
+  };
 
   return (
     <section className="personnelMatrixSection">
-      <div className="personnelMetricGrid">
-        {metrics.map((metric) => (
-          <article className="personnelMetricCard" key={metric.label}>
-            <span>{metric.label}</span>
-            <strong>{formatScore(metric.value)}</strong>
-            <i aria-hidden="true"><b style={{ width: `${Math.max(0, Math.min(100, metric.value))}%` }} /></i>
-            <small>{metric.detail}</small>
+      <div className="personnelDecisionSummary">
+        <div className="personnelDecisionOverview">
+          <div className="personnelDecisionCopy">
+            <span>Panorama del equipo</span>
+            <strong>{rows.length} colaboradores</strong>
+            <p>{evaluatedCount} cuentan con resultados APP o EDD. La distribución permite priorizar revisión, desarrollo y continuidad.</p>
+          </div>
+          <div className="personnelDistribution" aria-label={`Distribución: ${bandCounts.low} nivel bajo, ${bandCounts.normal} normal y ${bandCounts.high} alto`}>
+            <div className="personnelDistributionBar" aria-hidden="true">
+              <i className="low" style={{ width: `${rows.length ? (bandCounts.low / rows.length) * 100 : 0}%` }} />
+              <i className="normal" style={{ width: `${rows.length ? (bandCounts.normal / rows.length) * 100 : 0}%` }} />
+              <i className="high" style={{ width: `${rows.length ? (bandCounts.high / rows.length) * 100 : 0}%` }} />
+            </div>
+            <div className="personnelDistributionLegend">
+              <span className="low"><i />Requieren atención <b>{bandCounts.low}</b></span>
+              <span className="normal"><i />Cumplen mínimos <b>{bandCounts.normal}</b></span>
+              <span className="high"><i />Desempeño alto <b>{bandCounts.high}</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div className="personnelOutcomeMetrics">
+          <article className={employmentAverage >= 70 ? "isOnTarget" : "isBelowTarget"}>
+            <div><span>Empleabilidad promedio</span><small>Meta mínima 70%</small></div>
+            <strong>{formatScore(employmentAverage)}</strong>
+            <i aria-hidden="true"><b style={{ width: `${clampScore(employmentAverage)}%` }} /><em style={{ left: "70%" }} /></i>
           </article>
-        ))}
+          <article className={performanceAverage >= 77 ? "isOnTarget" : "isBelowTarget"}>
+            <div><span>Desempeño promedio</span><small>Meta mínima 77%</small></div>
+            <strong>{formatScore(performanceAverage)}</strong>
+            <i aria-hidden="true"><b style={{ width: `${clampScore(performanceAverage)}%` }} /><em style={{ left: "77%" }} /></i>
+          </article>
+        </div>
       </div>
 
-      <div className="personnelExplanations">
-        <article>
-          <strong>APP · Ajuste Persona–Puesto</strong>
-          <p>El 60% corresponde a la evaluación realizada por GSE sobre educación, experiencia y cursos. El 40% corresponde al cumplimiento de las actividades del cargo. El nivel de empleabilidad es el promedio de ambos componentes y debe alcanzar como mínimo 70%.</p>
-        </article>
-        <article>
-          <strong>EDD · Evaluación del desempeño</strong>
-          <p>Integra los componentes EDD 20 y EDD 80 para mostrar el nivel de desempeño del colaborador. El resultado se obtiene promediando ambos valores y debe alcanzar como mínimo 77%.</p>
-        </article>
-      </div>
+      <details className="personnelMethodology">
+        <summary>Cómo se calculan APP y EDD <ChevronDown size={16} /></summary>
+        <div>
+          <article>
+            <strong>APP · Ajuste Persona–Puesto</strong>
+            <p>Combina la evaluación de educación, experiencia y cursos (60%) con el cumplimiento de las actividades del cargo (40%). El mínimo esperado es 70%.</p>
+          </article>
+          <article>
+            <strong>EDD · Evaluación del desempeño</strong>
+            <p>Integra los componentes EDD 20 y EDD 80 para mostrar el nivel de desempeño. El mínimo esperado es 77%.</p>
+          </article>
+        </div>
+      </details>
 
       <div className="premiumFilters personnelMatrixFilters">
         <label className="searchFilter">
@@ -2992,15 +3564,16 @@ function PersonnelMatrixSection({ rows = [] }) {
         <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
         <FilterSelect label="Cargo" value={positionFilter} onChange={setPositionFilter} options={positionOptions} />
         <FilterSelect label="Nivel" value={levelFilter} onChange={setLevelFilter} options={["Bajo", "Normal", "Alto"]} />
+        {hasActiveFilters && <button type="button" className="personnelClearFilters" onClick={resetFilters}>Limpiar filtros</button>}
       </div>
 
-      <div className="processTableCard personnelMatrixCard">
-        <div className="processTableHeader">
+      <div className="personnelWorkspace">
+        <div className="personnelDirectory">
+          <div className="personnelDirectoryHeader">
           <div>
-            <h3>Detalle por colaborador</h3>
-            <p>Aquí puede ver la lista completa de colaboradores. Deslice hacia la derecha para ver todos los campos.</p>
+              <h3>Colaboradores</h3>
+              <p>{filteredRows.length} de {rows.length} visibles</p>
           </div>
-          <div className="personnelTableTools">
             <button
               type="button"
               className="personnelNameToggle"
@@ -3011,69 +3584,71 @@ function PersonnelMatrixSection({ rows = [] }) {
               {hideNames ? <Eye size={16} /> : <EyeOff size={16} />}
               <span>{hideNames ? "Mostrar nombres" : "Ocultar nombres"}</span>
             </button>
-            <div className="personnelLevelLegend" aria-label="Clasificación del indicador">
-              <span className="low"><AlertTriangle size={13} /> Bajo <small>No alcanza mínimos</small></span>
-              <span className="normal"><AlertTriangle size={13} /> Normal <small>Cumple mínimos</small></span>
-              <span className="high"><AlertTriangle size={13} /> Alto <small>90% o más</small></span>
-            </div>
           </div>
+          <div className="personnelDirectoryColumns" aria-hidden="true">
+            <span>Colaborador y cargo</span><span>APP</span><span>EDD</span><span>Nivel</span>
+          </div>
+          <div className="personnelDirectoryRows">
+            {filteredRows.map((item, index) => {
+              const band = getBand(item);
+              const rowKey = getRowKey(item, index);
+              const isSelected = selectedRow === item;
+              return (
+                <button type="button" key={rowKey} className={isSelected ? "isSelected" : ""} aria-pressed={isSelected} onClick={() => setSelectedRowKey(rowKey)}>
+                  <span className={`personnelIdentity ${hideNames ? "isBlurred" : ""}`}>
+                    <strong>{hideNames ? `Colaborador ${item.id || index + 1}` : (item.name || "Sin nombre")}</strong>
+                    <small>{item.position || "Cargo por definir"} · {item.area || "Área por definir"}</small>
+                  </span>
+                  <b className={Number(item.employmentLevel) >= 70 ? "pass" : "low"}>{formatScore(item.employmentLevel)}</b>
+                  <b className={Number(item.performanceLevel) >= 77 ? "pass" : "low"}>{formatScore(item.performanceLevel)}</b>
+                  <em className={band.key}>{band.label}</em>
+                  <ChevronRight size={16} />
+                </button>
+              );
+            })}
+          </div>
+          {!filteredRows.length && <div className="emptyState">{rows.length ? "No hay colaboradores que coincidan con los filtros." : "No hay datos en la pestaña Matrizpersonal."}</div>}
         </div>
-        <div className="processTableWrap personnelMatrixWrap">
-          <table className="processTable personnelMatrixTable">
-            <thead>
-              <tr>
-                <th>N°</th>
-                <th>Nombre completo</th>
-                <th>Gerencia</th>
-                <th>Área</th>
-                <th>Cargo</th>
-                <th>Grupo ocupacional</th>
-                <th>Sueldo</th>
-                <th>APP/60</th>
-                <th>APP/40</th>
-                <th>Nivel de empleabilidad</th>
-                <th>EDD/20</th>
-                <th>EDD/80</th>
-                <th>Nivel de desempeño</th>
-                <th>Sueldo propuesto</th>
-                <th>Observación / recomendación TH</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRows.map((item, index) => {
-                const band = getBand(item);
-                return (
-                  <tr key={`${item.id}-${item.name}-${index}`}>
-                    <td>
-                      <span className="personnelRowNumber">
-                        <strong>{item.id}</strong>
-                        <span className={`personnelLevelIndicator ${band.key}`} title={`Nivel ${band.label}: APP ${formatScore(item.employmentLevel)} · EDD ${formatScore(item.performanceLevel)}`}>
-                          <AlertTriangle size={15} />
-                          <em>{band.label}</em>
-                        </span>
-                      </span>
-                    </td>
-                    <td className={`personnelNameCell ${hideNames ? "isBlurred" : ""}`}><strong>{item.name || "Sin nombre"}</strong></td>
-                    <td>{item.management || "—"}</td>
-                    <td>{item.area || "—"}</td>
-                    <td>{item.position || "—"}</td>
-                    <td>{item.occupationalGroup || "—"}</td>
-                    <td>{item.salary || "—"}</td>
-                    <td>{formatScore(item.app60)}</td>
-                    <td>{formatScore(item.app40)}</td>
-                    <td><b className={item.employmentLevel >= 70 ? "personnelScore pass" : "personnelScore low"}>{formatScore(item.employmentLevel)}</b></td>
-                    <td>{formatScore(item.edd20)}</td>
-                    <td>{formatScore(item.edd80)}</td>
-                    <td><b className={item.performanceLevel >= 77 ? "personnelScore pass" : "personnelScore low"}>{formatScore(item.performanceLevel)}</b></td>
-                    <td>{item.proposedSalary || "—"}</td>
-                    <td>{item.observation || "—"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        {!filteredRows.length && <div className="emptyState">{rows.length ? "No hay colaboradores que coincidan con los filtros." : "No hay datos en la pestaña Matrizpersonal."}</div>}
+
+        <aside className="personnelDetailPanel">
+          {selectedRow ? (
+            <>
+              <div className="personnelDetailHeading">
+                <span>Colaborador seleccionado</span>
+                <h3 className={hideNames ? "isBlurred" : ""}>{hideNames ? `Colaborador ${selectedRow.id || selectedRowIndex + 1}` : (selectedRow.name || "Sin nombre")}</h3>
+                <div><em className={selectedBand.key}>{selectedBand.label}</em><small>{selectedRow.occupationalGroup || "Grupo por definir"}</small></div>
+              </div>
+
+              <dl className="personnelDetailMeta">
+                <div><dt>Gerencia</dt><dd>{selectedRow.management || "Por definir"}</dd></div>
+                <div><dt>Área</dt><dd>{selectedRow.area || "Por definir"}</dd></div>
+                <div><dt>Cargo</dt><dd>{selectedRow.position || "Por definir"}</dd></div>
+              </dl>
+
+              <div className="personnelScoreGroup">
+                <div className="personnelScoreHeader"><span>Empleabilidad APP</span><strong>{formatScore(selectedRow.employmentLevel)}</strong></div>
+                <i className="personnelScoreTrack"><b style={{ width: `${clampScore(selectedRow.employmentLevel)}%` }} /><em style={{ left: "70%" }} /></i>
+                <div className="personnelScoreParts"><span>APP 60 <b>{formatScore(selectedRow.app60)}</b></span><span>APP 40 <b>{formatScore(selectedRow.app40)}</b></span></div>
+              </div>
+
+              <div className="personnelScoreGroup">
+                <div className="personnelScoreHeader"><span>Desempeño EDD</span><strong>{formatScore(selectedRow.performanceLevel)}</strong></div>
+                <i className="personnelScoreTrack"><b style={{ width: `${clampScore(selectedRow.performanceLevel)}%` }} /><em style={{ left: "77%" }} /></i>
+                <div className="personnelScoreParts"><span>EDD 20 <b>{formatScore(selectedRow.edd20)}</b></span><span>EDD 80 <b>{formatScore(selectedRow.edd80)}</b></span></div>
+              </div>
+
+              <dl className="personnelCompensation">
+                <div><dt>Sueldo actual</dt><dd>{selectedRow.salary || "—"}</dd></div>
+                <div><dt>Sueldo propuesto</dt><dd>{selectedRow.proposedSalary || "—"}</dd></div>
+              </dl>
+
+              <div className="personnelRecommendation">
+                <span>Recomendación de Talento Humano</span>
+                <p>{selectedRow.observation || "Sin recomendación registrada."}</p>
+              </div>
+            </>
+          ) : <div className="emptyState">Selecciona un colaborador para revisar su detalle.</div>}
+        </aside>
       </div>
     </section>
   );
@@ -3149,29 +3724,42 @@ function ConfidentialPersonnelMatrixView({ rows = [], project = {}, onCancel }) 
     <section className={`confidentialPersonnelView ${accessGranted ? "isGranted" : "isLocked"}`}>
       <div className="confidentialViewHeader">
         <div>
-          <span>Talento Humano</span>
-          <h2>Optimización y Racionalización</h2>
-          <p>Análisis de ajuste persona–puesto, empleabilidad y desempeño de los colaboradores.</p>
+          <div className="confidentialTitleRow">
+            <h2>Optimización y Racionalización</h2>
+            <span><ShieldCheck size={15} /> Información protegida</span>
+          </div>
+          <p>Compara ajuste persona–puesto, desempeño y compensación para orientar decisiones de Talento Humano.</p>
         </div>
-        <LockKeyhole size={28} aria-hidden="true" />
       </div>
 
-      <div className="confidentialProtectedContent" aria-hidden={!accessGranted}>
-        <PersonnelMatrixSection rows={accessGranted ? rows : []} />
-      </div>
-
-      {!accessGranted && (
-        <div className="confidentialAccessOverlay" role="dialog" aria-modal="true" aria-labelledby="confidential-access-title">
-          <form className="confidentialAccessModal" onSubmit={handleAccess}>
+      {accessGranted ? (
+        <div className="confidentialProtectedContent">
+          <PersonnelMatrixSection rows={rows} />
+        </div>
+      ) : (
+        <div className="confidentialAccessGate" aria-labelledby="confidential-access-title">
+          <div className="confidentialAccessOverview">
             <div className="confidentialAccessIcon"><LockKeyhole size={26} /></div>
             <div className="confidentialAccessIntro">
-              <span>Acceso restringido</span>
-              <h2 id="confidential-access-title">Acceso a información confidencial de Talento Humano</h2>
-              <p>Esta sección contiene información personal y confidencial de colaboradores de la organización, incluyendo datos relacionados con cargos, compensación, ajuste persona–puesto, desempeño y otros resultados de gestión de talento humano.</p>
+              <span>Área restringida</span>
+              <h3 id="confidential-access-title">Información confidencial de Talento Humano</h3>
+              <p>Este espacio reúne información personal y sensible sobre cargos, compensación, ajuste persona–puesto y desempeño.</p>
+            </div>
+            <div className="confidentialAccessAssurances">
+              <div><ShieldCheck size={18} /><span><strong>Acceso autorizado</strong>Confirma tu identidad y autorización antes de consultar los datos.</span></div>
+              <div><Clock3 size={18} /><span><strong>Registro de acceso</strong>La aceptación queda asociada a su fecha y hora.</span></div>
+            </div>
+          </div>
+
+          <form className="confidentialAccessModal" onSubmit={handleAccess}>
+            <div className="confidentialAccessFormHeader">
+              <span>Confirmación de acceso</span>
+              <h3>Identifica tu acceso</h3>
+              <p>Revisa tus datos y acepta las condiciones para continuar.</p>
             </div>
 
             <fieldset className="confidentialIdentityFields">
-              <legend>Antes de continuar, por favor identifíquese:</legend>
+              <legend>Datos del responsable</legend>
               <label>
                 <span>Nombre completo</span>
                 <input value={form.fullName} onChange={(event) => updateField("fullName", event.target.value)} autoComplete="name" required />
@@ -3186,11 +3774,14 @@ function ConfidentialPersonnelMatrixView({ rows = [], project = {}, onCancel }) 
               </label>
             </fieldset>
 
-            <div className="confidentialTerms">
-              <p>Al continuar, declaro que cuento con autorización de mi organización para acceder a esta información y acepto las condiciones de confidencialidad, uso y responsabilidad establecidas para esta sección.</p>
-              <p>Reconozco que cualquier distribución, entrega, reenvío, reproducción o divulgación posterior de esta información realizada por la organización o por sus representantes será responsabilidad de la propia organización.</p>
-              <p>Asimismo, entiendo que una vez que la información sea descargada, exportada, compartida o distribuida fuera del entorno controlado del RIV, la responsabilidad sobre su custodia, acceso y uso posterior corresponderá a la organización.</p>
-            </div>
+            <details className="confidentialTerms">
+              <summary>Condiciones de confidencialidad y uso</summary>
+              <div>
+                <p>Al continuar, declaro que cuento con autorización de mi organización para acceder a esta información y acepto las condiciones de confidencialidad, uso y responsabilidad establecidas para esta sección.</p>
+                <p>Reconozco que cualquier distribución, entrega, reenvío, reproducción o divulgación posterior de esta información realizada por la organización o por sus representantes será responsabilidad de la propia organización.</p>
+                <p>Asimismo, entiendo que una vez que la información sea descargada, exportada, compartida o distribuida fuera del entorno controlado del RIV, la responsabilidad sobre su custodia, acceso y uso posterior corresponderá a la organización.</p>
+              </div>
+            </details>
 
             <label className="confidentialAcceptance">
               <input type="checkbox" checked={form.accepted} onChange={(event) => updateField("accepted", event.target.checked)} />
@@ -3203,7 +3794,7 @@ function ConfidentialPersonnelMatrixView({ rows = [], project = {}, onCancel }) 
             {errorMessage && <div className="confidentialAccessError" role="alert">{errorMessage}</div>}
 
             <div className="confidentialAccessActions">
-              <button type="button" className="secondaryButton" onClick={onCancel} disabled={submitting}>Cancelar</button>
+              <button type="button" className="secondaryButton" onClick={onCancel} disabled={submitting}>Volver al resumen</button>
               <button type="submit" className="primaryButton" disabled={submitting || !form.accepted}>
                 {submitting ? "Registrando acceso..." : "Aceptar y acceder"}
               </button>
@@ -3224,6 +3815,11 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
   const [savingValidation, setSavingValidation] = useState({});
   const [structureViewMode, setStructureViewMode] = useState("asis");
   const [architectureMatrixMode, setArchitectureMatrixMode] = useState("asis");
+  const [structureLayoutView, setStructureLayoutView] = useState("organigram");
+  const [architectureValidationFilter, setArchitectureValidationFilter] = useState("Todos");
+  const [selectedRoleKey, setSelectedRoleKey] = useState("");
+  const [profilePreviewOpen, setProfilePreviewOpen] = useState(false);
+  const [structurePreviewOpen, setStructurePreviewOpen] = useState(false);
   const [expandedOrgNodes, setExpandedOrgNodes] = useState({});
   const [selectedOrgNodeId, setSelectedOrgNodeId] = useState("");
   const [orgCanvasZoom, setOrgCanvasZoom] = useState(1);
@@ -3405,6 +4001,50 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
 
   const distinctGerencias = useMemo(() => new Set(activeArchitectureRows.map((item) => String(item.gerencia || "").trim()).filter(Boolean)).size, [activeArchitectureRows]);
   const distinctAreas = useMemo(() => new Set(activeArchitectureRows.map((item) => String(item.area || "").trim()).filter(Boolean)).size, [activeArchitectureRows]);
+  const architectureRowsByManagement = useMemo(() => {
+    const groups = new Map();
+    activeArchitectureRows.forEach((item) => {
+      const management = String(item.gerencia || "Sin gerencia").trim() || "Sin gerencia";
+      const area = String(item.area || "Área general").trim() || "Área general";
+      if (!groups.has(management)) groups.set(management, new Map());
+      const areas = groups.get(management);
+      if (!areas.has(area)) areas.set(area, []);
+      areas.get(area).push(item);
+    });
+    return [...groups.entries()].map(([management, areas]) => ({
+      management,
+      areas: [...areas.entries()].map(([area, roles]) => ({ area, roles })),
+    }));
+  }, [activeArchitectureRows]);
+  const roleKey = (item = {}) => [item.id, item.gerencia, item.area, item.cargo].join("|");
+  const roleRows = useMemo(() => filteredRows.filter((item) => {
+    if (architectureValidationFilter === "Validados") return getValidated(item);
+    if (architectureValidationFilter === "Por validar") return !getValidated(item);
+    return true;
+  }), [filteredRows, architectureValidationFilter, localValidation]);
+  const selectedRole = roleRows.find((item) => roleKey(item) === selectedRoleKey) || roleRows[0] || activeArchitectureRows[0] || null;
+  const selectedProfileUrl = safeUrl(selectedRole?.profileUrl || "");
+  const selectedProfileEmbedUrl = selectedProfileUrl ? getDocumentEmbedUrl(selectedProfileUrl) : "";
+  const selectedProfileCanEmbed = Boolean(selectedProfileEmbedUrl && (
+    /drive\.google\.com/i.test(selectedProfileUrl) ||
+    /(?:embed|embedview|preview)/i.test(selectedProfileUrl) ||
+    /\.(?:pdf|png|jpe?g)(?:$|[?#])/i.test(selectedProfileUrl)
+  ));
+
+  useEffect(() => {
+    if (!roleRows.length) {
+      setSelectedRoleKey("");
+      return;
+    }
+    if (!roleRows.some((item) => roleKey(item) === selectedRoleKey)) setSelectedRoleKey(roleKey(roleRows[0]));
+  }, [roleRows, selectedRoleKey]);
+
+  const changeStructureMode = (mode) => {
+    setStructureViewMode(mode);
+    setArchitectureMatrixMode(mode);
+    setArchitectureValidationFilter("Todos");
+    setSelectedRoleKey("");
+  };
   const splitProcessCodes = (value = "") => String(value || "")
     .split(/[,;|\n\r]+/)
     .map((item) => item.trim())
@@ -3677,219 +4317,97 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
   };
 
   return (
-    <section className="processMasterSection structureSection">
-      <div className="sectionHeader">
+    <section className="structureProfileV2">
+      <header className="structureProfileHeader">
         <div>
           <h2>Estructura y perfil</h2>
-          <p>Arquitectura de cargos, perfiles, grupos ocupacionales sugeridos y validación del cliente.</p>
+          <p>Organigrama, cargos, perfiles y grupos ocupacionales sugeridos, con tu validación. <strong>{activeArchitectureRows.length} cargos · {distinctGerencias} gerencias · {distinctAreas} áreas</strong></p>
         </div>
-      </div>
+        <div className="structureModeSwitch" aria-label="Versión de la estructura">
+          <button type="button" className={structureViewMode === "asis" ? "active" : ""} onClick={() => changeStructureMode("asis")}>AS IS</button>
+          <button type="button" className={structureViewMode === "tobe" ? "active" : ""} onClick={() => changeStructureMode("tobe")}>TO BE</button>
+        </div>
+      </header>
 
-      <div className="processSummaryGrid processDashboardSummaryGrid structureDashboardGrid">
-        <article className="processSummaryCard processDashboardTotalCard">
-          <div>
-            <span>Total cargos</span>
-            <strong>{activeArchitectureRows.length}</strong>
-          </div>
-          <i aria-hidden="true"><Users size={58} strokeWidth={1.5} /></i>
-        </article>
-        <article className="processSummaryCard processDashboardStatusCard">
-          <span>Validación</span>
-          <div className="processDashboardBarRows">
-            <div>
-              <em>Sí</em>
-              <span><i style={{ width: `${validationStats.total ? (validationStats.yes / validationStats.total) * 100 : 0}%` }} /></span>
-              <b>{validationStats.yes}</b>
-            </div>
-            <div>
-              <em>No</em>
-              <span><i style={{ width: `${validationStats.total ? (validationStats.no / validationStats.total) * 100 : 0}%` }} /></span>
-              <b>{validationStats.no}</b>
-            </div>
-          </div>
-        </article>
-        <article className="processSummaryCard processDashboardStatusCard structureOrgStatusCard">
-          <span>Estructura</span>
-          <div className="processDashboardBarRows">
-            <div>
-              <em>Gerencias</em>
-              <span><i style={{ width: `${Math.max(distinctGerencias, distinctAreas) ? (distinctGerencias / Math.max(distinctGerencias, distinctAreas)) * 100 : 0}%` }} /></span>
-              <b>{distinctGerencias}</b>
-            </div>
-            <div>
-              <em>Áreas</em>
-              <span><i style={{ width: `${Math.max(distinctGerencias, distinctAreas) ? (distinctAreas / Math.max(distinctGerencias, distinctAreas)) * 100 : 0}%` }} /></span>
-              <b>{distinctAreas}</b>
-            </div>
-          </div>
-        </article>
-      </div>
+      <section className="structureValidationOverview">
+        <div className="structureOverviewTitle"><h3>Qué falta por validar</h3><span>Valida cada elemento una vez lo hayas revisado</span></div>
+        <div className="structureValidationCards">
+          <article>
+            <div><strong>Estructura organizacional</strong><Badge status={activeStructureValidated ? "Finalizado" : "Pendiente"}>{activeStructureValidated ? "Validado" : "Por validar"}</Badge></div>
+            <p>{activeStructureLabel}</p>
+            <button type="button" className="structurePrimaryAction" onClick={handleValidateStructureAsset} disabled={!activeStructureImage || activeStructureValidated || activeStructureSaving}>{activeStructureSaving ? "Guardando..." : activeStructureValidated ? "Estructura validada" : "Validar estructura"}</button>
+          </article>
+          <article>
+            <div><strong>ROF</strong><Badge status={rofValidated ? "Finalizado" : "Pendiente"}>{rofValidated ? "Validado" : "Por validar"}</Badge></div>
+            <p>Reglamento orgánico funcional</p>
+            {rofLink ? <a href={rofLink} target="_blank" rel="noreferrer">Abrir ROF <ExternalLink size={14} /></a> : <span className="structureUnavailable">Sin enlace registrado</span>}
+          </article>
+          <article>
+            <div><strong>Cargos y perfiles</strong><Badge status="En validación">{validationStats.yes} de {validationStats.total}</Badge></div>
+            <i className="structureProgress"><b style={{ width: `${validationStats.total ? (validationStats.yes / validationStats.total) * 100 : 0}%` }} /></i>
+            <p>{validationStats.no} cargos por validar · {validationStats.total ? Math.round((validationStats.yes / validationStats.total) * 100) : 0}%</p>
+            <button type="button" className="structureTextAction" onClick={() => document.querySelector("#structure-roles")?.scrollIntoView({ behavior: "smooth" })}>Ir a la lista de cargos <ArrowDown size={14} /></button>
+          </article>
+        </div>
+      </section>
 
-      <div className="structureHeroImageCard">
-        <div className="imageToggleHeader">
-          <div>
-            <h3>{activeStructureLabel}</h3>
-            <p>{structureViewMode === "tobe" ? "Imagen cargada desde ImagenEstructuraTOBE." : "Imagen cargada desde ImagenEstructura."}</p>
-          </div>
-          <div className="imageToggleButtons">
-            <button type="button" className={structureViewMode === "asis" ? "active" : ""} onClick={() => setStructureViewMode("asis")}>Estructura AS IS</button>
-            <button type="button" className={structureViewMode === "tobe" ? "active" : ""} onClick={() => setStructureViewMode("tobe")}>Estructura TO BE</button>
-            {activeStructureImage && (
-              <a className="imageDownloadButton" href={activeStructureImage} download target="_blank" rel="noreferrer" aria-label={`Descargar ${activeStructureLabel}`} title="Descargar imagen">
-                <Download size={16} />
-              </a>
-            )}
-            <button
-              type="button"
-              className={activeStructureValidated ? "active" : ""}
-              onClick={handleValidateStructureAsset}
-              disabled={!activeStructureImage || activeStructureValidated || activeStructureSaving}
-            >
-              {activeStructureSaving ? "Guardando..." : activeStructureValidated ? "Validado" : "Validar"}
-            </button>
+      <section className="structureOrganizationCard">
+        <div className="structureOrganizationHeader">
+          <div><h3>Estructura organizacional · {structureViewMode === "tobe" ? "TO BE" : "AS IS"}</h3><div className="structureViewTabs"><button type="button" className={structureLayoutView === "organigram" ? "active" : ""} onClick={() => setStructureLayoutView("organigram")}>Organigrama</button><button type="button" className={structureLayoutView === "management" ? "active" : ""} onClick={() => setStructureLayoutView("management")}>Por gerencia</button></div></div>
+          <div className="structureOrganizationActions">
+            {activeStructureImage && <button type="button" onClick={() => setStructurePreviewOpen(true)}><Maximize2 size={15} /> Pantalla completa</button>}
+            {activeStructureImage && <a href={activeStructureImage} target="_blank" rel="noreferrer"><Download size={15} /> Descargar</a>}
           </div>
         </div>
-        {activeStructureImage ? (
-          <img src={activeStructureImage} alt={activeStructureLabel} />
+        {structureLayoutView === "organigram" ? (
+          activeStructureImage ? <button type="button" className="structureOrganigramPreview" onClick={() => setStructurePreviewOpen(true)}><img src={activeStructureImage} alt={activeStructureLabel} /></button> : <div className="structureEmptyImage"><Building2 size={42} /><strong>Organigrama no disponible</strong><span>Agrega la imagen en {activeStructureField}.</span></div>
         ) : (
-          <div className="structureEmptyImage">
-            <Building2 size={42} />
-            <span>No tiene</span>
+          <div className="structureManagementGrid">
+            {architectureRowsByManagement.map((group) => <article key={group.management}>
+              <h4>{group.management}</h4>
+              {group.areas.map((area) => <div key={`${group.management}-${area.area}`}><strong>{area.area}</strong><p>{area.roles.map((role) => role.cargo).filter(Boolean).join(" · ") || `${area.roles.length} cargos`}</p></div>)}
+            </article>)}
+            {!architectureRowsByManagement.length && <div className="emptyState">No hay gerencias registradas para esta versión.</div>}
           </div>
         )}
-      </div>
+        <small className="structureSourceNote">Datos cargados desde {structureViewMode === "tobe" ? "ImagenEstructuraTOBE y ArquitecturaCargosTOBE" : "ImagenEstructura y ArquitecturaCargos"}.</small>
+      </section>
 
-      <div className="structureRofCard">
-        <div className="imageToggleHeader">
-          <div>
-            <h3>ROF</h3>
-            <p>Reglamento orgánico funcional asociado a la estructura.</p>
-          </div>
-          <div className="imageToggleButtons">
-            {rofLink && (
-              <a className="imageDownloadButton rofOpenButton" href={rofLink} target="_blank" rel="noreferrer" title="Abrir ROF">
-                <ExternalLink size={16} />
-              </a>
-            )}
-            <button
-              type="button"
-              className={rofValidated ? "active" : ""}
-              onClick={handleValidateRof}
-              disabled={!rofDeliverable || rofValidated || savingRofValidation}
-            >
-              {savingRofValidation ? "Guardando..." : rofValidated ? "Validado" : "Validar"}
-            </button>
-          </div>
+      <section className="structureRolesCard" id="structure-roles">
+        <div className="structureRolesHeader"><div><h3>Arquitectura de cargos y perfiles</h3><p>Elige un cargo para ver su perfil y validarlo.</p></div><Badge status="En validación">{activeArchitectureRows.length} cargos</Badge></div>
+        <div className="structureRoleToolbar">
+          <label><Search size={16} /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar por gerencia, área, cargo o grupo..." /></label>
+          <div className="structureValidationTabs">{["Todos", "Por validar", "Validados"].map((label) => <button type="button" key={label} className={architectureValidationFilter === label ? "active" : ""} onClick={() => setArchitectureValidationFilter(label)}>{label}</button>)}</div>
+          <FilterSelect label="Gerencia" value={gerenciaFilter} onChange={setGerenciaFilter} options={gerenciaOptions} />
+          <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
         </div>
-        {rofPreviewLink && !rofPreviewFailed && !rofRequiresExternalPreview ? (
-          <div className="rofPreviewFrame">
-            <iframe title="Vista previa ROF" src={rofPreviewLink} loading="lazy" onError={() => setRofPreviewFailed(true)} />
-            <div className="rofPreviewFallback">
-              <FileText size={34} />
-              <strong>Vista previa no disponible</strong>
-              <span>OneDrive puede bloquear la visualización dentro del RIV.</span>
-              {rofLink && <a href={rofLink} target="_blank" rel="noreferrer">Abrir ROF <ExternalLink size={14} /></a>}
-            </div>
+        <div className="structureRolesLayout">
+          <div className="structureRoleList">
+            <div className="structureRoleListHead"><span>N°</span><span>Cargo</span><span>Grupo ocupacional</span><span>Status</span><span>Validación</span></div>
+            {roleRows.slice(0, 20).map((item) => {
+              const selected = selectedRole && roleKey(selectedRole) === roleKey(item);
+              const validated = getValidated(item);
+              return <button type="button" className={`structureRoleRow ${selected ? "selected" : ""}`} key={roleKey(item)} onClick={() => setSelectedRoleKey(roleKey(item))}>
+                <span>{item.id}</span><span><strong>{item.cargo || "Cargo sin nombre"}</strong><small>{item.gerencia}{item.area && item.area !== item.gerencia ? ` · ${item.area}` : ""}</small></span><span>{item.occupationalGroup || "Por definir"}<small>{item.abbreviation || ""}</small></span><span><Badge status={item.status}>{item.status || "Por definir"}</Badge></span><span><Badge status={validated ? "Finalizado" : "Pendiente"}>{validated ? "Validado" : "Por validar"}</Badge></span>
+              </button>;
+            })}
+            {!roleRows.length && <div className="emptyState">No hay cargos que coincidan con los filtros seleccionados.</div>}
           </div>
-        ) : (
-          <div className="structureEmptyImage rofEmptyPreview">
-            <FileText size={42} />
-            <strong>{rofLink ? "ROF disponible" : "No tiene"}</strong>
-            <span>{rofLink ? "Este enlace no permite vista previa dentro del RIV. Ábrelo en una pestaña para revisarlo." : "No se encontró enlace del ROF en entregables."}</span>
-            {rofLink && <a href={rofLink} target="_blank" rel="noreferrer">Abrir ROF <ExternalLink size={14} /></a>}
-          </div>
-        )}
-      </div>
-
-      <div className="premiumFilters processFilters structureFilters">
-        <label className="searchFilter processSearchFilter">
-          <span>Buscar</span>
-          <div className="searchInputWrap">
-            <Search size={18} />
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar por gerencia, área, cargo o grupo"
-            />
-          </div>
-        </label>
-        <FilterSelect label="Gerencia" value={gerenciaFilter} onChange={setGerenciaFilter} options={gerenciaOptions} />
-        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
-        <FilterSelect label="Status" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
-      </div>
-
-      <div className="processTableCard structureTableCard">
-        <div className="processTableHeader">
-          <div>
-            <h3>{activeArchitectureLabel}</h3>
-            <p>Matriz cargada desde la pestaña {activeArchitectureSheetName}.</p>
-          </div>
-          <div className="imageToggleButtons">
-            <button type="button" className={architectureMatrixMode === "asis" ? "active" : ""} onClick={() => setArchitectureMatrixMode("asis")}>Arquitectura de cargos y perfiles AS IS</button>
-            <button type="button" className={architectureMatrixMode === "tobe" ? "active" : ""} onClick={() => setArchitectureMatrixMode("tobe")}>Arquitectura de cargos y perfiles TO BE</button>
-          </div>
-          <Badge status="En validación">{filteredRows.length} visibles</Badge>
+          <aside className="structureRoleDetail">
+            {selectedRole ? <>
+              <span>Cargo seleccionado</span><h3>{selectedRole.cargo || "Cargo sin nombre"}</h3>
+              <div className="structureRoleBadges"><Badge status={selectedRole.status}>{selectedRole.status || "Por definir"}</Badge><Badge status={getValidated(selectedRole) ? "Finalizado" : "Pendiente"}>{getValidated(selectedRole) ? "Validado" : "Por validar"}</Badge></div>
+              <dl><div><dt>Gerencia</dt><dd>{selectedRole.gerencia || "Por definir"}</dd></div><div><dt>Área</dt><dd>{selectedRole.area || "Por definir"}</dd></div><div><dt>Grupo ocupacional sugerido</dt><dd>{selectedRole.occupationalGroup || "Por definir"}</dd></div><div><dt>Abreviación</dt><dd>{selectedRole.abbreviation || "—"}</dd></div></dl>
+              <div className="structureProfilePreviewCard"><FileText size={26} /><strong>Perfil del cargo</strong><span>{selectedProfileUrl ? "Revisa el perfil antes de validar" : "No hay un perfil enlazado"}</span><button type="button" disabled={!selectedProfileUrl} onClick={() => setProfilePreviewOpen(true)}>Ver perfil</button></div>
+              <button type="button" className="structurePrimaryAction" disabled={getValidated(selectedRole) || savingValidation[getValidationKey(selectedRole)]} onClick={() => handleValidate(selectedRole, true)}>{savingValidation[getValidationKey(selectedRole)] ? "Guardando..." : getValidated(selectedRole) ? "Cargo validado" : "Validar cargo"}</button>
+              <small className="structureValidationHint">Al validarlo, el avance pasa de {validationStats.yes} a {Math.min(validationStats.total, validationStats.yes + (getValidated(selectedRole) ? 0 : 1))} de {validationStats.total}.</small>
+            </> : <div className="emptyState">Selecciona un cargo para revisar su perfil.</div>}
+          </aside>
         </div>
-        <div className="processTableWrap structureTableWrap">
-          <table className="processTable fixedMatrixTable structureTable">
-            <thead>
-              <tr>
-                <th>N°</th>
-                <th>Gerencia</th>
-                <th>Área</th>
-                <th>Cargo</th>
-                <th>Grupo ocupacional sugerido</th>
-                <th>Abreviación</th>
-                <th>Status</th>
-                <th>Ver perfil</th>
-                <th>Validado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRows.map((item, index) => {
-                const key = getValidationKey(item);
-                const checked = getValidated(item);
-                const saving = Boolean(savingValidation[key]);
-                return (
-                  <tr key={`${item.id}-${item.cargo}-${index}`}>
-                    <td>{item.id}</td>
-                    <td>{item.gerencia}</td>
-                    <td>{item.area}</td>
-                    <td><strong>{item.cargo}</strong></td>
-                    <td>{item.occupationalGroup}</td>
-                    <td>{item.abbreviation}</td>
-                    <td><Badge status={item.status}>{item.status || "Sin status"}</Badge></td>
-                    <td>
-                      {item.profileUrl ? (
-                        <a className="structureProfileLink" href={safeUrl(item.profileUrl)} target="_blank" rel="noreferrer">Ver</a>
-                      ) : (
-                        <span className="structureProfileEmpty">No tiene</span>
-                      )}
-                    </td>
-                    <td>
-                      <label className={`processValidationCheck ${checked ? "validated" : ""} ${saving ? "saving" : ""}`} title="Validar cargo">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          disabled={saving}
-                          onChange={(event) => handleValidate(item, event.target.checked)}
-                        />
-                        <span>{checked ? "Validado" : "Validar"}</span>
-                      </label>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        {filteredRows.length === 0 && (
-          <div className="emptyState">
-            {activeArchitectureRows.length === 0 ? "No tiene" : "No hay cargos que coincidan con los filtros seleccionados."}
-          </div>
-        )}
-      </div>
+      </section>
 
+      {structurePreviewOpen && <div className="structurePreviewModal" role="dialog" aria-modal="true" onClick={() => setStructurePreviewOpen(false)}><div onClick={(event) => event.stopPropagation()}><button type="button" className="structureModalClose" onClick={() => setStructurePreviewOpen(false)} aria-label="Cerrar"><X size={18} /></button><img src={activeStructureImage} alt={activeStructureLabel} /></div></div>}
+      {profilePreviewOpen && selectedRole && <div className="structurePreviewModal" role="dialog" aria-modal="true" onClick={() => setProfilePreviewOpen(false)}><article className="structureProfileModal" onClick={(event) => event.stopPropagation()}><button type="button" className="structureModalClose" onClick={() => setProfilePreviewOpen(false)} aria-label="Cerrar"><X size={18} /></button><header><div><span>Perfil del cargo</span><h3>{selectedRole.cargo}</h3></div><a href={selectedProfileUrl} target="_blank" rel="noreferrer">Abrir en pantalla completa <ExternalLink size={15} /></a></header>{selectedProfileCanEmbed ? <iframe src={selectedProfileEmbedUrl} title={`Perfil de ${selectedRole.cargo}`} /> : <div className="structureExternalProfile"><FileSpreadsheet size={44} /><strong>Vista previa externa</strong><p>Este enlace no permite mostrar el archivo dentro del portal. Puedes abrirlo de forma segura en su aplicación de origen.</p><a href={selectedProfileUrl} target="_blank" rel="noreferrer">Abrir perfil <ExternalLink size={15} /></a></div>}</article></div>}
     </section>
   );
 }
@@ -4153,9 +4671,9 @@ const CLIENT_EXPERIENCE_PERIODS = [
 ];
 
 const RIVI_IMAGES = {
-  celebration: "/rivi-celebracion.png",
-  greeting: "/rivi-se%C3%B1alando.png",
-  loading: "/rivi-salundando.gif",
+  celebration: "/rivi/rivi-celebracion.png",
+  greeting: "/rivi/rivi-saludo.png",
+  loading: "/rivi/rivi-salundando.gif",
 };
 
 const EXPERIENCE_FEEDBACK_OPTIONS = [
@@ -4227,6 +4745,7 @@ function buildClientExperiencePeriods(milestones = [], responses = []) {
 function ClientExperience({ milestones = [], experience = [], project = {} }) {
   const [responses, setResponses] = useState(experience);
   const [activePeriodId, setActivePeriodId] = useState("");
+  const [surveyOpen, setSurveyOpen] = useState(false);
   const [formState, setFormState] = useState({});
   const [stepByPeriod, setStepByPeriod] = useState({});
   const [saving, setSaving] = useState("");
@@ -4364,6 +4883,12 @@ function ClientExperience({ milestones = [], experience = [], project = {} }) {
     updateDraft(activePeriod.id, { valued: next.join(", ") });
   };
 
+  const openExperience = (period) => {
+    if (!period || period.status === "Bloqueado") return;
+    setActivePeriodId(period.id);
+    setSurveyOpen(true);
+  };
+
   const renderStepContent = () => {
     if (!activePeriod || activePeriod.status === "Bloqueado") return null;
     if (activePeriod.status === "Completado") {
@@ -4488,69 +5013,93 @@ function ClientExperience({ milestones = [], experience = [], project = {} }) {
     );
   };
 
+  const pendingPeriod = periods.find((item) => item.status === "Pendiente");
+
   return (
-    <section className="card premiumSectionCard clientExperienceSection">
-      <div className="sectionHeader clientExperienceHeader">
-        <div>
-          <span>Experiencia clientes</span>
-          <h2><MessageCircle size={30} /> Tu experiencia</h2>
-          <p>Cuéntanos cómo se siente el avance del proyecto. Es una medición corta para mejorar contigo en cada etapa.</p>
-        </div>
-      </div>
-
-      <div className="clientExperienceSummary">
-        <article>
-          <span>Mediciones abiertas</span>
-          <strong>{unlockedCount}/3</strong>
-        </article>
-        <article>
-          <span>Pendientes</span>
-          <strong>{pendingCount}</strong>
-        </article>
-        <article>
-          <span>Completadas</span>
-          <strong>{completedCount}</strong>
-        </article>
-      </div>
-
-      <div className="clientExperienceCards">
-        {periods.map((period) => (
-          <button
-            type="button"
-            key={period.id}
-            className={`clientExperienceCard ${activePeriod?.id === period.id ? "active" : ""} ${normalizeSystemName(period.status)}`}
-            onClick={() => setActivePeriodId(period.id)}
-          >
+    <section className={`clientExperienceSection ${surveyOpen ? "isSurveyMode" : "isSummaryMode"}`}>
+      {surveyOpen ? (
+        <header className="clientExperienceSurveyTopbar">
+          <button type="button" className="clientExperienceBack" onClick={() => setSurveyOpen(false)}>
+            <ChevronLeft size={18} /> Volver a mis mediciones
+          </button>
+          <div className="clientExperienceSurveyIdentity">
+            <img src={RIVI_IMAGES.greeting} alt="RIVI" />
             <div>
-              <span>{period.month}</span>
-              <Badge status={period.status}>{period.status}</Badge>
+              <span>{activePeriod?.month} · {activePeriod?.title}</span>
+              <h2>Queremos escucharte</h2>
+              <p>Menos de un minuto. Una señal clara para mejorar tu experiencia.</p>
             </div>
-            <div className="clientExperienceCardIcon">
-              {period.status === "Completado" ? <CheckCircle2 size={34} /> : period.status === "Pendiente" ? <Clock3 size={34} /> : <Lock size={34} />}
-            </div>
-            <h3>{period.title}</h3>
-            <p>{period.status === "Completado" ? "Gracias por compartir tu experiencia." : period.status === "Pendiente" ? "Queremos conocer cómo te fue en este periodo." : "Se habilitará cuando completes los hitos."}</p>
-            <ProgressBar value={period.progress} status={period.status} />
-            <small>{period.status === "Completado" && period.response?.responseDate ? period.response.responseDate : `${period.completedMilestones}/${period.totalMilestones} hitos completados`}</small>
-            <img className="clientExperienceCardRivi" src={period.status === "Completado" ? RIVI_IMAGES.celebration : RIVI_IMAGES.greeting} alt="" />
-          </button>
-        ))}
-      </div>
-
-      {periods.some((item) => item.status === "Pendiente") && (
-        <article className="clientExperiencePendingNotice">
-          <MessageCircle size={20} />
-          <div>
-            <strong>Tienes una experiencia pendiente</strong>
-            <p>Responderla nos ayuda a mejorar tus entregables y el acompañamiento del proyecto.</p>
           </div>
-          <button type="button" onClick={() => setActivePeriodId(periods.find((item) => item.status === "Pendiente")?.id || activePeriod?.id)}>
-            Responder ahora
-          </button>
-        </article>
+          <div className="clientExperienceDraftState"><CheckCircle2 size={17} /> Tu avance se conserva mientras respondes</div>
+        </header>
+      ) : (
+        <header className="clientExperiencePageHeader">
+          <div>
+            <span>Experiencia clientes</span>
+            <h2>Tu experiencia</h2>
+            <p>Cuéntanos cómo se siente el avance del proyecto. Es una medición corta para mejorar contigo en cada etapa.</p>
+          </div>
+          <div className="clientExperienceCounts" aria-label="Estado de las mediciones">
+            <span><strong>{completedCount}</strong> completadas</span>
+            <span><strong>{pendingCount}</strong> pendiente{pendingCount === 1 ? "" : "s"}</span>
+            <span><strong>{periods.length - unlockedCount}</strong> por habilitar</span>
+          </div>
+        </header>
       )}
 
-      {activePeriod && (
+      {!surveyOpen && (
+        <>
+          {pendingPeriod && (
+            <article className="clientExperiencePendingNotice">
+              <img src={RIVI_IMAGES.greeting} alt="RIVI invitándote a responder" />
+              <div>
+                <strong>Tienes una experiencia pendiente</strong>
+                <p>Responderla nos ayuda a mejorar tus entregables y el acompañamiento del proyecto.</p>
+              </div>
+              <div className="clientExperiencePendingAction">
+                <button type="button" onClick={() => openExperience(pendingPeriod)}>
+                  Responder ahora <ArrowRight size={17} />
+                </button>
+                <small>Menos de 1 minuto · 4 pasos</small>
+              </div>
+            </article>
+          )}
+
+          <div className="clientExperienceOverviewTitle">
+            <h3>Tus 3 mediciones</h3>
+            <p>Se habilitan conforme completas los hitos de cada periodo.</p>
+          </div>
+
+          <div className="clientExperienceCards">
+            {periods.map((period) => (
+              <button
+                type="button"
+                key={period.id}
+                className={`clientExperienceCard ${normalizeSystemName(period.status)}`}
+                onClick={() => openExperience(period)}
+                aria-disabled={period.status === "Bloqueado"}
+              >
+                <div className="clientExperienceCardTopline">
+                  <span>{period.month}</span>
+                  <Badge status={period.status}>{period.status === "Pendiente" ? "Pendiente de responder" : period.status}</Badge>
+                </div>
+                <div className="clientExperienceCardIcon">
+                  {period.status === "Completado" ? <CheckCircle2 size={24} /> : period.status === "Pendiente" ? <Clock3 size={24} /> : <Lock size={24} />}
+                </div>
+                <h3>{period.title}</h3>
+                <p>{period.status === "Completado" ? "Gracias por compartir tu experiencia." : period.status === "Pendiente" ? "Queremos conocer cómo te fue en este periodo." : "Se habilitará cuando completes los hitos del periodo."}</p>
+                <ProgressBar value={period.progress} status={period.status} />
+                <small>{period.status === "Completado" && period.response?.responseDate ? period.response.responseDate : `${period.completedMilestones} de ${period.totalMilestones} hitos completados`}</small>
+                {period.status !== "Bloqueado" && (
+                  <span className="clientExperienceCardAction">{period.status === "Completado" ? "Ver respuesta" : "Responder"} <ArrowRight size={16} /></span>
+                )}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {surveyOpen && activePeriod && (
         <article className={`clientExperiencePanel ${normalizeSystemName(activePeriod.status)}`}>
           <div className="clientExperiencePanelIntro">
             <div>
@@ -4578,14 +5127,6 @@ function ClientExperience({ milestones = [], experience = [], project = {} }) {
             </div>
           ) : (
             <div className="clientExperienceWizard">
-              <aside className="clientExperienceCoach">
-                <img src={activePeriod.status === "Completado" ? RIVI_IMAGES.celebration : RIVI_IMAGES.greeting} alt="RIVI" />
-                <div>
-                  <strong>{activePeriod.status === "Completado" ? "Respuesta enviada" : "RIVI te acompaña"}</strong>
-                  <p>{activePeriod.status === "Completado" ? "Gracias por ayudarnos a mejorar." : "Son 4 pasos cortos. Puedes responderlo en menos de un minuto."}</p>
-                </div>
-              </aside>
-
               <div className="clientExperienceWizardMain">
                 {activePeriod.status !== "Completado" && (
                   <div className="clientExperienceStepper">
@@ -4682,12 +5223,7 @@ function RivLoadingIntro({ clientName = "", exiting = false }) {
   return (
     <div className={`rivLoadingIntro ${exiting ? "leaving" : ""}`} role="status" aria-live="polite">
       <div className="rivLoadingCard">
-        <div className="rivLoadingBrand">
-          <span>RIV</span>
-          <small>Ruta de Implementación Visible</small>
-        </div>
         <div className="rivLoadingRiviWrap">
-          <span className="rivLoadingPulse" />
           <img
             src={RIVI_IMAGES.loading || RIVI_IMAGES.greeting}
             alt="RIVI preparando tu ruta"
@@ -4698,18 +5234,13 @@ function RivLoadingIntro({ clientName = "", exiting = false }) {
           />
         </div>
         <div className="rivLoadingText">
-          <span>{clientName ? `Hola, ${clientName}` : "Bienvenido al RIV"}</span>
-          <h2>Preparando tu ruta de implementación...</h2>
-          <p>Estamos organizando tus avances, entregables y próximos pasos.</p>
-        </div>
-        <div className="rivLoadingBattery" aria-hidden="true">
-          <div className="rivLoadingBatteryBody"><i /></div>
-          <span />
+          <h2>{clientName ? `Hola, ${clientName}` : "Bienvenido al RIV"}</h2>
+          <p>Estamos preparando tu ruta de implementación</p>
         </div>
         <div className="rivLoadingSteps">
-          <span>Proyecto</span>
-          <span>Hitos</span>
-          <span>Entregables</span>
+          <span className="done"><CheckCircle2 size={20} /> Tus datos de acceso</span>
+          <span className="active"><i aria-hidden="true" /> Cargando avances y pendientes</span>
+          <span className="pending"><i aria-hidden="true" /> Organizando entregables y próximos pasos</span>
         </div>
       </div>
     </div>
@@ -4723,6 +5254,12 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
   const [areaFilter, setAreaFilter] = useState("Todos");
   const [responsibleFilter, setResponsibleFilter] = useState("Todos");
   const [processMapMode, setProcessMapMode] = useState("asis");
+  const [processMapView, setProcessMapView] = useState("explore");
+  const [validationFilter, setValidationFilter] = useState("Todos");
+  const [selectedProcessKey, setSelectedProcessKey] = useState("");
+  const [visibleProcessCount, setVisibleProcessCount] = useState(8);
+  const [processAssetView, setProcessAssetView] = useState("flow");
+  const [processAssetPreviewFailed, setProcessAssetPreviewFailed] = useState(false);
 
   const allProcesses = [...processesAsIs, ...processesToBe];
   const typeOptions = useMemo(() => allProcesses.map((item) => item.type).filter(Boolean), [allProcesses]);
@@ -4797,6 +5334,67 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
       ? isCheckedSheetValue(item.imageValidated)
       : isCheckedSheetValue(item.technicalSheetValidated || item.fichaValidated);
   };
+
+  const getProcessRowKey = (item = {}, index = 0) => String(
+    item.processId || item.processCode || item.id || `${item.processName || "proceso"}-${index}`
+  );
+
+  const activeProcessRows = processMapMode === "tobe" ? processesToBe : processesAsIs;
+  const activeFilteredRows = processMapMode === "tobe" ? filteredToBe : filteredAsIs;
+  const activeVariant = processMapMode === "tobe" ? "tobe" : "asis";
+  const isProcessValidated = (item = {}) => (
+    getProcessValidationValue(item, activeVariant, "image") ||
+    (activeVariant === "tobe" && getProcessValidationValue(item, activeVariant, "sheet"))
+  );
+  const validationFilteredRows = activeFilteredRows.filter((item) => {
+    if (validationFilter === "Validados") return isProcessValidated(item);
+    if (validationFilter === "Pendientes") return !isProcessValidated(item);
+    return true;
+  });
+  const selectedProcess = validationFilteredRows.find((item, index) => getProcessRowKey(item, index) === selectedProcessKey)
+    || validationFilteredRows[0]
+    || activeProcessRows[0]
+    || null;
+  const selectedFlowUrl = safeUrl(selectedProcess?.imageProcess || selectedProcess?.link);
+  const selectedSheetUrl = safeUrl(selectedProcess?.technicalSheet || selectedProcess?.ficha || selectedProcess?.fichaTecnica || selectedProcess?.linkFicha);
+  const activeProcessAssetUrl = processAssetView === "sheet" ? selectedSheetUrl : selectedFlowUrl;
+  const activeProcessAssetPreviewUrl = getProcessAssetPreviewUrl(activeProcessAssetUrl, processAssetView);
+  const activeProcessAssetCanEmbed = processAssetView === "flow" || !/sharepoint\.com|1drv\.ms|onedrive\.live\.com/i.test(activeProcessAssetUrl) || /(?:embed|embedview|action=embedview)/i.test(activeProcessAssetUrl);
+  const activeValidationStats = processMapMode === "tobe" ? toBeValidationStats : asIsValidationStats;
+  const activeValidationPercent = processMapMode === "tobe" ? toBeValidationPercent : asIsValidationPercent;
+
+  const processMapGroups = useMemo(() => {
+    const buckets = { strategic: new Map(), mission: new Map(), support: new Map() };
+    activeProcessRows.forEach((item, index) => {
+      const normalizedType = normalizeSystemName(item.type || "");
+      const category = normalizedType.includes("estrateg")
+        ? "strategic"
+        : (normalizedType.includes("apoyo") || normalizedType.includes("soporte"))
+          ? "support"
+          : "mission";
+      const macroName = item.macroName || "Macroproceso por definir";
+      if (!buckets[category].has(macroName)) buckets[category].set(macroName, []);
+      buckets[category].get(macroName).push({ ...item, __rowKey: getProcessRowKey(item, index) });
+    });
+    return Object.fromEntries(Object.entries(buckets).map(([key, value]) => [
+      key,
+      [...value.entries()].map(([name, rows]) => ({ name, rows })),
+    ]));
+  }, [activeProcessRows]);
+
+  useEffect(() => {
+    setSelectedProcessKey("");
+    setVisibleProcessCount(8);
+  }, [processMapMode, searchTerm, typeFilter, macroFilter, areaFilter, responsibleFilter, validationFilter]);
+
+  useEffect(() => {
+    setProcessAssetView("flow");
+    setProcessAssetPreviewFailed(false);
+  }, [processMapMode, selectedProcessKey]);
+
+  useEffect(() => {
+    setProcessAssetPreviewFailed(false);
+  }, [processAssetView]);
 
   const handleValidateProcessAsset = async (item, variant, field, nextChecked) => {
     if (!nextChecked) return;
@@ -5069,125 +5667,249 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
       </nav>
     </section>
 
-    <section className="card premiumSectionCard processMasterSection">
-      <div className="processMapToBeSection">
-        <div className="processTableHeader">
-          <div>
-            <h3>{activeProcessMapLabel}</h3>
-            <p>{processMapMode === "tobe" ? "Imagen cargada desde ImagenMapadeprocesosTOBE en la pestaña Proyecto." : "Imagen cargada desde ImagenMapadeprocesos en la pestaña Proyecto."}</p>
-          </div>
-          <div className="imageToggleButtons">
-            <button type="button" className={processMapMode === "asis" ? "active" : ""} onClick={() => setProcessMapMode("asis")}>Mapa de procesos AS IS</button>
-            <button type="button" className={processMapMode === "tobe" ? "active" : ""} onClick={() => setProcessMapMode("tobe")}>Mapa de procesos TO BE</button>
-            {activeProcessMapImage && (
-              <a className="imageDownloadButton" href={activeProcessMapImage} download target="_blank" rel="noreferrer" aria-label={`Descargar ${activeProcessMapLabel}`} title="Descargar imagen">
-                <Download size={16} />
-              </a>
-            )}
-          </div>
+    <section className="processWorkspaceV2">
+      <header className="processWorkspaceHeader">
+        <div>
+          <h1>Mapa y lista maestra de procesos</h1>
+          <p>Cómo funciona hoy tu operación (AS IS), cómo va a funcionar (TO BE) y el estado de validación de cada proceso.</p>
         </div>
-        <div className="structureHeroImageCard processMapToBeImageCard">
+        <div className="processWorkspaceActions">
+          <div className="processModeSwitch" aria-label="Versión del mapa">
+            <button type="button" className={processMapMode === "asis" ? "active" : ""} onClick={() => setProcessMapMode("asis")}>AS IS</button>
+            <button type="button" className={processMapMode === "tobe" ? "active" : ""} onClick={() => setProcessMapMode("tobe")}>TO BE</button>
+          </div>
           {activeProcessMapImage ? (
-            <img src={activeProcessMapImage} alt={activeProcessMapLabel} />
+            <a className="processDownloadMap" href={activeProcessMapImage} download target="_blank" rel="noreferrer">
+              <Download size={16} /> Descargar mapa
+            </a>
           ) : (
-            <div className="structureEmptyImage">
-              <Layers3 size={42} />
-              <span>{processMapMode === "tobe" ? "Agrega ImagenMapadeprocesosTOBE en la pestaña Proyecto para mostrar el mapa TO BE." : "Agrega ImagenMapadeprocesos en la pestaña Proyecto para mostrar el mapa AS IS."}</span>
-            </div>
+            <button type="button" className="processDownloadMap" disabled title="No hay una imagen de mapa cargada">
+              <Download size={16} /> Descargar mapa
+            </button>
           )}
         </div>
-      </div>
+      </header>
 
-      <div className="sectionHeader">
-        <div>
-          <h2>Lista Maestra de Procesos</h2>
-          <p>Consulta integrada de procesos AS IS y TO BE, con búsqueda y filtros por tipo, macroproceso y status.</p>
+      <article className="processMapExplorer">
+        <div className="processMapExplorerHead">
+          <h2>Mapa de procesos · Nivel 2 · {processMapMode === "tobe" ? "TO BE" : "AS IS"}</h2>
+          <div className="processMapViewSwitch">
+            <button type="button" className={processMapView === "image" ? "active" : ""} onClick={() => setProcessMapView("image")}>Infografía</button>
+            <button type="button" className={processMapView === "explore" ? "active" : ""} onClick={() => setProcessMapView("explore")}>Explorar procesos</button>
+          </div>
         </div>
-      </div>
 
-      <div className="processSummaryGrid processDashboardSummaryGrid">
-        <article className="processSummaryCard processDashboardTotalCard">
+        {processMapView === "image" ? (
+          <div className="processMapImageView">
+            {activeProcessMapImage ? (
+              <img src={activeProcessMapImage} alt={activeProcessMapLabel} />
+            ) : (
+              <div className="processMapEmpty">
+                <Layers3 size={34} />
+                <strong>Mapa pendiente de cargar</strong>
+                <span>{processMapMode === "tobe" ? "Agrega ImagenMapadeprocesosTOBE en Proyecto." : "Agrega ImagenMapadeprocesos en Proyecto."}</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="processMapCanvas">
+            <div className="processMapFlow">
+              <strong>ENTRADA · Requerimientos del cliente</strong>
+              <span><i /></span>
+              <strong>SALIDA · Satisfacción del cliente</strong>
+            </div>
+
+            <section className="processLane processLaneStrategic">
+              <div className="processLaneLabel">Procesos estratégicos</div>
+              {processMapGroups.strategic.length ? (
+                <div className="processMacroGrid compact">
+                  {processMapGroups.strategic.map((group) => (
+                    <article key={`strategic-${group.name}`} className="processMacroCard">
+                      <h3>{group.name}</h3>
+                      {group.rows.map((row) => (
+                        <button type="button" key={row.__rowKey} onClick={() => setSelectedProcessKey(row.__rowKey)}>{row.processName}</button>
+                      ))}
+                    </article>
+                  ))}
+                </div>
+              ) : <span className="processLaneEmpty">N/A (no aplica en el {processMapMode === "tobe" ? "TO BE" : "AS IS"})</span>}
+            </section>
+
+            <section className="processLane processLaneMission">
+              <div className="processLaneLabel">Procesos misionales · {processMapGroups.mission.reduce((total, group) => total + group.rows.length, 0)}</div>
+              <div className="processMacroGrid">
+                {processMapGroups.mission.map((group) => (
+                  <article key={`mission-${group.name}`} className="processMacroCard">
+                    <h3>{group.name}</h3>
+                    <small>{group.rows.length} {group.rows.length === 1 ? "proceso" : "procesos"}</small>
+                    {group.rows.map((row) => (
+                      <button type="button" key={row.__rowKey} className={getProcessRowKey(selectedProcess) === row.__rowKey ? "selected" : ""} onClick={() => setSelectedProcessKey(row.__rowKey)}>{row.processName}</button>
+                    ))}
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="processLane processLaneSupport">
+              <div className="processLaneLabel">Procesos de apoyo</div>
+              <div className="processMacroGrid compact">
+                {processMapGroups.support.map((group) => (
+                  <article key={`support-${group.name}`} className="processMacroCard">
+                    <h3>{group.name}</h3>
+                    {group.rows.map((row) => (
+                      <button type="button" key={row.__rowKey} className={getProcessRowKey(selectedProcess) === row.__rowKey ? "selected" : ""} onClick={() => setSelectedProcessKey(row.__rowKey)}>{row.processName}</button>
+                    ))}
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
+      </article>
+
+      <section className="processValidationStrip" aria-label="Avance de validación">
+        {[
+          { label: "Validación AS IS", stats: asIsValidationStats, percent: asIsValidationPercent },
+          { label: "Validación TO BE", stats: toBeValidationStats, percent: toBeValidationPercent },
+        ].map((item) => (
+          <div key={item.label}>
+            <span>{item.label}</span>
+            <strong>{item.stats.yes} de {item.stats.total} <small>· {item.percent}%</small></strong>
+            <i><b style={{ width: `${item.percent}%` }} /></i>
+          </div>
+        ))}
+      </section>
+
+      <article className="processMasterV2" id="process-master-list">
+        <div className="processMasterV2Head">
           <div>
-            <span>Total procesos AS IS</span>
-            <strong>{processesAsIs.length}</strong>
+            <h2>Lista maestra de procesos</h2>
+            <p>Elige un proceso para revisar su flujo y validarlo.</p>
           </div>
-        </article>
-        <article className="processSummaryCard processDashboardStatusCard">
-          <div className="processValidationHeader">
-            <span>Validado AS IS</span>
-            <strong>{asIsValidationPercent}%</strong>
-          </div>
-          <div className="processDashboardBarRows">
-            <div>
-              <em>Sí</em>
-              <span><i style={{ width: `${asIsValidationStats.total ? (asIsValidationStats.yes / asIsValidationStats.total) * 100 : 0}%` }} /></span>
-              <b>{asIsValidationStats.yes}</b>
-            </div>
-            <div>
-              <em>No</em>
-              <span><i style={{ width: `${asIsValidationStats.total ? (asIsValidationStats.no / asIsValidationStats.total) * 100 : 0}%` }} /></span>
-              <b>{asIsValidationStats.no}</b>
-            </div>
-          </div>
-        </article>
-        <article className="processSummaryCard processDashboardTotalCard">
-          <div>
-            <span>Total procesos TO BE</span>
-            <strong>{processesToBe.length}</strong>
-          </div>
-        </article>
-        <article className="processSummaryCard processDashboardStatusCard">
-          <div className="processValidationHeader">
-            <span>Validado TO BE</span>
-            <strong>{toBeValidationPercent}%</strong>
-          </div>
-          <div className="processDashboardBarRows">
-            <div>
-              <em>Sí</em>
-              <span><i style={{ width: `${toBeValidationStats.total ? (toBeValidationStats.yes / toBeValidationStats.total) * 100 : 0}%` }} /></span>
-              <b>{toBeValidationStats.yes}</b>
-            </div>
-            <div>
-              <em>No</em>
-              <span><i style={{ width: `${toBeValidationStats.total ? (toBeValidationStats.no / toBeValidationStats.total) * 100 : 0}%` }} /></span>
-              <b>{toBeValidationStats.no}</b>
-            </div>
-          </div>
-        </article>
-      </div>
+          <span>{processMapMode === "tobe" ? "TO BE" : "AS IS"} · {activeProcessRows.length} procesos</span>
+        </div>
 
-      <div className="premiumFilters processFilters">
-        <label className="searchFilter processSearchFilter">
-          <span>Buscar proceso</span>
-          <div className="searchInputWrap">
-            <Search size={18} />
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar por código, proceso, macroproceso, responsable, descripción o cambios"
-            />
+        <div className="processMasterToolbar">
+          <label className="processMasterSearch">
+            <Search size={17} />
+            <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar proceso, código o responsable..." />
+          </label>
+          <div className="processValidationTabs">
+            {["Todos", "Pendientes", "Validados"].map((filter) => (
+              <button type="button" key={filter} className={validationFilter === filter ? "active" : ""} onClick={() => setValidationFilter(filter)}>{filter}</button>
+            ))}
           </div>
-        </label>
-        <FilterSelect label="Tipo de proceso" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
-        <FilterSelect label="Macroproceso" value={macroFilter} onChange={setMacroFilter} options={macroOptions} />
-        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
-        <FilterSelect label="Responsable" value={responsibleFilter} onChange={setResponsibleFilter} options={responsibleOptions} />
-      </div>
+          <FilterSelect label="Tipo" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
+          <FilterSelect label="Macroproceso" value={macroFilter} onChange={setMacroFilter} options={macroOptions} />
+          <FilterSelect label="Responsable" value={responsibleFilter} onChange={setResponsibleFilter} options={responsibleOptions} />
+        </div>
 
-      <div className="processTablesStack">
-        <ProcessTable
-          title="Procesos AS IS"
-          subtitle="Situación actual documentada en la lista maestra."
-          rows={filteredAsIs}
-          variant="asis"
-        />
-        <ProcessTable
-          title="Procesos TO BE"
-          subtitle="Procesos propuestos, modificados o diseñados para la operación objetivo."
-          rows={filteredToBe}
-          variant="tobe"
-        />
-      </div>
+        <div className="processMasterGrid">
+          <div className="processMasterList">
+            <div className="processMasterColumns">
+              <span>Código</span>
+              <span>Proceso</span>
+              <span>Estado</span>
+            </div>
+            {validationFilteredRows.slice(0, visibleProcessCount).map((item, index) => {
+              const rowKey = getProcessRowKey(item, index);
+              const validated = isProcessValidated(item);
+              return (
+                <button type="button" key={rowKey} className={`processMasterRow ${getProcessRowKey(selectedProcess) === rowKey ? "selected" : ""}`} onClick={() => setSelectedProcessKey(rowKey)}>
+                  <strong>{item.processCode || item.id || "S/C"}</strong>
+                  <span><b>{item.processName || "Proceso sin nombre"}</b><small>{item.macroName || "Macroproceso por definir"}</small></span>
+                  <em className={validated ? "validated" : "pending"}>{validated ? "Validado" : "Por validar"}</em>
+                </button>
+              );
+            })}
+            {validationFilteredRows.length === 0 && <div className="processListEmpty">No hay procesos que coincidan con los filtros.</div>}
+            {visibleProcessCount < validationFilteredRows.length && (
+              <button type="button" className="processShowAll" onClick={() => setVisibleProcessCount(validationFilteredRows.length)}>Mostrando {visibleProcessCount} de {validationFilteredRows.length} · Ver todos</button>
+            )}
+          </div>
+
+          <aside className="processDetailPanel">
+            {selectedProcess ? (
+              <>
+                <span className="processDetailEyebrow">Proceso seleccionado</span>
+                <h3>{selectedProcess.processName || "Proceso sin nombre"}</h3>
+                <div className="processDetailBadges">
+                  <b>{selectedProcess.processCode || selectedProcess.id || "S/C"}</b>
+                  <em className={isProcessValidated(selectedProcess) ? "validated" : "pending"}>{isProcessValidated(selectedProcess) ? "Validado" : "Por validar"}</em>
+                </div>
+                <p>{selectedProcess.macroName || "Macroproceso por definir"} · {selectedProcess.type || "Tipo por definir"}</p>
+
+                <div className="processAssetViewer">
+                  <div className="processAssetViewerTabs">
+                    <button type="button" className={processAssetView === "flow" ? "active" : ""} onClick={() => setProcessAssetView("flow")}>Flujo</button>
+                    {activeVariant === "tobe" && (
+                      <button type="button" className={processAssetView === "sheet" ? "active" : ""} onClick={() => setProcessAssetView("sheet")}>Ficha técnica</button>
+                    )}
+                  </div>
+                  <div className="processAssetViewerFrame">
+                    {activeProcessAssetPreviewUrl && activeProcessAssetCanEmbed && !processAssetPreviewFailed ? (
+                      processAssetView === "flow" ? (
+                        <img
+                          key={`flow-${activeProcessAssetPreviewUrl}`}
+                          src={activeProcessAssetPreviewUrl}
+                          alt={`Flujo de ${selectedProcess.processName || "proceso"}`}
+                          onError={() => setProcessAssetPreviewFailed(true)}
+                        />
+                      ) : (
+                        <iframe
+                          key={`sheet-${activeProcessAssetPreviewUrl}`}
+                          src={activeProcessAssetPreviewUrl}
+                          title={`Ficha técnica de ${selectedProcess.processName || "proceso"}`}
+                          loading="lazy"
+                        />
+                      )
+                    ) : (
+                      <div className="processAssetViewerEmpty">
+                        {processAssetView === "sheet" ? <FileText size={25} /> : <Layers3 size={25} />}
+                        <strong>{processAssetView === "sheet" ? "Ficha técnica" : `Flujo del proceso ${processMapMode === "tobe" ? "TO BE" : "AS IS"}`}</strong>
+                        <span>{processAssetPreviewFailed || (activeProcessAssetUrl && !activeProcessAssetCanEmbed) ? "El enlace de OneDrive debe abrirse en su aplicación de origen" : "Vista previa no cargada"}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="processAssetViewerFooter">
+                    <span>{processAssetView === "sheet" ? "Ficha técnica del proceso" : `Flujo ${processMapMode === "tobe" ? "TO BE" : "AS IS"}`}</span>
+                    {activeProcessAssetUrl ? (
+                      <a href={activeProcessAssetUrl} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Abrir en pantalla completa</a>
+                    ) : <small>Sin enlace</small>}
+                  </div>
+                </div>
+
+                <dl className="processDetailMeta">
+                  <div><dt>Descripción</dt><dd>{processMapMode === "tobe" ? (selectedProcess.changes || selectedProcess.description || "Sin descripción") : (selectedProcess.description || "Sin descripción")}</dd></div>
+                  <div><dt>Responsable</dt><dd>{selectedProcess.responsible || "Por definir"}</dd></div>
+                </dl>
+
+                <div className="processDetailAssets">
+                  <span>Flujo</span>
+                  <ProcessAssetCell item={selectedProcess} variant={activeVariant} field="image" url={safeUrl(selectedProcess.imageProcess || selectedProcess.link)} />
+                  {activeVariant === "tobe" && (
+                    <>
+                      <span>Ficha técnica</span>
+                      <ProcessAssetCell item={selectedProcess} variant={activeVariant} field="sheet" url={safeUrl(selectedProcess.technicalSheet || selectedProcess.ficha || selectedProcess.fichaTecnica || selectedProcess.linkFicha)} />
+                    </>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  className="processValidatePrimary"
+                  disabled={isProcessValidated(selectedProcess) || Boolean(savingProcessValidation[getProcessValidationKey(selectedProcess, activeVariant, "image")])}
+                  onClick={() => handleValidateProcessAsset(selectedProcess, activeVariant, "image", true)}
+                >
+                  <CheckCircle2 size={17} />
+                  {isProcessValidated(selectedProcess) ? "Proceso validado" : "Validar este proceso"}
+                </button>
+                <small className="processValidationHint">Al validarlo, el avance {processMapMode === "tobe" ? "TO BE" : "AS IS"} pasa de {activeValidationStats.yes} a {Math.min(activeValidationStats.total, activeValidationStats.yes + (isProcessValidated(selectedProcess) ? 0 : 1))} de {activeValidationStats.total}.</small>
+              </>
+            ) : <div className="processListEmpty">Selecciona un proceso para ver su detalle.</div>}
+          </aside>
+        </div>
+      </article>
     </section>
     </>
   );
@@ -5230,16 +5952,30 @@ function getCOEMonthlyCost(item = {}) {
   return legacyCost * frequency;
 }
 
-function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previousView = "portal" }) {
+function COEDashboard({ coeAsIs = [], coeToBe = [], processesAsIs = [], processesToBe = [], pending = [], setView, previousView = "portal" }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [processFilter, setProcessFilter] = useState("Todos");
   const [participantFilter, setParticipantFilter] = useState("Todos");
   const [monthFilter, setMonthFilter] = useState("Todos");
+  const [desktopCoeMode, setDesktopCoeMode] = useState("asis");
+  const [comparisonFilter, setComparisonFilter] = useState("all");
+  const [selectedActivityKey, setSelectedActivityKey] = useState("");
   const [mobileActivitySide, setMobileActivitySide] = useState("asis");
   const [mobileNavSide, setMobileNavSide] = useState("asis");
   const [mobileProcessSide, setMobileProcessSide] = useState("asis");
   const [mobileBottomNavVisible, setMobileBottomNavVisible] = useState(false);
   const [mobileCoeTouchStart, setMobileCoeTouchStart] = useState(null);
+
+  const processIndex = useMemo(() => {
+    const index = new Map();
+    [...processesAsIs, ...processesToBe].forEach((item) => {
+      const code = String(item.processCode || item.code || item.id || "").trim();
+      const name = String(item.processName || item.process || "").trim();
+      if (code) index.set(normalizeSystemName(code), item);
+      if (name) index.set(normalizeSystemName(name), item);
+    });
+    return index;
+  }, [processesAsIs, processesToBe]);
 
   const enrichRows = (rows) => rows.map((item) => {
     const time = parseNumericValue(item.time);
@@ -5247,8 +5983,11 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
     const totalMinutes = parseNumericValue(item.totalMinutes) || time * frequency;
     const minuteValue = parseNumericValue(item.minuteValue || item.cost);
     const observationStatus = String(item.observation || "").trim();
+    const process = processIndex.get(normalizeSystemName(item.code || item.process || "")) || {};
     return {
       ...item,
+      code: item.code || process.processCode || process.code || "",
+      process: item.process || process.processName || process.process || item.code || "Sin proceso",
       timeValue: time,
       frequencyValue: frequency,
       totalMinutesValue: totalMinutes,
@@ -5256,14 +5995,16 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
       hourlyValueNumber: parseNumericValue(item.hourlyValue),
       minuteValueNumber: minuteValue,
       observationStatus,
-      processType: String(item.processType || "").trim(),
+      processType: String(item.processType || process.type || "").trim(),
       navStatus: String(item.nav || "").trim(),
+      transformationType: item.transformationType || process.transformationStatus || "",
+      sourceProcessCodes: item.sourceProcessCodes || process.relatedProcessCode || "",
       totalCost: getCOEMonthlyCost(item),
     };
   });
 
-  const asIsRows = useMemo(() => enrichRows(coeAsIs), [coeAsIs]);
-  const toBeRows = useMemo(() => enrichRows(coeToBe), [coeToBe]);
+  const asIsRows = useMemo(() => enrichRows(coeAsIs), [coeAsIs, processIndex]);
+  const toBeRows = useMemo(() => enrichRows(coeToBe), [coeToBe, processIndex]);
   const allRows = useMemo(() => [...asIsRows, ...toBeRows], [asIsRows, toBeRows]);
   const processOptions = useMemo(() => allRows.map((item) => item.process).filter(Boolean), [allRows]);
   const participantOptions = useMemo(() => allRows.map((item) => item.participant).filter(Boolean), [allRows]);
@@ -5299,12 +6040,14 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
 
   const totalsByProcess = (rows) => {
     const totals = new Map();
-    rows.forEach((item) => {
-      const key = item.process || "Sin proceso";
-      totals.set(key, (totals.get(key) || 0) + item.totalCost);
+    rows.forEach((item, index) => {
+      const key = normalizeSystemName(item.code || item.process || `sin-proceso-${index}`);
+      const current = totals.get(key) || { key, code: item.code || "", process: item.process || item.code || "Sin proceso", total: 0, activities: [] };
+      current.total += item.totalCost;
+      current.activities.push(item);
+      totals.set(key, current);
     });
-    return Array.from(totals.entries())
-      .map(([process, total]) => ({ process, total }))
+    return Array.from(totals.values())
       .sort((a, b) => b.total - a.total);
   };
 
@@ -5330,6 +6073,39 @@ function COEDashboard({ coeAsIs = [], coeToBe = [], pending = [], setView, previ
   };
   const asIsOperation = useMemo(() => summarizeOperation(filteredAsIs), [filteredAsIs]);
   const toBeOperation = useMemo(() => summarizeOperation(filteredToBe), [filteredToBe]);
+  const transformationGroups = useMemo(() => buildCOETransformationGroups(asIsRows, toBeRows), [asIsRows, toBeRows]);
+  const totalAsIsProcesses = processesAsIs.length || totalsByProcess(asIsRows).length;
+  const totalToBeProcesses = processesToBe.length || totalsByProcess(toBeRows).length;
+
+  const getTransformationBucket = (value = "") => {
+    const text = normalizeSystemName(value);
+    if (text.includes("amplia") || text.includes("ampliacion") || text.includes("crece")) return "expands";
+    if (text.includes("unifica") || text.includes("fusion") || text.includes("consolida")) return "merges";
+    if (text.includes("elimina") || text.includes("suprime") || text.includes("retira")) return "removes";
+    if (text.includes("nuevo") || text.includes("nueva") || text.includes("crea")) return "new";
+    return "maintains";
+  };
+
+  const transformationSummary = useMemo(() => transformationGroups.reduce((summary, group) => {
+    summary[getTransformationBucket(group.type)] += 1;
+    return summary;
+  }, { expands: 0, merges: 0, removes: 0, new: 0, maintains: 0 }), [transformationGroups]);
+
+  const filteredTransformationGroups = useMemo(() => transformationGroups.filter((group) => comparisonFilter === "all" || getTransformationBucket(group.type) === comparisonFilter), [transformationGroups, comparisonFilter]);
+  const activeDesktopRows = desktopCoeMode === "tobe" ? filteredToBe : filteredAsIs;
+  const activeDesktopProcesses = desktopCoeMode === "tobe" ? toBeProcesses : asIsProcesses;
+  const activeDesktopOperation = desktopCoeMode === "tobe" ? toBeOperation : asIsOperation;
+  const sortedDesktopActivities = useMemo(() => [...activeDesktopRows].sort((a, b) => b.totalCost - a.totalCost), [activeDesktopRows]);
+  const getActivityKey = (item, index = 0) => `${item.code || "sin-codigo"}-${item.activity || "sin-actividad"}-${item.participant || "sin-responsable"}-${index}`;
+  const selectedActivity = sortedDesktopActivities.find((item, index) => getActivityKey(item, index) === selectedActivityKey) || sortedDesktopActivities[0] || null;
+  const selectedActivityIndex = selectedActivity ? sortedDesktopActivities.indexOf(selectedActivity) : -1;
+  const selectedActivityResolvedKey = selectedActivity ? getActivityKey(selectedActivity, selectedActivityIndex) : "";
+  const topDesktopProcesses = activeDesktopProcesses.slice(0, 10);
+  const activeDesktopTotal = desktopCoeMode === "tobe" ? toBeTotal : asIsTotal;
+  const topDesktopTotal = topDesktopProcesses.reduce((sum, item) => sum + item.total, 0);
+  const topDesktopShare = activeDesktopTotal > 0 ? (topDesktopTotal / activeDesktopTotal) * 100 : 0;
+  const highestThreeShare = activeDesktopTotal > 0 ? (topDesktopProcesses.slice(0, 3).reduce((sum, item) => sum + item.total, 0) / activeDesktopTotal) * 100 : 0;
+  const unvaluedToBeActivities = toBeRows.filter((item) => item.totalCost <= 0).length;
 
   const summarizeActivities = (rows) => {
     const isMatch = (value, words) => words.some((word) => normalizeSystemName(value).includes(word));
@@ -5717,78 +6493,121 @@ const coeBackView = previousView === "ruta" ? "ruta" : "portal";
       </nav>
     </section>
 
-    <section className="card premiumSectionCard coeSection desktopCoeView">
-      <div className="sectionHeader">
+    <section className="coeV3 desktopCoeView">
+      <header className="coeV3Header">
         <div>
-          <h2>COE</h2>
-          <p>Comparativo de costo operativo estructural por proceso, separando AS IS y TO BE.</p>
+          <h2>{desktopCoeMode === "compare" ? "COE · Comparar" : "COE"}</h2>
+          <p>{desktopCoeMode === "compare" ? "Qué pasa con cada proceso AS IS al construir el TO BE: se amplía, se unifica, se elimina o es nuevo." : "Costo operativo estructural por proceso y actividad."}</p>
         </div>
-      </div>
+        <div className="coeV3HeaderActions">
+          <div className="coeV3ModeTabs" aria-label="Vista COE">
+            {[["asis", "AS IS"], ["tobe", "TO BE"], ["compare", "Comparar"]].map(([key, label]) => <button type="button" key={key} className={desktopCoeMode === key ? "active" : ""} aria-pressed={desktopCoeMode === key} onClick={() => { setDesktopCoeMode(key); setSelectedActivityKey(""); }}>{label}</button>)}
+          </div>
+          <button type="button" className="coeV3Export" onClick={() => window.print()}><Download size={16} /> Exportar</button>
+        </div>
+      </header>
 
-      <div className="coeExecutiveGrid threeCards">
-        <article className="coeExecutiveCard coeCostCard">
-          <span>Costo procesos AS IS</span>
-          <strong>${formatCurrency(asIsTotal)}</strong>
-          <p>Total mensual estimado de la situación actual.</p>
-        </article>
-        <article className="coeExecutiveCard coeDifferenceCard difference">
+      <div className="coeV3ModeScene" key={desktopCoeMode}>
+      {desktopCoeMode === "compare" && <article className="coeV3TransformationSummary">
+        <div className="coeV3ProcessDelta"><span>Procesos</span><strong>{totalAsIsProcesses} <ArrowRight size={24} /> <b>{totalToBeProcesses}</b></strong><small>{Math.abs(totalAsIsProcesses - totalToBeProcesses)} proceso{Math.abs(totalAsIsProcesses - totalToBeProcesses) === 1 ? "" : "s"} {totalToBeProcesses <= totalAsIsProcesses ? "menos" : "más"}</small></div>
+        <div className="coeV3TransformationStats">
+          {[
+            ["expands", "Se amplía", transformationSummary.expands, "crecen en alcance"],
+            ["merges", "Se unifica", transformationSummary.merges, "convergen en menos procesos"],
+            ["removes", "Se elimina", transformationSummary.removes, "no pasan al TO BE"],
+            ["new", "Nuevo", transformationSummary.new, "nacen en el TO BE"],
+          ].map(([key, label, value, note]) => <div className={key} key={key}><i /><span>{label}</span><strong>{value}</strong><small>{note}</small></div>)}
+        </div>
+      </article>}
+
+      <article className={`coeV3CostOverview ${desktopCoeMode === "compare" ? "compact" : ""}`}>
+        <div className="coeV3CostValue"><span>Costo mensual · AS IS</span><strong>${formatCurrency(asIsTotal)}</strong></div>
+        <b className="coeV3Equation">−</b>
+        <div className="coeV3CostValue muted"><span>Costo mensual · TO BE</span><strong>${formatCurrency(toBeTotal)}</strong>{toBeTotal <= 0 && <small>Sin valorar · {unvaluedToBeActivities} de {toBeRows.length} actividades</small>}</div>
+        <b className="coeV3Equation">=</b>
+        <div className="coeV3SavingsCard">
           <span>Ahorro mensual estimado</span>
           <strong>${formatCurrency(Math.abs(difference))}</strong>
-          <em>{Math.abs(reductionPercent).toFixed(1)}%</em>
-          <p>{difference >= 0 ? "Reducción estimada frente al AS IS." : "Incremento estimado frente al AS IS."}</p>
-        </article>
-        <article className="coeExecutiveCard coeCostCard">
-          <span>Costo procesos TO BE</span>
-          <strong>${formatCurrency(toBeTotal)}</strong>
-          <p>Total mensual estimado de la operación objetivo.</p>
-        </article>
-      </div>
+          <div><b>{Math.abs(reductionPercent).toFixed(1)}%</b><small>{difference >= 0 ? "de reducción frente al AS IS" : "de incremento frente al AS IS"}</small>{toBeTotal <= 0 && <em>Provisional</em>}</div>
+        </div>
+      </article>
 
-      <div className="coeInsightGrid">
-        <article className="coeInsightCard coeActivitiesCard">
-          <span>Carga operativa</span>
-          <div className="coeOperationalComparison">
-            <div><b>AS IS</b><strong>{asIsOperation.activities}</strong><small>actividades</small><strong>{formatCurrency(asIsOperation.totalMinutes)}</strong><small>minutos/mes</small><strong>{formatCurrency(asIsOperation.totalHours)}</strong><small>horas/mes</small></div>
-            <div><b>TO BE</b><strong>{toBeOperation.activities}</strong><small>actividades</small><strong>{formatCurrency(toBeOperation.totalMinutes)}</strong><small>minutos/mes</small><strong>{formatCurrency(toBeOperation.totalHours)}</strong><small>horas/mes</small></div>
+      {desktopCoeMode !== "compare" && <>
+        <article className="coeV3DistributionPanel">
+          <div className="coeV3Treemap" aria-label={`Procesos de mayor costo ${desktopCoeMode === "asis" ? "AS IS" : "TO BE"}`}>
+            {topDesktopProcesses.map((item, index) => {
+              return <button type="button" key={item.key} className={`coeV3TreemapItem bento-${index + 1} tone-${Math.min(index, 5)}`} onClick={() => { setProcessFilter(item.process); setSelectedActivityKey(""); }}><span>{item.process}</span><strong>${formatCurrency(item.total)}</strong><small>{activeDesktopTotal ? (item.total / activeDesktopTotal * 100).toFixed(1) : 0}% del total</small></button>;
+            })}
+            {!topDesktopProcesses.length && <div className="coeV3Empty"><BarChart3 size={26} /><strong>No hay costos registrados</strong><span>Completa la matriz COE para visualizar la distribución.</span></div>}
           </div>
-          <p>Comparación de tiempo mensual requerido por la operación.</p>
+          <p>Los {topDesktopProcesses.length} procesos más costosos suman ${formatCurrency(topDesktopTotal)} ({topDesktopShare.toFixed(0)}% del costo mensual). El tamaño de cada bloque es proporcional a su costo; los 3 mayores concentran el {highestThreeShare.toFixed(0)}%.</p>
+          <div className="coeV3OperationalStrip">
+            <div><span>Procesos</span><strong>{totalAsIsProcesses} <ArrowRight size={18} /> <b>{totalToBeProcesses}</b></strong></div>
+            <div><span>Actividades</span><strong>{asIsOperation.activities} <ArrowRight size={18} /> <b>{toBeOperation.activities}</b></strong></div>
+            <div><span>Horas al mes</span><strong>{formatCurrency(activeDesktopOperation.totalHours)}</strong></div>
+            <div><span>Valor hora promedio</span><strong>${formatCurrency(activeDesktopOperation.averageHourlyValue)}</strong></div>
+          </div>
         </article>
 
-        <article className="coeInsightCard coeNavCard">
-          <span>Costo operativo</span>
-          <div className="coeOperationalComparison cost">
-            <div><b>AS IS</b><strong>${formatCurrency(asIsOperation.averageMinuteValue)}</strong><small>valor minuto promedio</small><strong>${formatCurrency(asIsOperation.averageHourlyValue)}</strong><small>valor hora promedio</small></div>
-            <div><b>TO BE</b><strong>${formatCurrency(toBeOperation.averageMinuteValue)}</strong><small>valor minuto promedio</small><strong>${formatCurrency(toBeOperation.averageHourlyValue)}</strong><small>valor hora promedio</small></div>
+        <article className="coeV3ActivitiesPanel">
+          <div className="coeV3ActivitiesToolbar">
+            <h3>Actividades <span>· {activeDesktopRows.length}</span></h3>
+            <label><Search size={16} /><input value={searchTerm} onChange={(event) => { setSearchTerm(event.target.value); setSelectedActivityKey(""); }} placeholder="Buscar actividad, código o proceso..." /></label>
+            <select aria-label="Proceso" value={processFilter} onChange={(event) => { setProcessFilter(event.target.value); setSelectedActivityKey(""); }}><option>Todos</option>{[...new Set(processOptions)].map((option) => <option key={option}>{option}</option>)}</select>
+            <select aria-label="Responsable" value={participantFilter} onChange={(event) => { setParticipantFilter(event.target.value); setSelectedActivityKey(""); }}><option>Todos</option>{[...new Set(participantOptions)].map((option) => <option key={option}>{option}</option>)}</select>
+            <select aria-label="Mes" value={monthFilter} onChange={(event) => { setMonthFilter(event.target.value); setSelectedActivityKey(""); }}><option>Todos</option>{[...new Set(monthOptions)].map((option) => <option key={option}>{option}</option>)}</select>
           </div>
-          <p>Valores calculados desde las nuevas columnas de la matriz COE.</p>
+          <div className="coeV3ActivitiesBody">
+            <div className="coeV3ActivityList">
+              <div className="coeV3ActivityHead"><span>Actividad</span><span>Responsable</span><span>Min/mes</span><span>Costo mensual</span></div>
+              <div className="coeV3ActivityRows">
+                {sortedDesktopActivities.map((item, index) => {
+                  const key = getActivityKey(item, index);
+                  const maxActivityCost = Math.max(1, ...sortedDesktopActivities.map((row) => row.totalCost));
+                  return <button type="button" className={selectedActivityResolvedKey === key ? "selected" : ""} key={key} onClick={() => setSelectedActivityKey(key)}><span><strong>{item.activity || "Actividad sin nombre"}</strong><small>{item.code || "S/C"} · {item.process || "Sin proceso"}</small></span><span>{item.participant || "Por asignar"}</span><span>{formatCurrency(item.totalMinutesValue)}</span><span><i><b style={{ width: `${item.totalCost / maxActivityCost * 100}%` }} /></i><strong>${formatCurrency(item.totalCost)}</strong></span></button>;
+                })}
+                {!sortedDesktopActivities.length && <div className="coeV3Empty"><Search size={24} /><strong>No hay actividades con estos filtros</strong><span>Ajusta la búsqueda o selecciona otro proceso.</span></div>}
+              </div>
+            </div>
+            <aside className="coeV3ActivityDetail">
+              <span>Detalle de la actividad</span>
+              {selectedActivity ? <>
+                <h3>{selectedActivity.activity || "Actividad sin nombre"}</h3>
+                <p>{selectedActivity.code || "S/C"} · {selectedActivity.process || "Sin proceso"} · {selectedActivity.participant || "Por asignar"}</p>
+                <dl>
+                  <div><dt>Tiempo por vez</dt><dd>{formatCurrency(selectedActivity.timeValue)} min</dd></div>
+                  <div><dt>Frecuencia</dt><dd>{formatCurrency(selectedActivity.frequencyValue)} veces/mes</dd></div>
+                  <div><dt>Total</dt><dd>{formatCurrency(selectedActivity.totalMinutesValue)} min/mes</dd></div>
+                  <div><dt>Sueldo mensual</dt><dd>${formatCurrency(selectedActivity.monthlySalaryValue)}</dd></div>
+                  <div><dt>Valor hora · minuto</dt><dd>${formatCurrency(selectedActivity.hourlyValueNumber)} · ${formatCurrency(selectedActivity.minuteValueNumber)}</dd></div>
+                  <div className="total"><dt>Costo mensual</dt><dd>${formatCurrency(selectedActivity.totalCost)}</dd></div>
+                </dl>
+                {desktopCoeMode === "tobe" && (!selectedActivity.transformationType || !selectedActivity.sourceProcessCodes) && <div className="coeV3DataWarning"><AlertTriangle size={16} /><span>Tipo de transformación y procesos relacionados están sin definir. Complétalos para consolidar la comparación.</span></div>}
+              </> : <div className="coeV3Empty"><Search size={24} /><strong>Selecciona una actividad</strong><span>Aquí verás su cálculo mensual.</span></div>}
+            </aside>
+          </div>
         </article>
-      </div>
+      </>}
 
-      <div className="coeChartsGrid coeProcessListsGrid">
-        <ProcessCostList title="Procesos AS IS" subtitle="Costo total por proceso actual." rows={asIsProcesses} badge={`${asIsProcesses.length} procesos`} />
-        <ProcessCostList title="Procesos TO BE" subtitle="Costo total por proceso propuesto." rows={toBeProcesses} badge={`${toBeProcesses.length} procesos`} />
-      </div>
-
-      <div className="premiumFilters processFilters coeFiltersOneLine">
-        <label className="searchFilter processSearchFilter compactSearchFilter">
-          <span>Buscar actividad</span>
-          <div className="searchInputWrap compact">
-            <Search size={18} />
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar por código, proceso o actividad"
-            />
-          </div>
-        </label>
-        <FilterSelect label="Proceso" value={processFilter} onChange={setProcessFilter} options={processOptions} />
-        <FilterSelect label="Responsable" value={participantFilter} onChange={setParticipantFilter} options={participantOptions} />
-        <FilterSelect label="Mes" value={monthFilter} onChange={setMonthFilter} options={monthOptions} />
-      </div>
-
-      <div className="processTablesStack coeTablesStack">
-        <COETable title="Matriz COE AS IS" subtitle="Actividades levantadas en la situación actual." rows={filteredAsIs} />
-        <COETable title="Matriz COE TO BE" subtitle="Actividades propuestas para la operación objetivo." rows={filteredToBe} />
+      {desktopCoeMode === "compare" && <article className="coeV3RelationsPanel">
+        <div className="coeV3RelationsHeader">
+          <div><h3>De AS IS a TO BE</h3><p>Relaciones construidas con los códigos y estados registrados en las hojas de procesos.</p></div>
+          <div>{[["all", "Todos"], ["expands", "Se amplía"], ["merges", "Se unifica"], ["removes", "Se elimina"], ["new", "Nuevo"]].map(([key, label]) => <button type="button" key={key} className={comparisonFilter === key ? "active" : ""} onClick={() => setComparisonFilter(key)}>{label}</button>)}</div>
+        </div>
+        <div className="coeV3RelationColumns"><span>AS IS · procesos de origen</span><span>Transformación</span><span>TO BE · procesos resultantes</span></div>
+        <div className="coeV3RelationList">
+          {filteredTransformationGroups.map((group) => {
+            const bucket = getTransformationBucket(group.type);
+            return <div className={`coeV3RelationRow ${bucket}`} key={group.id}>
+              <div className="coeV3RelationSources">{group.sources.length ? group.sources.map((source) => <button type="button" key={source.key} onClick={() => { setDesktopCoeMode("asis"); setProcessFilter(source.name); }}><span>{source.name}</span><small>{source.code || "S/C"}</small><strong>${formatCurrency(source.total)}</strong></button>) : <div className="empty">Sin origen AS IS</div>}</div>
+              <div className="coeV3RelationType"><i /><span>{group.type || "Sin cambio"}</span><ArrowRight size={18} /></div>
+              <div className="coeV3RelationTarget">{bucket === "removes" ? <div className="removed"><X size={18} /><span>No pasa al TO BE</span></div> : <button type="button" onClick={() => { setDesktopCoeMode("tobe"); setProcessFilter(group.target.name); }}><span>{group.target.name}</span><small>{group.target.code || (bucket === "new" ? "Nuevo" : "S/C")} · {group.sources.length} origen{group.sources.length === 1 ? "" : "es"} AS IS</small><strong>${formatCurrency(group.target.total)}</strong></button>}</div>
+            </div>;
+          })}
+          {!filteredTransformationGroups.length && <div className="coeV3Empty"><ArrowRight size={26} /><strong>No hay relaciones en este estado</strong><span>Registra códigos relacionados y tipo de transformación para construir esta vista.</span></div>}
+        </div>
+        <p className="coeV3RelationsFoot">Haz clic en un proceso para abrir sus actividades y revisar cómo se transforma.</p>
+      </article>}
       </div>
     </section>
     </>
@@ -5797,6 +6616,7 @@ const coeBackView = previousView === "ruta" ? "ruta" : "portal";
 
 function Findings({ findings = [], project = {}, pending = [], setView, previousView = "portal" }) {
   const [open, setOpen] = useState("");
+  const [selectedDesktopFinding, setSelectedDesktopFinding] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("Todos");
   const [deliverableTypeFilter, setDeliverableTypeFilter] = useState("Todos");
@@ -6185,6 +7005,17 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
     }, { pending: 0, inProcess: 0, completed: 0 });
   }, [uniqueVisibleFindings]);
 
+  const desktopFinding = useMemo(() => {
+    if (!clientDeliverableFindings.length) return null;
+    return clientDeliverableFindings.find((item) => item.__clientDeliverableKey === selectedDesktopFinding)
+      || clientDeliverableFindings[0];
+  }, [clientDeliverableFindings, selectedDesktopFinding]);
+
+  const loadedDeliverables = useMemo(() => clientDeliverableFindings.reduce((total, item) => {
+    const count = getClientDeliverableLabels(item).length;
+    return total + (getFindingUploadValue(item, "loaded") ? count : 0);
+  }, 0), [clientDeliverableFindings, findingUploadStatus]);
+
   useEffect(() => {
     setMobileFindingsVisible(6);
   }, [searchTerm, dateFilter, deliverableTypeFilter, priorityFilter, managementFilter, responsibleFilter, statusFilter]);
@@ -6385,7 +7216,141 @@ function Findings({ findings = [], project = {}, pending = [], setView, previous
       </nav>
     </section>
 
-    <section className="card premiumSectionCard findingsPremiumSection">
+    <section className="findingsWorkspaceV2">
+      <header className="findingsWorkspaceHeader">
+        <div>
+          <h1>Modelo de negocio y hallazgos</h1>
+          <p>Comprende el modelo validado, revisa qué debe resolverse y accede a los entregables que lo convierten en acción.</p>
+        </div>
+        <nav className="findingsWorkspaceNav" aria-label="Secciones de modelo y hallazgos">
+          <button type="button" onClick={() => document.getElementById("modelo-negocio")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Modelo de negocio</button>
+          <button type="button" onClick={() => document.getElementById("hallazgos-cliente")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Hallazgos</button>
+          <button type="button" className="primary" onClick={() => setView?.("entregables-clientes")}>Entregables · {Math.max(0, visibleDeliverableTotals.client - loadedDeliverables)} pendientes</button>
+        </nav>
+      </header>
+
+      <article id="modelo-negocio" className="findingsModelPanel">
+        <div className="findingsPanelTitle">
+          <div>
+            <h2>Modelo de negocio</h2>
+            <p>La infografía validada concentra la lectura actual y el modelo propuesto.</p>
+          </div>
+          {businessModelImage && (
+            <a href={businessModelImage} target="_blank" rel="noreferrer" className="findingsOutlineAction">
+              <Download size={16} /> Descargar infografía
+            </a>
+          )}
+        </div>
+        {businessModelImage ? (
+          <a className="findingsModelImage" href={businessModelImage} target="_blank" rel="noreferrer" aria-label="Abrir infografía del modelo de negocio en pantalla completa">
+            <img src={businessModelImage} alt="Infografía del modelo de negocio" />
+            <span><Eye size={16} /> Ver en pantalla completa</span>
+          </a>
+        ) : (
+          <div className="findingsModelEmpty">
+            <Layers3 size={32} />
+            <div><strong>Modelo pendiente de publicar</strong><span>Agrega el enlace en el campo Modelodenegocio de la pestaña Proyecto.</span></div>
+          </div>
+        )}
+      </article>
+
+      <section id="hallazgos-cliente" className="findingsResultsSection">
+        <div className="findingsResultsHeading">
+          <div>
+            <h2>Hallazgos encontrados</h2>
+            <p>Lo identificado durante el levantamiento y los entregables que debe preparar el cliente para resolverlo.</p>
+          </div>
+          <button type="button" className="findingsTextAction" onClick={() => setView?.("entregables-clientes")}>Ver todos los entregables <ArrowRight size={16} /></button>
+        </div>
+
+        <div className="findingsMetricsStrip">
+          <div><span>Total de hallazgos</span><strong>{uniqueFindingsCount}</strong><small>{statusSummary.completed} completados · {statusSummary.pending + statusSummary.inProcess} por resolver</small></div>
+          <div className="findingsMetricStatus">
+            <span>Estado de hallazgos</span>
+            <i aria-hidden="true">
+              <b className="done" style={{ width: `${uniqueFindingsCount ? (statusSummary.completed / uniqueFindingsCount) * 100 : 0}%` }} />
+              <b className="working" style={{ width: `${uniqueFindingsCount ? (statusSummary.inProcess / uniqueFindingsCount) * 100 : 0}%` }} />
+            </i>
+            <small>{statusSummary.completed} completados · {statusSummary.inProcess} en proceso · {statusSummary.pending} pendientes</small>
+          </div>
+          <div className="findingsMetricDeliverables">
+            <span>Entregables del cliente</span><strong>{visibleDeliverableTotals.client}</strong>
+            <small>{loadedDeliverables} cargados · {Math.max(0, visibleDeliverableTotals.client - loadedDeliverables)} pendientes</small>
+          </div>
+        </div>
+
+        {clientDeliverableFolders.length > 0 && (
+          <div className="findingsQuickFolders">
+            {clientDeliverableFolders.slice(0, 4).map((folder) => (
+              <a key={`${folder.label}-${folder.url}`} href={folder.url} target="_blank" rel="noreferrer">
+                <FolderOpen size={20} /><span><strong>Carpeta de {folder.label}</strong><small>{folder.detail}</small></span><ExternalLink size={15} />
+              </a>
+            ))}
+          </div>
+        )}
+
+        <article className="findingsWorklist">
+          <div className="findingsWorklistToolbar">
+            <div><h3>Lista de hallazgos</h3><span>{clientDeliverableFindings.length} visibles</span></div>
+            <label><Search size={16} /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar hallazgo, proceso o entregable" /></label>
+            <FilterSelect label="Tipo" value={deliverableTypeFilter} onChange={setDeliverableTypeFilter} options={deliverableTypes} />
+            <FilterSelect label="Prioridad" value={priorityFilter} onChange={setPriorityFilter} options={priorities} />
+            <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statuses} />
+          </div>
+
+          <div className="findingsWorklistBody">
+            <div className="findingsRows" role="list">
+              {clientDeliverableFindings.map((item) => {
+                const labels = getClientDeliverableLabels(item);
+                const selected = desktopFinding?.__clientDeliverableKey === item.__clientDeliverableKey;
+                const loaded = getFindingUploadValue(item, "loaded");
+                return (
+                  <button key={item.__clientDeliverableKey} type="button" role="listitem" className={`findingsRow ${selected ? "selected" : ""}`} onClick={() => setSelectedDesktopFinding(item.__clientDeliverableKey)}>
+                    <span className="findingsRowId">{item.id}</span>
+                    <span className="findingsRowMain"><strong>{item.finding || "Hallazgo sin título"}</strong><small>{item.processArea || item.area || "Proceso por definir"}</small></span>
+                    <span className="findingsRowTags">{labels.slice(0, 2).map((label) => <em key={label}>{label}</em>)}</span>
+                    <span className="findingsRowProgress"><i><b style={{ width: loaded ? "100%" : "0%" }} /></i><small>{loaded ? labels.length : 0} de {labels.length} cargados</small></span>
+                    <span className="findingsRowAction">Ver ({labels.length}) <ChevronRight size={15} /></span>
+                  </button>
+                );
+              })}
+              {!clientDeliverableFindings.length && <div className="findingsRowsEmpty">No hay hallazgos que coincidan con los filtros.</div>}
+            </div>
+
+            <aside className="findingsDetailPanel" aria-live="polite">
+              {desktopFinding ? (
+                <>
+                  <div className="findingsDetailHead">
+                    <div><span>{desktopFinding.id}</span><h3>Entregables del hallazgo</h3></div>
+                    <button type="button" onClick={() => setSelectedDesktopFinding("")} aria-label="Cerrar detalle"><X size={17} /></button>
+                  </div>
+                  <h4>{desktopFinding.finding || "Hallazgo sin título"}</h4>
+                  <p>{desktopFinding.description || "Sin descripción técnica registrada."}</p>
+                  <div className="findingsDetailMeta">
+                    <span><b>Estado</b>{desktopFinding.status || "Pendiente"}</span>
+                    <span><b>Prioridad</b>{desktopFinding.priority || "Por definir"}</span>
+                    <span><b>Responsable</b>{desktopFinding.owner || desktopFinding.responsible || "Por asignar"}</span>
+                  </div>
+                  <div className="findingsDetailDeliverables">
+                    {getClientDeliverableLabels(desktopFinding).map((label) => (
+                      <div key={label}>
+                        <span><b>{label}</b><small>{getFindingUploadValue(desktopFinding, "loaded") ? "Cargado" : "Pendiente"}</small></span>
+                        {safeUrl(desktopFinding.link) && <a href={safeUrl(desktopFinding.link)} target="_blank" rel="noreferrer">Abrir carpeta <ExternalLink size={13} /></a>}
+                      </div>
+                    ))}
+                  </div>
+                  <FindingUploadChecks item={desktopFinding} />
+                  {desktopFinding.recommendation && <div className="findingsRecommendation"><strong>Recomendación técnica</strong><p>{desktopFinding.recommendation}</p></div>}
+                  <button type="button" className="findingsAllDeliverables" onClick={() => setView?.("entregables-clientes")}>Ver en el listado completo <ArrowRight size={15} /></button>
+                </>
+              ) : <div className="findingsDetailEmpty">Selecciona un hallazgo para ver sus entregables.</div>}
+            </aside>
+          </div>
+        </article>
+      </section>
+    </section>
+
+    <section className="card premiumSectionCard findingsPremiumSection findingsLegacyDesktop">
       <div className="structureHeroImageCard findingsBusinessModelCard">
         <div className="imageToggleHeader">
           <div>
@@ -6604,9 +7569,6 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
   const [validationFilter, setValidationFilter] = useState("Todos");
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
 
-  const pendingWebhookUrl = safeUrl(import.meta.env.VITE_PENDING_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
-  const spreadsheetId = getActiveSpreadsheetId();
-
   const getValidationStatus = (item) => {
     const key = item.request || item.id || "";
     return pendingValidation[key] ?? item.validationClient ?? "";
@@ -6614,7 +7576,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
 
   const normalizeValidation = (value) => {
     const text = normalizeSystemName(value || "");
-    if (text.includes("implementado") || text.includes("validado") || text.includes("completado") || text.includes("finalizado")) return "Implementado";
+    if (text.includes("realizado") || text.includes("implementado") || text.includes("validado") || text.includes("completado") || text.includes("finalizado")) return "Realizado";
     if (text.includes("pendiente") || !text) return "Pendiente";
     return value;
   };
@@ -6622,7 +7584,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
   const statusOptions = useMemo(() => pending.map((item) => item.status).filter(Boolean), [pending]);
   const validationOptions = useMemo(() => {
     const values = pending.map((item) => normalizeValidation(getValidationStatus(item))).filter(Boolean);
-    return [...new Set(["Implementado", "Pendiente", ...values])];
+    return [...new Set(["Realizado", "Pendiente", ...values])];
   }, [pending, pendingValidation]);
 
   const filteredPending = useMemo(() => {
@@ -6659,7 +7621,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
         acc.pending += 1;
       }
 
-      if (validationText.includes("implementado") || validationText.includes("completado") || validationText.includes("validado")) {
+      if (validationText.includes("realizado") || validationText.includes("implementado") || validationText.includes("completado") || validationText.includes("validado")) {
         acc.implemented += 1;
       } else {
         acc.pendingImplementation += 1;
@@ -6692,48 +7654,8 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
     setSavingValidation((current) => ({ ...current, [key]: true }));
     setValidationMessage((current) => ({ ...current, [key]: "Guardando..." }));
 
-    if (!pendingWebhookUrl) {
-      setPendingValidation((current) => ({ ...current, [key]: previous }));
-      onPendingValidationChange?.(item, previous);
-      setSavingValidation((current) => ({ ...current, [key]: false }));
-      setValidationMessage((current) => ({
-        ...current,
-        [key]: "Falta configurar el webhook para guardar esta validación."
-      }));
-      return;
-    }
-
     try {
-      const response = await fetch(pendingWebhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "updatePending",
-          tipo: "pendiente",
-          spreadsheetId,
-          sheetName: "PendientesCliente",
-          pendiente: item.request,
-          responsable: item.owner,
-          fecha: item.dueDate,
-          campo: "ValidacionDeCliente",
-          valor: value,
-          validacionCliente: value,
-          fechaValidacion: new Date().toISOString(),
-        }),
-      });
-
-      const text = await response.text();
-      let result = {};
-      try {
-        result = JSON.parse(text);
-      } catch {
-        result = { ok: response.ok, message: text };
-      }
-
-      if (!response.ok || result.ok === false) {
-        throw new Error(result.message || "No se pudo registrar la validación.");
-      }
-
+      await persistPendingClientValidation(item, value);
       setValidationMessage((current) => ({ ...current, [key]: "Registrado" }));
     } catch (error) {
       console.error(error);
@@ -6773,7 +7695,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
           <div className="mobilePendingValidationCards">
             <article>
               <i />
-              <span>Implementado</span>
+              <span>Realizado</span>
               <strong><ChevronRight size={18} />{summary.implemented}</strong>
             </article>
             <article>
@@ -6808,7 +7730,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
 
           <div className="mobilePendingFilters">
             <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
-            <FilterSelect label="Implementó" value={validationFilter} onChange={setValidationFilter} options={validationOptions} />
+            <FilterSelect label="Realización" value={validationFilter} onChange={setValidationFilter} options={validationOptions} />
           </div>
 
           <div className="mobilePendingGrid">
@@ -6817,7 +7739,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
               const isOpen = openPending === key;
               const link = safeUrl(item.link);
               const normalizedValidation = normalizeValidation(getValidationStatus(item));
-              const isValidated = normalizedValidation === "Implementado";
+              const isValidated = normalizedValidation === "Realizado";
 
               return (
                 <article className={`mobilePendingCard ${isOpen ? "open" : ""}`} key={`mobile-${key}`}>
@@ -6840,7 +7762,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
 
                   <div className="mobilePendingBadges">
                     <Badge status={item.status}>{item.status || "Pendiente"}</Badge>
-                    <Badge status={isValidated ? "Finalizado" : "Pendiente"}>{isValidated ? "Implementado" : "En proceso"}</Badge>
+                    <Badge status={isValidated ? "Finalizado" : "Pendiente"}>{isValidated ? "Realizado" : "En proceso"}</Badge>
                   </div>
 
                   {isOpen && (
@@ -6930,10 +7852,10 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
             </article>
 
             <article className="pendingSummaryCard">
-              <span>Implementó</span>
+              <span>Realización</span>
               <div className="pendingMiniRows">
                 <div>
-                  <span>Implementado</span>
+                  <span>Realizado</span>
                   <div className="pendingMiniTrack success"><i style={{ width: `${pending.length ? (summary.implemented / pending.length) * 100 : 0}%` }} /></div>
                   <strong>{summary.implemented}</strong>
                 </div>
@@ -6960,7 +7882,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
               </div>
             </label>
             <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
-            <FilterSelect label="Implementó" value={validationFilter} onChange={setValidationFilter} options={validationOptions} />
+            <FilterSelect label="Realización" value={validationFilter} onChange={setValidationFilter} options={validationOptions} />
           </div>
         </>
       )}
@@ -6971,7 +7893,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
           const link = safeUrl(item.link);
           const validationStatus = getValidationStatus(item);
           const normalizedValidation = normalizeValidation(validationStatus);
-          const isValidated = normalizedValidation === "Implementado";
+          const isValidated = normalizedValidation === "Realizado";
           const key = item.request || item.id || `${item.owner}-${item.dueDate}`;
 
           return (
@@ -7003,15 +7925,15 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
                 <Badge status={item.status}>{item.status}</Badge>
 
                 {isValidated ? (
-                  <Badge status="Finalizado">Implementado</Badge>
+                  <Badge status="Finalizado">Realizado</Badge>
                 ) : (
                   <button
                     className="pendingValidatePill"
                     type="button"
                     disabled={Boolean(savingValidation[key])}
-                    onClick={() => handleValidatePending(item, "Implementado")}
+                    onClick={() => handleValidatePending(item, "Realizado")}
                   >
-                    {savingValidation[key] ? "Guardando..." : "Implementó"}
+                    {savingValidation[key] ? "Guardando..." : "Realizado"}
                   </button>
                 )}
 
@@ -7065,7 +7987,7 @@ function PendingClient({ pending, compact = false, setView, previousView = "port
   );
 }
 
-function ClientDeliverables({ findings = [], project = {} }) {
+function ClientDeliverables({ findings = [], project = {}, setView }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
@@ -7073,6 +7995,8 @@ function ClientDeliverables({ findings = [], project = {} }) {
   const [uploadStatus, setUploadStatus] = useState({});
   const [saving, setSaving] = useState({});
   const [remoteResources, setRemoteResources] = useState({});
+  const [selectedRowKey, setSelectedRowKey] = useState("");
+  const [visibleCount, setVisibleCount] = useState(12);
 
   const session = getClientSession();
   const webhookUrl = safeUrl(import.meta.env.VITE_FINDING_UPLOAD_WEBHOOK_URL || import.meta.env.VITE_DOCUMENTS_WEBHOOK_URL || "");
@@ -7237,7 +8161,23 @@ function ClientDeliverables({ findings = [], project = {} }) {
     return acc;
   }, {}), [rows]);
   const loadedTotal = rows.filter(getRowLoaded).length;
-  const maxTypeCount = Math.max(1, ...Object.values(typeSummary));
+  const nextPending = rows.find((item) => !getRowLoaded(item)) || rows[0] || null;
+  const selectedRow = filteredRows.find((item) => item.rowKey === selectedRowKey) || filteredRows[0] || null;
+  const groupedRows = useMemo(() => {
+    const groups = new Map();
+    filteredRows.slice(0, visibleCount).forEach((item) => {
+      const process = item.processArea || "Proceso por definir";
+      const management = item.management || item.gerencia || "Gerencia por definir";
+      const key = `${process}|${management}`;
+      if (!groups.has(key)) groups.set(key, { process, management, rows: [] });
+      groups.get(key).rows.push(item);
+    });
+    return [...groups.values()];
+  }, [filteredRows, visibleCount]);
+
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [searchTerm, typeFilter, statusFilter, areaFilter]);
 
   const resources = [
     { label: "IA K&ZEN Políticas", detail: "Crear con asistencia guiada", url: resourceUrls.policiesAI, icon: Sparkles },
@@ -7247,140 +8187,96 @@ function ClientDeliverables({ findings = [], project = {} }) {
   ];
 
   return (
-    <section className="clientDeliverablesView">
-      <div className="sectionHeader clientDeliverablesHeader">
+    <section className="clientDeliverablesV2">
+      <header className="clientDeliverablesV2Header">
         <div>
-          <h2>Entregables clientes</h2>
-          <p>Consulta qué debes construir, revisa la recomendación técnica y accede a las herramientas para desarrollar cada entregable.</p>
+          <button type="button" className="clientDeliverablesBack" onClick={() => setView?.("hallazgos")}><ChevronLeft size={16} /> Modelo y hallazgos</button>
+          <h1>Entregables</h1>
+          <p>Consulta qué debes construir, revisa la recomendación técnica y sube cada documento. Al marcarlo, su estado se guarda automáticamente.</p>
         </div>
-        <Badge status="En validación">{filteredRows.length} visibles</Badge>
-      </div>
+      </header>
 
-      <div className="clientDeliverablesSummary">
-        <article className="clientDeliverableSummaryCard">
-          <h3>Entregables solicitados</h3>
-          <strong>{rows.length}</strong>
-          <div className="clientDeliverableBars">
-            {Object.entries(typeSummary).map(([label, value]) => (
-              <div key={label}>
-                <span>{label}</span>
-                <i><b style={{ width: `${(value / maxTypeCount) * 100}%` }} /></i>
-                <em>{value}</em>
-              </div>
+      <article className="clientDeliverablesHero">
+        <div className="clientDeliverablesProgress">
+          <span>Estado de cargado</span>
+          <strong>{loadedTotal} <small>/ {rows.length}</small></strong>
+          <i><b style={{ width: `${rows.length ? (loadedTotal / rows.length) * 100 : 0}%` }} /></i>
+          <p>{Math.max(0, rows.length - loadedTotal)} pendientes por subir</p>
+        </div>
+        {nextPending ? (
+          <div className="clientDeliverablesNext">
+            <div><span>Siguiente entregable</span><strong>{nextPending.deliverableType}</strong><p>{nextPending.management || nextPending.gerencia || nextPending.processArea || "Responsable por definir"}</p></div>
+            {safeUrl(nextPending.link) ? <a href={safeUrl(nextPending.link)} target="_blank" rel="noreferrer"><UploadCloud size={17} /> Subir ahora</a> : <button type="button" disabled><UploadCloud size={17} /> Sin carpeta</button>}
+          </div>
+        ) : <div className="clientDeliverablesNext complete"><CheckCircle2 size={26} /><strong>Todos los entregables están cargados</strong></div>}
+      </article>
+
+      <article className="clientDeliverablesWorkspace">
+        <div className="clientDeliverablesToolbar">
+          <label className="clientDeliverablesSearch"><Search size={17} /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar entregable, recomendación o gerencia" /></label>
+          <div className="clientDeliverablesTypeTabs">
+            <button type="button" className={typeFilter === "Todos" ? "active" : ""} onClick={() => setTypeFilter("Todos")}>Todos {rows.length}</button>
+            {Object.entries(typeSummary).map(([label, value]) => <button type="button" key={label} className={typeFilter === label ? "active" : ""} onClick={() => setTypeFilter(label)}>{label} {value}</button>)}
+          </div>
+          <div className="clientDeliverablesSecondaryFilters">
+            <span>Mostrar:</span>
+            {["Pendiente", "Cargado", "Todos"].map((value) => <button type="button" key={value} className={statusFilter === value ? "active" : ""} onClick={() => setStatusFilter(value)}>{value === "Pendiente" ? "Pendientes por subir" : value === "Cargado" ? "Cargados" : "Todos"}</button>)}
+            <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
+          </div>
+        </div>
+
+        <div className="clientDeliverablesColumns">
+          <div className="clientDeliverablesList">
+            <div className="clientDeliverablesListHeader"><span>Entregable</span><span>Estado</span><span>Acción</span></div>
+            {groupedRows.map((group) => (
+              <section key={`${group.process}-${group.management}`} className="clientDeliverablesGroup">
+                <h2>{group.process} · {group.management} · {group.rows.length} entregables</h2>
+                {group.rows.map((item) => {
+                  const loaded = getRowLoaded(item);
+                  const selected = selectedRow?.rowKey === item.rowKey;
+                  return (
+                    <div key={item.rowKey} className={`clientDeliverableRowV2 ${selected ? "selected" : ""}`}>
+                      <button type="button" className="clientDeliverableRowMain" onClick={() => setSelectedRowKey(item.rowKey)}><strong>{item.deliverableType}</strong><small>{item.finding || item.description || "Sin descripción registrada"}</small></button>
+                      <span className={`clientDeliverableStatus ${loaded ? "loaded" : ""}`}>{loaded ? "Cargado" : "Pendiente"}</span>
+                      <span className="clientDeliverableRowAction">{safeUrl(item.link) ? <a href={safeUrl(item.link)} target="_blank" rel="noreferrer"><UploadCloud size={15} /> {loaded ? "Reemplazar" : "Subir"}</a> : <em>Sin enlace</em>}</span>
+                    </div>
+                  );
+                })}
+              </section>
             ))}
+            {!filteredRows.length && <div className="clientDeliverablesEmpty">No hay entregables que coincidan con los filtros.</div>}
+            {visibleCount < filteredRows.length && <button type="button" className="clientDeliverablesMore" onClick={() => setVisibleCount((current) => current + 12)}>Mostrando {visibleCount} de {filteredRows.length} · Ver más</button>}
           </div>
-        </article>
-        <article className="clientDeliverableSummaryCard">
-          <h3>Estado de cargado</h3>
-          <strong>{loadedTotal}/{rows.length}</strong>
-          <div className="clientDeliverableBars">
-            <div>
-              <span>Cargado</span>
-              <i><b style={{ width: `${rows.length ? (loadedTotal / rows.length) * 100 : 0}%` }} /></i>
-              <em>{loadedTotal}</em>
-            </div>
-            <div>
-              <span>Pendiente</span>
-              <i><b className="pending" style={{ width: `${rows.length ? ((rows.length - loadedTotal) / rows.length) * 100 : 0}%` }} /></i>
-              <em>{Math.max(0, rows.length - loadedTotal)}</em>
-            </div>
-          </div>
-        </article>
-      </div>
 
-      <div className="clientDeliverableResources">
-        {resources.map(({ label, detail, url, icon: Icon }) => (
-          <a
-            key={label}
-            className={`clientDeliverableResource ${url ? "" : "disabled"}`}
-            href={url || undefined}
-            target={url ? "_blank" : undefined}
-            rel={url ? "noreferrer" : undefined}
-            aria-disabled={!url}
-            onClick={(event) => !url && event.preventDefault()}
-          >
-            <Icon size={24} />
-            <strong>{label}</strong>
-            <span>{url ? detail : "Enlace pendiente de configurar"}</span>
-            {url && <ExternalLink size={15} />}
-          </a>
-        ))}
-      </div>
-
-      <div className="clientDeliverableFilters">
-        <label className="searchField clientDeliverableSearch">
-          <Search size={18} />
-          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar entregable, recomendación, gerencia o área" />
-        </label>
-        <FilterSelect label="Tipo de entregable" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
-        <FilterSelect label="Estado" value={statusFilter} onChange={setStatusFilter} options={["Cargado", "Pendiente"]} />
-        <FilterSelect label="Área" value={areaFilter} onChange={setAreaFilter} options={areaOptions} />
-      </div>
-
-      <article className="clientDeliverableMatrixCard">
-        <div className="processTableHeader">
-          <div>
-            <h3>Matriz de entregables clientes</h3>
-            <p>Información tomada directamente de la pestaña Hallazgos.</p>
-          </div>
-          <Badge status="Disponible">{Math.min(filteredRows.length, 20)} de {filteredRows.length}</Badge>
+          <aside className="clientDeliverableDetailV2">
+            {selectedRow ? (
+              <>
+                <div className="clientDeliverableDetailHead"><span>Detalle del entregable</span><button type="button" onClick={() => setSelectedRowKey("")} aria-label="Cerrar detalle"><X size={16} /></button></div>
+                <h2>{selectedRow.deliverableType}</h2>
+                <div className="clientDeliverableDetailBadges"><b>{selectedRow.deliverableType}</b><span className={getRowLoaded(selectedRow) ? "loaded" : ""}>{getRowLoaded(selectedRow) ? "Cargado" : "Pendiente"}</span></div>
+                <div className="clientDeliverableDropzone">
+                  <UploadCloud size={26} />
+                  <strong>{getRowLoaded(selectedRow) ? "Documento cargado" : "Sube el archivo en la carpeta asignada"}</strong>
+                  <span>Después confirma el estado con el control inferior.</span>
+                  {safeUrl(selectedRow.link) ? <a href={safeUrl(selectedRow.link)} target="_blank" rel="noreferrer"><UploadCloud size={15} /> {getRowLoaded(selectedRow) ? "Reemplazar archivo" : "Subir archivo"}</a> : <button type="button" disabled>Carpeta pendiente</button>}
+                </div>
+                <dl className="clientDeliverableDetailMeta">
+                  <div><dt>Proceso</dt><dd>{selectedRow.processArea || "Por definir"}</dd></div>
+                  <div><dt>Gerencia</dt><dd>{selectedRow.management || selectedRow.gerencia || "Por definir"}</dd></div>
+                  <div><dt>Fecha</dt><dd>{selectedRow.deliveryDate || "Por definir"}</dd></div>
+                </dl>
+                <label className={`clientDeliverableConfirm ${getRowLoaded(selectedRow) ? "loaded" : ""}`}>
+                  <input type="checkbox" checked={getRowLoaded(selectedRow)} disabled={Boolean(saving[getUploadKey(selectedRow, "loaded")])} onChange={(event) => handleUploadChange(selectedRow, "loaded", event.target.checked)} />
+                  <span>{getRowLoaded(selectedRow) ? "Marcado como cargado" : "Confirmar que el archivo fue cargado"}</span>
+                </label>
+                <section className="clientDeliverableDetailCopy"><h3>Recomendación técnica</h3><p>{selectedRow.recommendation || selectedRow.solution || "Sin recomendación registrada."}</p></section>
+                <section className="clientDeliverableDetailCopy"><h3>Descripción técnica</h3><p>{selectedRow.description || "Sin descripción técnica registrada."}</p></section>
+                <section className="clientDeliverableTools"><h3>Herramientas para crearlo</h3>{resources.filter((resource) => normalizeSystemName(resource.label).includes(normalizeSystemName(selectedRow.deliverableType)) || normalizeSystemName(selectedRow.deliverableType).includes("politica") && normalizeSystemName(resource.label).includes("politica") || normalizeSystemName(selectedRow.deliverableType).includes("procedimiento") && normalizeSystemName(resource.label).includes("procedimiento")).map(({ label, url }) => url ? <a key={label} href={url} target="_blank" rel="noreferrer">{label}<ExternalLink size={13} /></a> : <span key={label}>{label}<em>Próximamente</em></span>)}</section>
+                <button type="button" className="clientDeliverableOrigin" onClick={() => setView?.("hallazgos")}>Ver hallazgo de origen: {selectedRow.id} <ArrowRight size={14} /></button>
+              </>
+            ) : <div className="clientDeliverableDetailEmpty">Selecciona un entregable para revisar su detalle.</div>}
+          </aside>
         </div>
-        <div className="clientDeliverableMatrixWrap">
-          <table className="clientDeliverableMatrix">
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Fecha</th>
-                <th>Descripción técnica</th>
-                <th>Recomendación</th>
-                <th>Proceso</th>
-                <th>Gerencia</th>
-                <th>Área</th>
-                <th>Cargada</th>
-                <th>Archivo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRows.slice(0, 20).map((item) => (
-                <tr key={item.rowKey}>
-                  <td><strong>{item.deliverableType}</strong></td>
-                  <td>{item.deliveryDate || "Por definir"}</td>
-                  <td>{item.description || "Sin descripción técnica"}</td>
-                  <td>{item.recommendation || item.solution || "Sin recomendación registrada"}</td>
-                  <td>{item.processArea || "Por definir"}</td>
-                  <td>{item.management || item.gerencia || "Por definir"}</td>
-                  <td>{item.areaDetail || item.area || "Por definir"}</td>
-                  {(() => {
-                    const field = "loaded";
-                    const key = getUploadKey(item, field);
-                    const checked = getUploadValue(item, field);
-                    return (
-                      <td>
-                        <label className={`clientDeliverableCheck ${checked ? "checked" : ""}`}>
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            disabled={Boolean(saving[key])}
-                            onChange={(event) => handleUploadChange(item, field, event.target.checked)}
-                          />
-                          <span>{checked ? "Cargado" : "Marcar"}</span>
-                        </label>
-                      </td>
-                    );
-                  })()}
-                  <td>
-                    {safeUrl(item.link) ? (
-                      <a className="clientDeliverableUploadLink" href={safeUrl(item.link)} target="_blank" rel="noreferrer">
-                        Subir <ExternalLink size={14} />
-                      </a>
-                    ) : <span className="clientDeliverableNoLink">Sin enlace</span>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {!filteredRows.length && <div className="emptyState">No hay entregables cliente que coincidan con los filtros.</div>}
       </article>
     </section>
   );
@@ -7389,12 +8285,17 @@ function ClientDeliverables({ findings = [], project = {} }) {
 function Repository({ repository = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("Todos");
+  const [viewMode, setViewMode] = useState("cards");
+  const [sortMode, setSortMode] = useState("recent");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [copiedCode, setCopiedCode] = useState("");
 
   const getRepositoryType = (value = "") => {
     const normalized = normalizeSystemName(value);
     if (normalized.includes("metodologia")) return "Metodología";
     if (normalized.includes("politica")) return "Política";
     if (normalized.includes("formato")) return "Formato";
+    if (normalized.includes("prompt")) return "Prompt";
     return String(value || "Sin tipo").trim() || "Sin tipo";
   };
 
@@ -7408,56 +8309,123 @@ function Repository({ repository = [] }) {
     Metodología: documents.filter((item) => item.displayType === "Metodología").length,
     Política: documents.filter((item) => item.displayType === "Política").length,
     Formato: documents.filter((item) => item.displayType === "Formato").length,
+    Prompt: documents.filter((item) => item.displayType === "Prompt").length,
   }), [documents]);
 
-  const typeOptions = useMemo(() => [...new Set(documents.map((item) => item.displayType).filter(Boolean))], [documents]);
   const filteredDocuments = useMemo(() => {
     const query = normalizeSystemName(searchTerm);
-    return documents.filter((item) => {
+    const result = documents.filter((item) => {
       const searchable = normalizeSystemName(`${item.code} ${item.name} ${item.description} ${item.updatedAt} ${item.displayType}`);
       return (typeFilter === "Todos" || item.displayType === typeFilter) && (!query || searchable.includes(query));
     });
-  }, [documents, searchTerm, typeFilter]);
+    return [...result].sort((a, b) => sortMode === "name"
+      ? String(a.name || "").localeCompare(String(b.name || ""), "es")
+      : String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""), "es"));
+  }, [documents, searchTerm, typeFilter, sortMode]);
 
   const summaryCards = [
-    { label: "Metodologías", value: typeTotals.Metodología, icon: BookOpen },
-    { label: "Políticas", value: typeTotals.Política, icon: ShieldCheck },
-    { label: "Formatos", value: typeTotals.Formato, icon: FileText },
+    { label: "Políticas", description: "Reglas y lineamientos", value: typeTotals.Política, type: "Política", icon: ShieldCheck },
+    { label: "Formatos", description: "Plantillas de registro", value: typeTotals.Formato, type: "Formato", icon: FileText },
+    { label: "Metodologías", description: "Cómo hacemos las cosas", value: typeTotals.Metodología, type: "Metodología", icon: BookOpen },
+    { label: "Prompts", description: "Listos para copiar", value: typeTotals.Prompt, type: "Prompt", icon: Sparkles },
   ];
+
+  const searchSuggestions = useMemo(() => documents
+    .map((item) => item.name)
+    .filter(Boolean)
+    .map((value) => {
+      const normalized = normalizeSystemName(value);
+      if (normalized.includes("control documental")) return "control documental";
+      if (normalized.includes("ajuste puesto persona")) return "ajuste puesto persona";
+      if (normalized.includes("stock minimo")) return "stock mínimo";
+      return String(value).split(/[·,:;()]/)[0].trim().split(/\s+/).slice(0, 5).join(" ").toLowerCase();
+    })
+    .filter((value, index, list) => value.length > 5 && list.indexOf(value) === index)
+    .slice(0, 3), [documents]);
+
+  const activeSearchMatches = useMemo(() => {
+    const query = normalizeSystemName(searchTerm);
+    if (!query) return [];
+    return documents.filter((item) => normalizeSystemName(`${item.code} ${item.name} ${item.description}`).includes(query)).slice(0, 4);
+  }, [documents, searchTerm]);
+
+  const copyPrompt = async (item) => {
+    const value = item.description || item.name || "";
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedCode(item.code || item.id);
+      window.setTimeout(() => setCopiedCode(""), 1800);
+    } catch {
+      setCopiedCode("");
+    }
+  };
+
+  const selectSuggestion = (value) => {
+    setSearchTerm(value);
+    setSearchFocused(false);
+  };
 
   return (
     <section className="repositorySection">
-      <div className="sectionHeader repositoryHeader">
-        <div>
-          <h2>Repositorio</h2>
-          <p>Documentos, políticas, metodologías y formatos validados disponibles para consulta.</p>
+      <header className="repositoryDiscovery">
+        <h2>¿Qué documento necesitas?</h2>
+        <p>Políticas, formatos, metodologías y prompts validados, disponibles para consulta.</p>
+        <div className="repositorySearchShell">
+          <Search size={20} aria-hidden="true" />
+          <input
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") setSearchFocused(false);
+              if (event.key === "Enter") setSearchFocused(false);
+            }}
+            placeholder="Busca por nombre, código o descripción..."
+            aria-label="Buscar documentos del repositorio"
+          />
+          <button type="button" onClick={() => setSearchFocused(false)}>Buscar</button>
+          {searchFocused && searchTerm.trim() && (
+            <div className="repositorySearchPopover">
+              {activeSearchMatches.length ? (
+                <>
+                  <strong>Resultados · {activeSearchMatches.length}</strong>
+                  {activeSearchMatches.map((item) => (
+                    <button type="button" key={item.id} onMouseDown={(event) => event.preventDefault()} onClick={() => selectSuggestion(item.name)}>
+                      <Search size={15} aria-hidden="true" />
+                      <span><b>{item.name}</b><small>{item.code || item.displayType}</small></span>
+                    </button>
+                  ))}
+                </>
+              ) : <span className="repositorySearchNoMatch">No encontramos coincidencias. Prueba con otra palabra.</span>}
+              <div className="repositorySearchHelp">Pulsa <b>Enter</b> para ver los resultados · <b>Esc</b> para cerrar</div>
+            </div>
+          )}
         </div>
-        <span className="repositoryTotal">{documents.length} documentos</span>
-      </div>
+        <div className="repositoryTypeTabs" aria-label="Filtrar por tipo de documento">
+          {[{ label: "Todo", value: "Todos", count: documents.length }, ...summaryCards.map(({ label, type, value }) => ({ label, value: type, count: value }))].map((option) => (
+            <button type="button" className={typeFilter === option.value ? "active" : ""} onClick={() => setTypeFilter(option.value)} key={option.value}>
+              {option.label} <span>{option.count}</span>
+            </button>
+          ))}
+        </div>
+        {!!searchSuggestions.length && (
+          <p className="repositoryTry">Prueba con: {searchSuggestions.map((suggestion, index) => (
+            <Fragment key={suggestion}>
+              <button type="button" onClick={() => selectSuggestion(suggestion)}>{suggestion}</button>
+              {index < searchSuggestions.length - 1 && <span>·</span>}
+            </Fragment>
+          ))}</p>
+        )}
+      </header>
 
       <div className="repositorySummaryGrid">
-        {summaryCards.map(({ label, value, icon: Icon }) => (
-          <article className="repositorySummaryCard" key={label}>
-            <Icon size={24} aria-hidden="true" />
-            <span>{label}</span>
+        {summaryCards.map(({ label, description, value, type, icon: Icon }) => (
+          <button type="button" className={`repositorySummaryCard type-${normalizeSystemName(type)} ${typeFilter === type ? "active" : ""}`} onClick={() => setTypeFilter(type)} key={label}>
+            <span className="repositorySummaryIcon"><Icon size={22} aria-hidden="true" /></span>
+            <span><b>{label}</b><small>{description}</small></span>
             <strong>{value}</strong>
-          </article>
+          </button>
         ))}
-      </div>
-
-      <div className="repositoryFilters">
-        <label className="searchFilter">
-          <span>Buscar</span>
-          <div className="searchInputWrap">
-            <Search size={18} />
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar por código, nombre o descripción"
-            />
-          </div>
-        </label>
-        <FilterSelect label="Tipo" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
       </div>
 
       <div className="repositoryListHeader">
@@ -7465,29 +8433,45 @@ function Repository({ repository = [] }) {
           <h3>Documentos validados</h3>
           <p>{filteredDocuments.length} de {documents.length} documentos visibles</p>
         </div>
+        <div className="repositoryViewControls">
+          <label>
+            <select aria-label="Ordenar documentos" value={sortMode} onChange={(event) => setSortMode(event.target.value)}>
+              <option value="recent">Más recientes</option>
+              <option value="name">Nombre A–Z</option>
+            </select>
+          </label>
+          <div role="group" aria-label="Vista de documentos">
+            <button type="button" className={viewMode === "cards" ? "active" : ""} onClick={() => setViewMode("cards")}><Layers3 size={15} /> Tarjetas</button>
+            <button type="button" className={viewMode === "list" ? "active" : ""} onClick={() => setViewMode("list")}><FileText size={15} /> Lista</button>
+          </div>
+        </div>
       </div>
 
-      <div className="repositoryDocumentGrid">
+      <div className={`repositoryDocumentGrid ${viewMode === "list" ? "listMode" : ""}`}>
         {filteredDocuments.map((item, index) => (
           <article className="repositoryDocumentCard" key={item.id || `${item.code}-${index}`}>
             <div className="repositoryDocumentTop">
               <span className={`repositoryType type-${normalizeSystemName(item.displayType)}`}>{item.displayType}</span>
-              <FolderOpen size={22} aria-hidden="true" />
+              <span className="repositoryCode">{item.code || "Sin código"}</span>
             </div>
-            <span className="repositoryCode">{item.code || "Sin código"}</span>
             <h3>{item.name || "Documento sin nombre"}</h3>
+            {item.displayType === "Prompt" && <pre className="repositoryPromptPreview">{item.description || item.name}</pre>}
             <p>{item.description || "Sin descripción registrada."}</p>
             <div className="repositoryDocumentMeta">
-              <span>Actualización</span>
-              <strong>{item.updatedAt || "Sin fecha"}</strong>
+              <span>Actualizado <strong>{item.updatedAt || "Sin fecha"}</strong></span>
+              {item.displayType === "Prompt" ? (
+                <button type="button" onClick={() => copyPrompt(item)} className="repositoryOpenLink">
+                  {copiedCode === (item.code || item.id) ? <CheckCircle2 size={16} /> : <Copy size={16} />}
+                  {copiedCode === (item.code || item.id) ? "Copiado" : "Copiar prompt"}
+                </button>
+              ) : item.documentUrl ? (
+                <a href={item.documentUrl} target="_blank" rel="noreferrer" className="repositoryOpenLink">
+                  Abrir documento <ExternalLink size={16} />
+                </a>
+              ) : (
+                <span className="repositoryNoLink">Enlace pendiente</span>
+              )}
             </div>
-            {item.documentUrl ? (
-              <a href={item.documentUrl} target="_blank" rel="noreferrer" className="repositoryOpenLink">
-                Abrir documento <ExternalLink size={16} />
-              </a>
-            ) : (
-              <span className="repositoryNoLink">Enlace pendiente</span>
-            )}
           </article>
         ))}
       </div>
@@ -7509,6 +8493,9 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
   const [responsibleFilter, setResponsibleFilter] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [openDeliverable, setOpenDeliverable] = useState("");
+  const [desktopSelectedKey, setDesktopSelectedKey] = useState("");
+  const [deliverableGroupMode, setDeliverableGroupMode] = useState("milestone");
+  const [desktopVisibleCount, setDesktopVisibleCount] = useState(9);
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
   const [localDeliverableValidation, setLocalDeliverableValidation] = useState({});
   const [savingDeliverableValidation, setSavingDeliverableValidation] = useState({});
@@ -7519,6 +8506,13 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
   const statuses = [...new Set(deliverables.map((d) => d.status).filter(Boolean))];
   const responsibles = [...new Set(deliverables.map((d) => d.responsible).filter(Boolean))];
   const milestones = [...new Set(deliverables.map((d) => d.milestone).filter(Boolean))];
+
+  const getDeliverableState = (status = "") => {
+    const value = normalizeSystemName(status);
+    if (value.includes("finalizado") || value.includes("terminado") || value.includes("aprobado") || value.includes("completado")) return "finalized";
+    if (value.includes("desarrollo") || value.includes("desarollo") || value.includes("proceso") || value.includes("revision")) return "development";
+    return "pending";
+  };
 
   const summary = useMemo(() => {
     const isFinalized = (status = "") => {
@@ -7549,7 +8543,12 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
 
   const filtered = deliverables.filter((item) => {
     const systemOk = systemFilter === "Todos" || item.system === systemFilter;
-    const statusOk = statusFilter === "Todos" || item.status === statusFilter;
+    const statusOk = statusFilter === "Todos" ||
+      statusFilter === "__finalized" && getDeliverableState(item.status) === "finalized" ||
+      statusFilter === "__development" && getDeliverableState(item.status) === "development" ||
+      statusFilter === "__pending" && getDeliverableState(item.status) === "pending" ||
+      statusFilter === "__toValidate" && getDeliverableState(item.status) === "finalized" && !isCheckedSheetValue(item.clientValidated) && !isCheckedSheetValue(item.validated) ||
+      item.status === statusFilter;
     const responsibleOk = responsibleFilter === "Todos" || item.milestone === responsibleFilter;
     const searchableText = [
       item.system,
@@ -7574,6 +8573,20 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
     return isCheckedSheetValue(item.clientValidated) || isCheckedSheetValue(item.validated);
   };
   const isDeliverableSaving = (item) => Boolean(savingDeliverableValidation[getDeliverableValidationKey(item)]);
+  const validatedCount = deliverables.filter(isDeliverableValidated).length;
+  const toValidateCount = deliverables.filter((item) => getDeliverableState(item.status) === "finalized" && !isDeliverableValidated(item)).length;
+  const desktopSelectedItem = filtered.find((item) => getDeliverableValidationKey(item) === desktopSelectedKey) || filtered[0] || null;
+  const desktopVisibleItems = filtered.slice(0, desktopVisibleCount);
+  const desktopGroups = useMemo(() => {
+    const groups = new Map();
+    desktopVisibleItems.forEach((item) => {
+      const label = deliverableGroupMode === "system" ? item.system : item.milestone;
+      const groupName = String(label || (deliverableGroupMode === "system" ? "Sistema sin definir" : "Hito sin definir")).trim();
+      if (!groups.has(groupName)) groups.set(groupName, []);
+      groups.get(groupName).push(item);
+    });
+    return [...groups.entries()];
+  }, [desktopVisibleItems, deliverableGroupMode]);
 
   const handleValidateDeliverable = async (item) => {
     if (!item || isDeliverableValidated(item) || isDeliverableSaving(item)) return;
@@ -7636,6 +8649,7 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
 
   useEffect(() => {
     setMobileVisibleCount(6);
+    setDesktopVisibleCount(9);
   }, [searchTerm, systemFilter, responsibleFilter, statusFilter]);
 
   return (
@@ -7755,7 +8769,104 @@ function Deliverables({ deliverables = [], selectedDeliverable, setSelectedDeliv
       </section>
     )}
 
-    <section className="card premiumSectionCard deliverablesSection">
+    {!compact && (
+      <section className="gseDeliverablesV2" aria-labelledby="gse-deliverables-title">
+        <header className="gseDeliverablesHeader">
+          <div>
+            <h2 id="gse-deliverables-title">Entregables GSE</h2>
+            <p>Los documentos que gse&amp;co prepara para ti, organizados por hito y sistema. Ábrelos cuando estén disponibles y valida los que ya revisaste.</p>
+          </div>
+        </header>
+
+        <section className="gseDeliverablesOverview" aria-label="Estado general de entregables">
+          <div className="gseDeliverablesTotal"><span>Total de entregables</span><strong>{deliverables.length}</strong></div>
+          <div className="gseDeliverablesStatus">
+            <span>Estado de los entregables</span>
+            <div className="gseDeliverablesStack" aria-hidden="true">
+              <i className="finalized" style={{ width: `${deliverables.length ? summary.finalized / deliverables.length * 100 : 0}%` }} />
+              <i className="development" style={{ width: `${deliverables.length ? summary.development / deliverables.length * 100 : 0}%` }} />
+              <i className="pending" style={{ width: `${deliverables.length ? summary.pending / deliverables.length * 100 : 0}%` }} />
+            </div>
+            <div className="gseDeliverablesLegend"><span className="finalized">Finalizado <b>{summary.finalized}</b></span><span className="development">En desarrollo <b>{summary.development}</b></span><span className="pending">Pendiente <b>{summary.pending}</b></span></div>
+          </div>
+          <aside className="gseDeliverablesAction">
+            <span>Tu acción</span>
+            <strong>{toValidateCount ? "Revisa y valida los entregables finalizados" : "Validaciones al día"}</strong>
+            <button type="button" onClick={() => setStatusFilter(toValidateCount ? "__toValidate" : "Todos")}>{toValidateCount ? `Ver por validar · ${toValidateCount}` : `Ver los ${validatedCount} validados`} <ArrowRight size={15} /></button>
+          </aside>
+        </section>
+
+        <section className="gseDeliverablesWorkspace">
+          <div className="gseDeliverablesWorkspaceHeader">
+            <h3>Entregables</h3>
+            <div className="gseDeliverablesGroupSwitch" role="group" aria-label="Agrupar entregables">
+              <span>Agrupar por</span>
+              <button type="button" className={deliverableGroupMode === "milestone" ? "active" : ""} onClick={() => setDeliverableGroupMode("milestone")}>Hito</button>
+              <button type="button" className={deliverableGroupMode === "system" ? "active" : ""} onClick={() => setDeliverableGroupMode("system")}>Sistema</button>
+            </div>
+          </div>
+
+          <div className="gseDeliverablesToolbar">
+            <label className="gseDeliverablesSearch"><Search size={17} /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar entregable, sistema o hito..." /></label>
+            <div className="gseDeliverablesStatusTabs">
+              <button type="button" className={statusFilter === "Todos" ? "active" : ""} onClick={() => setStatusFilter("Todos")}>Todos <b>{deliverables.length}</b></button>
+              <button type="button" className={statusFilter === "__finalized" ? "active" : ""} onClick={() => setStatusFilter("__finalized")}>Finalizados <b>{summary.finalized}</b></button>
+              <button type="button" className={statusFilter === "__development" ? "active" : ""} onClick={() => setStatusFilter("__development")}>En desarrollo <b>{summary.development}</b></button>
+              <button type="button" className={statusFilter === "__pending" ? "active" : ""} onClick={() => setStatusFilter("__pending")}>Pendientes <b>{summary.pending}</b></button>
+            </div>
+            <FilterSelect label="Sistema" value={systemFilter} onChange={setSystemFilter} options={systems} />
+            <FilterSelect label="Hito" value={responsibleFilter} onChange={setResponsibleFilter} options={milestones} />
+          </div>
+
+          <div className="gseDeliverablesMasterDetail">
+            <div className="gseDeliverablesList">
+              <div className="gseDeliverablesListHead"><span>Entregable</span><span>Estado</span><span>Avance</span><span>Validación</span></div>
+              {desktopGroups.map(([groupName, groupItems]) => {
+                const groupValidated = groupItems.filter(isDeliverableValidated).length;
+                return (
+                  <section className="gseDeliverablesGroup" key={`gse-group-${groupName}`}>
+                    <header><strong>{groupName}</strong><span>{groupValidated} de {groupItems.length} validados</span></header>
+                    {groupItems.map((item) => {
+                      const itemKey = getDeliverableValidationKey(item);
+                      const selected = desktopSelectedItem && getDeliverableValidationKey(desktopSelectedItem) === itemKey;
+                      const validated = isDeliverableValidated(item);
+                      const saving = isDeliverableSaving(item);
+                      const progress = Math.max(0, Math.min(100, Number(item.progress) || (getDeliverableState(item.status) === "finalized" ? 100 : 0)));
+                      const state = getDeliverableState(item.status);
+                      return (
+                        <div className={`gseDeliverableRow ${selected ? "selected" : ""}`} key={`gse-row-${itemKey}`}>
+                          <button type="button" className="gseDeliverableRowMain" onClick={() => { setDesktopSelectedKey(itemKey); setSelectedDeliverable?.(item.deliverable); }}><strong>{item.deliverable || "Entregable sin nombre"}</strong><small>{item.system || "General"}{safeUrl(item.link) ? "" : " · Sin documento"}</small></button>
+                          <span className={`gseDeliverableState ${state}`}>{state === "finalized" ? "Finalizado" : state === "development" ? "En desarrollo" : "Pendiente"}</span>
+                          <span className="gseDeliverableProgress"><b>{progress}% <small>de avance</small></b><i><em style={{ width: `${progress}%` }} /></i></span>
+                          <button type="button" className={`gseDeliverableValidate ${validated ? "validated" : ""}`} disabled={validated || saving || getDeliverableState(item.status) !== "finalized" || !safeUrl(item.link)} onClick={(event) => { event.stopPropagation(); handleValidateDeliverable(item); }}>{saving ? "Guardando..." : validated ? <><CheckCircle2 size={14} /> Validado</> : safeUrl(item.link) ? "Validar" : "Sin documento"}</button>
+                        </div>
+                      );
+                    })}
+                  </section>
+                );
+              })}
+              {!filtered.length && <div className="gseDeliverablesEmpty"><Search size={22} /><strong>No encontramos entregables con esos filtros.</strong><span>Prueba con otro sistema, hito, estado o palabra clave.</span></div>}
+              {desktopVisibleCount < filtered.length && <button type="button" className="gseDeliverablesMore" onClick={() => setDesktopVisibleCount((current) => current + 9)}>Mostrando {desktopVisibleCount} de {filtered.length} · Ver más</button>}
+            </div>
+
+            {desktopSelectedItem && (
+              <aside className="gseDeliverableDetail">
+                <span className="gseDeliverableDetailEyebrow">Entregable seleccionado</span>
+                <h3>{desktopSelectedItem.deliverable || "Entregable sin nombre"}</h3>
+                <div className="gseDeliverableDetailTags"><span className={getDeliverableState(desktopSelectedItem.status)}>{getDeliverableState(desktopSelectedItem.status) === "finalized" ? "Finalizado" : getDeliverableState(desktopSelectedItem.status) === "development" ? "En desarrollo" : "Pendiente"}</span><span>{desktopSelectedItem.system || "General"}</span><span>{desktopSelectedItem.milestone || "Sin hito"}</span></div>
+                <section><h4>Descripción</h4><p>{desktopSelectedItem.observation || "Este entregable todavía no tiene una descripción registrada."}</p></section>
+                <section><h4>Avance</h4><div className="gseDeliverableDetailProgress"><strong>{Math.max(0, Math.min(100, Number(desktopSelectedItem.progress) || (getDeliverableState(desktopSelectedItem.status) === "finalized" ? 100 : 0)))}% <small>de avance</small></strong><i><em style={{ width: `${Math.max(0, Math.min(100, Number(desktopSelectedItem.progress) || (getDeliverableState(desktopSelectedItem.status) === "finalized" ? 100 : 0)))}%` }} /></i></div></section>
+                {safeUrl(desktopSelectedItem.link) ? <a className="gseDeliverableOpen" href={safeUrl(desktopSelectedItem.link)} target="_blank" rel="noreferrer"><ExternalLink size={16} /> Abrir entregable</a> : <button type="button" className="gseDeliverableOpen unavailable" disabled><FileText size={16} /> Documento no disponible</button>}
+                <button type="button" className={`gseDeliverableDetailValidate ${isDeliverableValidated(desktopSelectedItem) ? "validated" : ""}`} disabled={isDeliverableValidated(desktopSelectedItem) || isDeliverableSaving(desktopSelectedItem) || getDeliverableState(desktopSelectedItem.status) !== "finalized" || !safeUrl(desktopSelectedItem.link)} onClick={() => handleValidateDeliverable(desktopSelectedItem)}>{isDeliverableSaving(desktopSelectedItem) ? "Guardando validación..." : isDeliverableValidated(desktopSelectedItem) ? <><CheckCircle2 size={16} /> Ya validaste este entregable</> : !safeUrl(desktopSelectedItem.link) ? "Documento requerido para validar" : getDeliverableState(desktopSelectedItem.status) === "finalized" ? "Validar entregable" : "Disponible al finalizar"}</button>
+                <p className="gseDeliverableDetailHelp">Revisa el documento antes de validarlo. Si algo no está bien, escríbenos desde Reuniones o Pendientes.</p>
+              </aside>
+            )}
+          </div>
+        </section>
+      </section>
+    )}
+
+    <section className={`card premiumSectionCard deliverablesSection ${!compact ? "deliverablesLegacyDesktop" : ""}`}>
       <div className="sectionHeader">
         <div>
           <h2>{compact ? "Entregables principales" : "Entregables GSE"}</h2>
@@ -8310,6 +9421,9 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
   const [searchTerm, setSearchTerm] = useState("");
   const [requiredFilter, setRequiredFilter] = useState("Todos");
   const [documentStatusFilter, setDocumentStatusFilter] = useState("Todos");
+  const [documentCategoryFilter, setDocumentCategoryFilter] = useState("Todos");
+  const [selectedDocumentKey, setSelectedDocumentKey] = useState("");
+  const [desktopVisibleCount, setDesktopVisibleCount] = useState(10);
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
   const [mobileInstructionsOpen, setMobileInstructionsOpen] = useState(false);
 
@@ -8493,9 +9607,10 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
       const matchesSearch = !query || searchable.includes(query);
       const matchesRequired = requiredFilter === "Todos" || getRequiredLabel(item) === requiredFilter;
       const matchesStatus = documentStatusFilter === "Todos" || getCurrentStatus(item) === documentStatusFilter;
-      return matchesSearch && matchesRequired && matchesStatus;
+      const matchesCategory = documentCategoryFilter === "Todos" || (item.category || "Sin categoría") === documentCategoryFilter;
+      return matchesSearch && matchesRequired && matchesStatus && matchesCategory;
     });
-  }, [documents, responses, documentStates, searchTerm, requiredFilter, documentStatusFilter]);
+  }, [documents, responses, documentStates, searchTerm, requiredFilter, documentStatusFilter, documentCategoryFilter]);
 
   const documentSummary = useMemo(() => {
     const total = documents.length;
@@ -8537,12 +9652,23 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
 
   const yesHave = documents.filter((item) => getCurrentResponse(item) === "Sí tengo").length;
   const required = documents.filter((item) => getRequiredLabel(item) === "Obligatorio").length;
+  const categoryOptions = Array.from(new Set(documents.map((item) => item.category || "Sin categoría").filter(Boolean)));
+  const nextPendingDocument = documents.find((item) => getCurrentStatus(item) === "Pendiente") || documents[0] || null;
+  const selectedDocument = filteredDocuments.find((item) => getDocumentStableKey(item) === selectedDocumentKey)
+    || documents.find((item) => getDocumentStableKey(item) === selectedDocumentKey)
+    || nextPendingDocument;
+  const selectedKey = selectedDocument ? getDocumentKey(selectedDocument) : "";
+  const selectedStatus = selectedDocument ? getCurrentStatus(selectedDocument) : "Pendiente";
+  const selectedFolderLink = selectedDocument ? getFolderLink(selectedDocument) : "";
+  const selectedBusy = Boolean(saving[selectedKey]);
+  const desktopDocuments = filteredDocuments.slice(0, desktopVisibleCount);
   const mobileDocuments = filteredDocuments.slice(0, mobileVisibleCount);
   const documentsBackView = previousView === "entregables" ? "entregables" : "portal";
   const activePending = pending.filter(isPendingActive).length;
 useEffect(() => {
     setMobileVisibleCount(6);
-  }, [searchTerm, requiredFilter, documentStatusFilter]);
+    setDesktopVisibleCount(10);
+  }, [searchTerm, requiredFilter, documentStatusFilter, documentCategoryFilter]);
 
   const renderDocumentItem = (item, index) => {
     const key = getDocumentKey(item) || String(index);
@@ -8711,185 +9837,168 @@ useEffect(() => {
       </nav>
     </section>
 
-    <section className="documentsPage documentsChecklistPage">
-      <div className="documentsTableHeader">
-        <div>
-          <span>Checklist documental</span>
-          <h2>{title}</h2>
-          <p>{description}</p>
-        </div>
+    <section className="documentsPage documentsChecklistPage documentsUploadV3">
+      <header className="documentsUploadHeading">
+        <h1>{title}</h1>
+        <p>Es el primer paso de tu proyecto Business Power: nos ayuda a conocer cómo opera hoy tu empresa para trabajar con estructura, control y claridad.</p>
+      </header>
+
+      <div className="documentsUploadSteps" aria-label="Cómo completar la carga documental">
+        {[
+          [UploadCloud, "Sube cada documento", "Con Subir aquí, abre su carpeta."],
+          [CheckCircle2, "Confirma que lo cargaste", "Marca Ya lo cargué al terminar."],
+          [Eye, "GSE lo revisa", "Te avisaremos si requiere ajustes."],
+        ].map(([Icon, label, detail], index) => (
+          <article key={label}>
+            <span>{index + 1}</span>
+            <Icon size={20} />
+            <div><strong>{label}</strong><small>{detail}</small></div>
+          </article>
+        ))}
       </div>
 
-      <div className="documentsChecklistSummary documentsChecklistBars">
-        <article className="documentsTotalSummaryCard">
-          <span>Total documentos solicitados</span>
+      <section className="documentsUploadOverview">
+        <div className="documentsUploadTotal">
+          <span>Documentos solicitados</span>
           <strong>{documentSummary.total}</strong>
-          <p>{documentSummary.progress}% de avance documental</p>
-          <ProgressBar value={documentSummary.progress} status="Finalizado" />
-        </article>
-        <article className="documentsStatusSummaryCard">
-          <div>
-            <span>Estado de documentos</span>
-            <strong>{documentSummary.progress}%</strong>
+          <small>{documentSummary.progress}% de avance documental</small>
+        </div>
+        <div className="documentsUploadStatus">
+          <span>Estado de los documentos</span>
+          <div className="documentsUploadStatusBar" aria-label={`${documentSummary.progress}% de avance`}>
+            {documentSummary.validatedCount > 0 && <i className="validated" style={{ width: `${documentSummary.validatedCount / Math.max(1, documentSummary.total) * 100}%` }} />}
+            {documentSummary.reviewCount > 0 && <i className="review" style={{ width: `${documentSummary.reviewCount / Math.max(1, documentSummary.total) * 100}%` }} />}
+            {documentSummary.unavailableCount > 0 && <i className="unavailable" style={{ width: `${documentSummary.unavailableCount / Math.max(1, documentSummary.total) * 100}%` }} />}
           </div>
-          {[
-            ["Pendientes", documentSummary.pendingCount],
-            ["En revisión", documentSummary.reviewCount],
-            ["Validados", documentSummary.validatedCount],
-            ["No disponibles", documentSummary.unavailableCount],
-          ].map(([label, count]) => (
-            <div className="documentsSummaryBarRow" key={label}>
-              <span>{label}</span>
-              <i><b style={{ width: `${Math.max(3, Math.round((count / documentStatusMax) * 100))}%` }} /></i>
-              <em>{count}</em>
-            </div>
-          ))}
-        </article>
-      </div>
-
-      <section className="documentsInstructions documentsInstructionsCompact">
-        <h2>Instrucciones:</h2>
-        <div>
-          <p>Da clic en <strong>“Subir aquí”</strong> para cargar cada documento en su carpeta correspondiente. Luego regresa a la app y selecciona <strong>“Ya lo cargué”</strong> para que GSE pueda revisarlo.</p>
-          <p>Si no tienes un documento formal, pero la información existe en la práctica, represéntala de forma sencilla y súbela.</p>
+          <div className="documentsUploadLegend">
+            <span><i className="pending" />{documentSummary.pendingCount} Pendientes</span>
+            <span><i className="review" />{documentSummary.reviewCount} En revisión</span>
+            <span><i className="validated" />{documentSummary.validatedCount} Validados</span>
+            <span><i className="unavailable" />{documentSummary.unavailableCount} No disponibles</span>
+          </div>
         </div>
-        <div>
-          <p>Si la información está incompleta o desactualizada, súbela igual e indícalo en el nombre del archivo.</p>
-          <p>Marca <strong>“No tengo”</strong> solo cuando no cuentes con el documento ni con la información necesaria para representarlo.</p>
-        </div>
+        {nextPendingDocument && (
+          <div className="documentsUploadNext">
+            <span>Siguiente documento</span>
+            <strong>{nextPendingDocument.item || nextPendingDocument.description || "Documento pendiente"}</strong>
+            {isRequiredDocument(nextPendingDocument) && <em>Obligatorio</em>}
+            {getFolderLink(nextPendingDocument) ? (
+              <a href={getFolderLink(nextPendingDocument)} target="_blank" rel="noreferrer"><UploadCloud size={17} /> Subir ahora</a>
+            ) : (
+              <button type="button" disabled><UploadCloud size={17} /> Sin carpeta</button>
+            )}
+          </div>
+        )}
       </section>
 
-      <div className="filters premiumFilters documentsFilters">
-        <label className="filter searchFilter documentsSearchFilter">
-          <span>Buscar</span>
-          <div className="searchInputWrap">
-            <Search size={19} />
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar documento, categoría o estado..."
-            />
+      <section className="documentsUploadWorkspace">
+        <div className="documentsUploadListPane">
+          <div className="documentsUploadFilters">
+            <label className="documentsUploadSearch">
+              <Search size={17} />
+              <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar documento, categoría o estado..." />
+            </label>
+            <div className="documentsUploadStatusTabs" role="group" aria-label="Filtrar por estado">
+              {[
+                ["Todos", documentSummary.total],
+                ["Pendiente", documentSummary.pendingCount],
+                ["En revisión", documentSummary.reviewCount],
+                ["Validado", documentSummary.validatedCount],
+              ].map(([status, count]) => (
+                <button type="button" key={status} className={documentStatusFilter === status ? "active" : ""} onClick={() => setDocumentStatusFilter(status)}>
+                  {status === "Todos" ? "Todos" : status === "Pendiente" ? "Pendientes" : status === "Validado" ? "Validados" : status} <span>{count}</span>
+                </button>
+              ))}
+            </div>
+            <label className="documentsRequiredToggle">
+              <input type="checkbox" checked={requiredFilter === "Obligatorio"} onChange={(event) => setRequiredFilter(event.target.checked ? "Obligatorio" : "Todos")} />
+              <span aria-hidden="true" /> Solo obligatorios
+            </label>
+            <select aria-label="Filtrar por categoría" value={documentCategoryFilter} onChange={(event) => setDocumentCategoryFilter(event.target.value)}>
+              <option value="Todos">Categoría</option>
+              {categoryOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
           </div>
-        </label>
-        <FilterSelect label="Obligatorio" value={requiredFilter} onChange={setRequiredFilter} options={["Obligatorio", "Opcional"]} />
-        <FilterSelect label="Estado" value={documentStatusFilter} onChange={setDocumentStatusFilter} options={statusOptions} />
-      </div>
 
-      <div className="documentsChecklistTableCard">
-        {!documents.length && (
-          <div className="documentsTableEmpty">
-            <span>Checklist pendiente</span>
-            <h3>No se encontraron ítems en Google Sheet</h3>
-            <p>La app busca una pestaña llamada Documentos con columnas como Titulo, Descripcion, Categoria, Item, Detalle, Obligatorio, RespuestaCliente, Estado, Observacion, LinkCarpeta y FechaRespuesta.</p>
+          <div className="documentsUploadListHead"><span>Documento solicitado</span><span>Estado</span><span>Acción</span></div>
+
+          {!documents.length && <div className="documentsTableEmpty"><h3>No se encontraron documentos</h3><p>Revisa la pestaña Documentos de Google Sheet.</p></div>}
+          {documents.length > 0 && filteredDocuments.length === 0 && <div className="documentsTableEmpty"><h3>No hay documentos con esos filtros</h3><p>Prueba con otra búsqueda, estado o categoría.</p></div>}
+
+          <div className="documentsUploadRows">
+            {desktopDocuments.map((item, index) => {
+              const rowKey = getDocumentKey(item) || String(index);
+              const stableKey = getDocumentStableKey(item);
+              const status = getCurrentStatus(item);
+              const folderLink = getFolderLink(item);
+              const statusClass = normalizeSystemName(status).replace(/\s+/g, "-");
+              const selected = selectedDocument && getDocumentStableKey(selectedDocument) === stableKey;
+              return (
+                <article className={selected ? "selected" : ""} key={`${stableKey}-${index}`}>
+                  <button className="documentsUploadRowMain" type="button" onClick={() => setSelectedDocumentKey(stableKey)}>
+                    <span><strong>{item.item || item.description || item.title || "Documento solicitado"}</strong><small>{item.category || "Sin categoría"}</small></span>
+                    {isRequiredDocument(item) && <em>Obligatorio</em>}
+                  </button>
+                  <span className={`documentsStatusPill status-${statusClass}`}>{status}</span>
+                  <div className="documentsUploadRowAction">
+                    {status === "Pendiente" && folderLink && <a href={folderLink} target="_blank" rel="noreferrer"><UploadCloud size={15} /> Subir aquí</a>}
+                    {status === "Pendiente" && !folderLink && <button type="button" disabled>Sin carpeta</button>}
+                    {status !== "Pendiente" && folderLink && <a href={folderLink} target="_blank" rel="noreferrer"><FolderOpen size={15} /> Ver carpeta</a>}
+                    {status === "No disponible" && <button type="button" onClick={() => handleDocumentAction(item, { respuesta: "", estado: "Pendiente" })}>Revisar</button>}
+                  </div>
+                  {saveMessage[rowKey] && <span className="documentSaveMessage tableMessage">{saveMessage[rowKey]}</span>}
+                </article>
+              );
+            })}
           </div>
+
+          {desktopVisibleCount < filteredDocuments.length && (
+            <button className="documentsUploadMore" type="button" onClick={() => setDesktopVisibleCount((current) => current + 10)}>
+              Mostrando {desktopVisibleCount} de {filteredDocuments.length} · Ver más
+            </button>
+          )}
+        </div>
+
+        {selectedDocument && (
+          <aside className="documentsUploadDetail">
+            <span>Documento seleccionado</span>
+            <h2>{selectedDocument.item || selectedDocument.description || selectedDocument.title || "Documento solicitado"}</h2>
+            <div className="documentsUploadDetailBadges">
+              <span className={`documentsStatusPill status-${normalizeSystemName(selectedStatus).replace(/\s+/g, "-")}`}>{selectedStatus}</span>
+              {isRequiredDocument(selectedDocument) && <em>Obligatorio</em>}
+              <small>{selectedDocument.category || "Sin categoría"}</small>
+            </div>
+            {selectedDocument.detail && <p className="documentsUploadDetailCopy">{selectedDocument.detail}</p>}
+
+            <ol className="documentsUploadDetailSteps">
+              <li className="active">
+                <span>1</span><div><strong>Sube el documento en su carpeta</strong><small>Se abrirá la carpeta asignada a este documento.</small></div>
+                {selectedFolderLink ? <a href={selectedFolderLink} target="_blank" rel="noreferrer"><UploadCloud size={17} /> Subir aquí</a> : <button type="button" disabled>Sin carpeta asignada</button>}
+              </li>
+              <li className={selectedStatus !== "Pendiente" ? "complete" : ""}>
+                <span>2</span><div><strong>Confirma que ya lo cargaste</strong><small>Así GSE sabrá que puede revisarlo.</small></div>
+                <button type="button" disabled={selectedBusy || selectedStatus === "En revisión" || selectedStatus === "Validado"} onClick={() => handleDocumentAction(selectedDocument, { respuesta: "Sí tengo", estado: "En revisión" })}>
+                  {selectedBusy ? "Guardando..." : selectedStatus === "En revisión" || selectedStatus === "Validado" ? "Carga confirmada" : "Ya lo cargué"}
+                </button>
+              </li>
+              <li className={selectedStatus === "Validado" ? "complete" : ""}>
+                <span>3</span><div><strong>GSE lo revisa</strong><small>{selectedStatus === "Validado" ? "Documento validado." : "Te avisaremos cuando esté validado."}</small></div>
+              </li>
+            </ol>
+
+            <div className="documentsUploadAdvice">
+              <strong>Antes de subirlo</strong>
+              <p>Si no tienes un documento formal, pero la información existe en la práctica, represéntala de forma sencilla y súbela.</p>
+              <p>Si está incompleto o desactualizado, súbelo igual e indícalo en el nombre del archivo.</p>
+            </div>
+            <button className="documentsUploadUnavailable" type="button" disabled={selectedBusy || selectedStatus === "No disponible"} onClick={() => handleDocumentAction(selectedDocument, { respuesta: "No tengo", estado: "No disponible" })}>
+              No tengo este documento
+            </button>
+            <small className="documentsUploadUnavailableHint">Úsalo solo si no cuentas con el documento ni con la información para representarlo.</small>
+            {saveMessage[selectedKey] && <span className="documentSaveMessage">{saveMessage[selectedKey]}</span>}
+          </aside>
         )}
-
-        {documents.length > 0 && filteredDocuments.length === 0 && (
-          <div className="documentsTableEmpty">
-            <span>Sin resultados</span>
-            <h3>No hay documentos con esos filtros</h3>
-            <p>Prueba con otra búsqueda, estado u obligatoriedad.</p>
-          </div>
-        )}
-
-        {filteredDocuments.length > 0 && (
-          <div className="documentsChecklistTableWrap">
-            <table className="documentsChecklistTable">
-              <thead>
-                <tr>
-                  <th>Estado</th>
-                  <th>Documento solicitado</th>
-                  <th>Categoría</th>
-                  <th>Obligatorio</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(groupedDocuments).map(([group, rows]) => (
-                  <Fragment key={group}>
-                    {rows.map((item, index) => {
-                      const key = getDocumentKey(item) || String(index);
-                      const status = getCurrentStatus(item);
-                      const folderLink = getFolderLink(item);
-                      const isExpanded = Boolean(expandedDocuments[key]);
-                      const isBusy = Boolean(saving[key]);
-                      const statusClass = normalizeSystemName(status).replace(/\s+/g, "-");
-
-                      return (
-                        <Fragment key={`${group}-${key}-${index}`}>
-                          <tr>
-                            <td>
-                              <span className={`documentsStatusPill status-${statusClass}`}>
-                                {getStatusLabel(status)}
-                              </span>
-                            </td>
-                            <td>
-                              <button
-                                className="documentsRowToggle"
-                                type="button"
-                                onClick={() => setExpandedDocuments((current) => ({ ...current, [key]: !current[key] }))}
-                              >
-                                <ChevronRight size={16} className={isExpanded ? "open" : ""} />
-                                <span>{item.description || item.item || item.title || "Documento solicitado"}</span>
-                              </button>
-                            </td>
-                            <td>{item.category || "Sin categoría"}</td>
-                            <td>{isRequiredDocument(item) ? "Sí" : "No"}</td>
-                            <td>
-                              <div className="documentsActionGroup">
-                                {status === "Pendiente" && (
-                                  <>
-                                    {folderLink ? (
-                                      <a href={folderLink} target="_blank" rel="noreferrer">Subir aquí</a>
-                                    ) : (
-                                      <button type="button" disabled>Sin carpeta</button>
-                                    )}
-                                    <button type="button" disabled={isBusy} onClick={() => handleDocumentAction(item, { respuesta: "Sí tengo", estado: "En revisión" })}>Ya lo cargué</button>
-                                    <button type="button" disabled={isBusy} onClick={() => handleDocumentAction(item, { respuesta: "No tengo", estado: "No disponible" })}>No tengo</button>
-                                  </>
-                                )}
-                                {status === "En revisión" && (
-                                  <>
-                                    {folderLink ? (
-                                      <a href={folderLink} target="_blank" rel="noreferrer">Ver carpeta</a>
-                                    ) : (
-                                      <button type="button" disabled>Sin carpeta</button>
-                                    )}
-                                    <button type="button" disabled={isBusy} onClick={() => handleDocumentAction(item, { respuesta: "", estado: "Pendiente" })}>Cambiar respuesta</button>
-                                  </>
-                                )}
-                                {status === "Validado" && (
-                                  folderLink ? <a href={folderLink} target="_blank" rel="noreferrer">Ver carpeta</a> : <button type="button" disabled>Sin carpeta</button>
-                                )}
-                                {status === "No disponible" && (
-                                  <button type="button" disabled={isBusy} onClick={() => handleDocumentAction(item, { respuesta: "", estado: "Pendiente" })}>Cambiar respuesta</button>
-                                )}
-                              </div>
-                              {saveMessage[key] && <span className="documentSaveMessage tableMessage">{saveMessage[key]}</span>}
-                            </td>
-                          </tr>
-                          {isExpanded && (
-                            <tr className="documentsExpandedRow">
-                              <td colSpan={5}>
-                                <div>
-                                  {item.item && <p><strong>Ítem:</strong> {item.item}</p>}
-                                  {item.detail && <p><strong>Detalle:</strong> {item.detail}</p>}
-                                  {item.observation && <p><strong>Observación:</strong> {item.observation}</p>}
-                                  {item.responseDate && <p><strong>Última respuesta:</strong> {item.responseDate}</p>}
-                                </div>
-                              </td>
-                            </tr>
-                          )}
-                        </Fragment>
-                      );
-                    })}
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      </section>
     </section>
     </>
   );
@@ -8936,7 +10045,6 @@ function MobilePortalHome({ project, milestones = [], pending = [], meetings = [
     { label: "Entregables", view: "entregables", icon: ClipboardCheck, short: "Entregables" },
     { label: "Documentos", view: "documentos", icon: UploadCloud, short: "Documentos" },
     { label: "Recibir", view: "educacion", icon: BookOpen, short: "Recibir" },
-    { label: "¿Necesitas ayuda?", view: "tutoriales", icon: Video, short: "Ayuda" },
   ];
   const query = normalizeSystemName(mobileSearch);
   const searchResults = query ? [
@@ -11627,16 +12735,17 @@ function Root() {
 
 function App() {
   const [session, setSession] = useState(() => getStoredClientSession());
-  const [view, setView] = useState("portal");
+  const [view, setView] = useState("resumen");
   const [data, setData] = useState(demoData);
   const [connected, setConnected] = useState(false);
   const [loadingData, setLoadingData] = useState(Boolean(getStoredClientSession()?.sheetId));
   const [introVisible, setIntroVisible] = useState(Boolean(getStoredClientSession()?.sheetId));
   const [introLeaving, setIntroLeaving] = useState(false);
+  const introStartedAt = useRef(Date.now());
   const [error, setError] = useState("");
   const [selectedDeliverable, setSelectedDeliverable] = useState("");
   const [selectedHito, setSelectedHito] = useState("");
-  const [previousView, setPreviousView] = useState("portal");
+  const [previousView, setPreviousView] = useState("resumen");
 
   useEffect(() => {
     if (!session?.sheetId) return;
@@ -11666,17 +12775,22 @@ function App() {
     }
 
     if (loadingData) {
+      introStartedAt.current = Date.now();
       setIntroVisible(true);
       setIntroLeaving(false);
       return;
     }
 
-    setIntroLeaving(true);
-    const timer = window.setTimeout(() => {
+    const remaining = Math.max(0, 1400 - (Date.now() - introStartedAt.current));
+    const leaveTimer = window.setTimeout(() => setIntroLeaving(true), remaining);
+    const hideTimer = window.setTimeout(() => {
       setIntroVisible(false);
       setIntroLeaving(false);
-    }, 720);
-    return () => window.clearTimeout(timer);
+    }, remaining + 540);
+    return () => {
+      window.clearTimeout(leaveTimer);
+      window.clearTimeout(hideTimer);
+    };
   }, [loadingData, session?.sheetId]);
 
   const { project, milestones, findings, pending, deliverables, updates, education, tutorials = [], meetings = [], charges = [], repository = [], documents = [], architectureRoles = [], architectureRolesToBe = [], personnelMatrix = [], organizationProcesses = [], indicators = [], qualityCommittee = [], clientExperience = [], processesAsIs = [], processesToBe = [], coeAsIs = [], coeToBe = [] } = data;
@@ -11699,6 +12813,7 @@ function App() {
   };
 
   const navigate = (nextView) => {
+    if (["portal", "comite-calidad", "educacion", "tutoriales"].includes(nextView)) nextView = "resumen";
     if (!nextView || nextView === view) return;
     setPreviousView(view);
     setView(nextView);
@@ -11766,23 +12881,16 @@ function App() {
         <div className={`content view-${view}`}>
           <div className="mobileTabs">
             {[
-              ["portal", "Portal"],
               ["resumen", "Resumen"],
-              ["calendario", "Calendario"],
-              ["ruta", "Ruta"],
+              ["calendario", "Agenda y pendientes"],
               ["procesos", "Procesos"],
               ["optimizacion-racionalizacion", "Optimización y Racionalización"],
               ["coe", "COE"],
               ["hallazgos", "Hallazgos"],
-              ["pendientes", "Pendientes"],
               ["entregables", "Entregables"],
-              ["entregables-clientes", "Entregables clientes"],
               ["repositorio", "Repositorio"],
               ["indicadores", "Indicadores"],
-              ["comite-calidad", "Comité de Calidad"],
               ["documentos", "Documentos"],
-              ["educacion", "Lo que vas a recibir"],
-              ["tutoriales", "¿Necesitas ayuda?"],
               ["experiencia", "Tu experiencia"],
             ].map(([value, label]) => (
               <button key={value} onClick={() => navigate(value)} className={view === value ? "active" : ""}>
@@ -11836,7 +12944,7 @@ function App() {
             />
           )}
 
-          {view === "calendario" && <CalendarView meetings={meetings} />}
+          {view === "calendario" && <CalendarView meetings={meetings} pending={pending} setView={navigate} onPendingValidationChange={handlePendingValidationChange} />}
 
           {view === "ruta" && (
             <>
@@ -11867,11 +12975,11 @@ function App() {
           )}
           {view === "indicadores" && <ImplementationIndicators indicators={indicators} />}
           {view === "comite-calidad" && <QualityCommittee committee={qualityCommittee} />}
-          {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} pending={pending} setView={navigate} previousView={previousView} />}
+          {view === "coe" && <COEDashboard coeAsIs={coeAsIs} coeToBe={coeToBe} processesAsIs={processesAsIs} processesToBe={processesToBe} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "hallazgos" && <Findings findings={findings} project={project} pending={pending} setView={navigate} previousView={previousView} />}
           {view === "pendientes" && <PendingClient pending={pending} setView={navigate} previousView={previousView} onPendingValidationChange={handlePendingValidationChange} />}
           {view === "entregables" && <Deliverables deliverables={deliverables} selectedDeliverable={selectedDeliverable} setSelectedDeliverable={setSelectedDeliverable} setView={navigate} previousView={previousView} pending={pending} />}
-          {view === "entregables-clientes" && <ClientDeliverables findings={findings} project={project} />}
+          {view === "entregables-clientes" && <ClientDeliverables findings={findings} project={project} setView={navigate} />}
           {view === "repositorio" && <Repository repository={repository} />}
           {view === "documentos" && <DocumentsUpload documents={documents} project={project} setView={navigate} previousView={previousView} pending={pending} />}
           {view === "educacion" && <Education education={education} setView={navigate} previousView={previousView} pending={pending} />}

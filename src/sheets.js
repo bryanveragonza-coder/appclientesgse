@@ -478,8 +478,13 @@ function projectFromRawRows(rows) {
     "lidercliente",
     "logogse",
     "logogsehorizontal",
+    "logogsehorizontalcolor",
+    "logogsehorizontalcolour",
+    "logogsehorizontalacolor",
     "logogsehor",
     "logohorizontalgse",
+    "imageninicio",
+    "imagenlogin",
     "logocliente",
     "fraseproyecto",
     "mensajebienvenida",
@@ -585,7 +590,7 @@ function projectFromRawRows(rows) {
     generalManager: map.gerentegeneral || map.dueno || map["dueño"] || map.lidercliente || demoData.project.generalManager,
     logoGSE: map.logogse || demoData.project.logoGSE,
     logoGSEhorizontal: map.logogsehorizontal || map.logogsehor || map.logohorizontalgse || findProjectFieldValue(cleanRows, ["LogoGSEhorizontal", "Logo GSE horizontal", "Logo horizontal GSE", "LogoGSECompleto", "Logo GSE completo"]) || demoData.project.logoGSEhorizontal,
-    logoGSEhorizontalColor: map.logogsehorizontalcolor || map.logogsehorizontalcolour || findProjectFieldValue(cleanRows, ["LogoGSEhorizontalcolor", "Logo GSE horizontal color", "Logo GSE horizontal a color", "LogoGSEHorizontalColor"]) || demoData.project.logoGSEhorizontalColor,
+    logoGSEhorizontalColor: map.logogsehorizontalcolor || map.logogsehorizontalcolour || map.logogsehorizontalacolor || findProjectFieldValue(cleanRows, ["LogoGSEhorizontalcolor", "Logo GSE horizontal color", "Logo GSE horizontal a color", "LogoGSEHorizontalColor"]) || demoData.project.logoGSEhorizontalColor,
     loginImage: map.imageninicio || map.imagenlogin || findProjectFieldValue(cleanRows, ["ImagenInicio", "Imagen Inicio", "Imagen login", "ImagenLogin"]) || demoData.project.loginImage,
     logoClient: map.logocliente || demoData.project.logoClient,
     projectPhrase: map.fraseproyecto || demoData.project.projectPhrase,
@@ -1113,6 +1118,7 @@ function mapCOERows(rows) {
     monthlyActivityCost: getRowValue(row, ["COSTO MENSUAL ACTIVIDAD", "Costo mensual actividad", "Costo Mensual Actividad", "CostoMensualActividad", "Costo mensual de actividad"]),
     sourceProcessCodes: getRowValue(row, ["PROCESOS AS IS RELACIONADOS", "Procesos AS IS relacionados", "ProcesosASISRelacionados", "CodigosASISRelacionados", "Códigos AS IS relacionados", "Procesos origen AS IS"]),
     transformationType: getRowValue(row, ["TIPO TRANSFORMACION", "TIPO TRANSFORMACIÓN", "Tipo transformación", "TipoTransformacion", "Transformación", "Transformacion"]),
+    scenario: getRowValue(row, ["ESCENARIO", "Escenario", "SITUACION", "SITUACIÓN", "Situacion", "Situación", "VERSION", "Versión", "Estado modelo", "Modelo"]),
     nav: getRowValue(row, ["NAV", "Nav", "nav", "GeneraValor", "Genera Valor", "Valor", "NoAgregaValor", "No agrega valor"]),
     month: getRowValue(row, ["MES", "Mes", "month", "Month"]),
   })).filter((x) => x.code || x.process || x.processType || x.activity || x.participant || x.observation || x.nav);
@@ -1130,7 +1136,7 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
   const tutorialSheetNames = ["Tutoriales", "tutoriales", "TUTORIALES", "Tutorial", "Ayuda", "Videos", "VideosTutoriales", "Videos Tutoriales"];
   const tutorialHeaders = ["Titulo", "Título", "Title", "Descripcion", "Descripción", "Description", "Link", "Enlace", "Video", "Youtube", "YouTube"];
 
-  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, architectureToBeRows, personnelMatrixRows, organizationProcessRows, indicatorRows, qualityCommitteeRows, clientExperienceRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, repositoryRows, userRows] = await Promise.all([
+  const [projectRawRows, milestoneRows, findingRows, pendingRows, deliverableRows, updateRows, educationRows, masterTutorialRows, clientTutorialRows, meetingRows, chargeRows, documentRows, architectureRows, architectureToBeRows, personnelMatrixRows, organizationProcessRows, indicatorRows, qualityCommitteeRows, clientExperienceRows, processesAsIsRows, processesToBeRows, coeAsIsRows, coeToBeRows, genericCoeRows, repositoryRows, userRows] = await Promise.all([
     fetchCsvRows("Proyecto", true, spreadsheetId),
     fetchCsvSheet("Hitos", true, spreadsheetId),
     fetchCsvSheet("Hallazgos", true, spreadsheetId),
@@ -1164,8 +1170,9 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     fetchFirstAvailableSheet(["ExperienciaClientes", "Experiencia Clientes", "Tu experiencia", "Experiencia cliente", "Experiencia clientes"], spreadsheetId),
     fetchFirstAvailableSheet(["ProcesosASIS", "Procesos AS IS", "Procesos As Is", "Procesos AS-IS", "Procesos AS_IS", "ListaASIS", "Lista AS IS", "Lista AS-IS", "ASIS", "AS IS"], spreadsheetId),
     fetchFirstAvailableSheet(["ProcesosTOBE", "Procesos TO BE", "Procesos To Be", "Procesos TO-BE", "Procesos TO_BE", "ListaTOBE", "Lista TO BE", "Lista TO-BE", "TOBE", "TO BE"], spreadsheetId),
-    fetchFirstAvailableSheet(["COEASIS", "COE AS IS", "COE As Is", "COE AS-IS", "COE AS_IS", "COE Actual", "COEActual"], spreadsheetId),
-    fetchFirstAvailableSheet(["COETOBE", "COE TO BE", "COE To Be", "COE TO-BE", "COE TO_BE", "COE Propuesto", "COEPropuesto"], spreadsheetId),
+    fetchFirstAvailableSheet(["COEASIS", "COE AS IS", "COE As Is", "COE AS-IS", "COE AS_IS", "COE Actual", "COEActual", "Matriz COE AS IS", "Costo Operativo AS IS"], spreadsheetId),
+    fetchFirstAvailableSheet(["COETOBE", "COE TO BE", "COE To Be", "COE TO-BE", "COE TO_BE", "COE Propuesto", "COEPropuesto", "Matriz COE TO BE", "Costo Operativo TO BE"], spreadsheetId),
+    fetchFirstAvailableSheet(["COE", "Matriz COE", "Costo Operativo Estructural", "Costos Operativos", "Costos"], spreadsheetId),
     fetchFirstAvailableSheet(["Repositorio", "repositorio", "REPOSITORIO"], spreadsheetId),
     fetchFirstAvailableSheet(["Usuarios", "UsuariosInternos", "Usuarios Internos", "Equipo", "Colaboradores"], spreadsheetId),
   ]);
@@ -1173,6 +1180,17 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
   const deliverables = mapDeliverables(deliverableRows);
   const project = projectFromRawRows(projectRawRows);
   const weightedProgress = calculateDeliverablesProgress(deliverables);
+  const mappedCoeAsIs = mapCOERows(coeAsIsRows);
+  const mappedCoeToBe = mapCOERows(coeToBeRows);
+  const mappedGenericCoe = mapCOERows(genericCoeRows);
+  const genericCoeAsIs = mappedGenericCoe.filter((item) => {
+    const scenario = normalizeHeader(item.scenario || "");
+    return scenario.includes("asis") || scenario.includes("actual") || scenario.includes("origen");
+  });
+  const genericCoeToBe = mappedGenericCoe.filter((item) => {
+    const scenario = normalizeHeader(item.scenario || "");
+    return scenario.includes("tobe") || scenario.includes("propuesto") || scenario.includes("objetivo") || scenario.includes("futuro");
+  });
 
   return {
     project: {
@@ -1198,8 +1216,8 @@ export async function loadSheetDataForSpreadsheetId(spreadsheetId) {
     clientExperience: mapClientExperience(clientExperienceRows),
     processesAsIs: mapProcessesAsIs(processesAsIsRows),
     processesToBe: mapProcessesToBe(processesToBeRows),
-    coeAsIs: mapCOERows(coeAsIsRows),
-    coeToBe: mapCOERows(coeToBeRows),
+    coeAsIs: mappedCoeAsIs.length ? mappedCoeAsIs : (genericCoeAsIs.length ? genericCoeAsIs : mappedGenericCoe),
+    coeToBe: mappedCoeToBe.length ? mappedCoeToBe : genericCoeToBe,
     repository: mapRepository(repositoryRows),
     users: mapUsers(userRows),
   };
