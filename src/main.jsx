@@ -4670,10 +4670,12 @@ const CLIENT_EXPERIENCE_PERIODS = [
   { id: "EXP-M3", month: "Mes 3", requiredMilestones: [9, 10, 11, 12], title: "Experiencia final" },
 ];
 
+const getPublicAssetUrl = (fileName) => new URL(fileName, document.baseURI).href;
+
 const RIVI_IMAGES = {
-  celebration: "/rivi/rivi-celebracion.png",
-  greeting: "/rivi/rivi-saludo.png",
-  loading: "/rivi/rivi-salundando.gif",
+  celebration: getPublicAssetUrl("rivi-celebracion.png"),
+  greeting: getPublicAssetUrl("rivi-señalando.png"),
+  loading: getPublicAssetUrl("rivi-salundando.gif"),
 };
 
 const EXPERIENCE_FEEDBACK_OPTIONS = [
