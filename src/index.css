@@ -170,6 +170,10 @@
 .structureManagementGrid article > div:last-child { border-bottom: 0; }
 .structureManagementGrid strong { display: block; font-size: .8rem; }
 .structureManagementGrid p { margin: 4px 0 0; color: var(--structure-muted); font-size: .75rem; line-height: 1.4; }
+.structureManagementRoles { display: flex; flex-wrap: wrap; gap: 5px 10px; margin-top: 5px; }
+.structureManagementRoles button { padding: 2px 0; border: 0; border-bottom: 1px solid transparent; color: var(--structure-muted); background: transparent; font: inherit; font-size: .75rem; line-height: 1.35; text-align: left; cursor: pointer; }
+.structureManagementRoles button:hover,
+.structureManagementRoles button.selected { border-bottom-color: var(--structure-cyan); color: var(--structure-cyan-dark); }
 .structureRolesHeader { margin-bottom: 14px; }
 .structureRoleToolbar { display: grid; grid-template-columns: minmax(260px, 1fr) auto minmax(130px, auto) minmax(130px, auto); gap: 10px; align-items: end; margin-bottom: 14px; }
 .structureRoleToolbar > label:first-child { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border: 1px solid var(--structure-line); border-radius: 7px; }
@@ -194,6 +198,9 @@
 .structureRoleDetail > span { color: var(--structure-muted); font-size: .73rem; }
 .structureRoleDetail h3 { margin: 7px 0 8px; font-size: 1.08rem; line-height: 1.25; }
 .structureRoleBadges { display: flex; flex-wrap: wrap; gap: 7px; }
+.structureValidationStatus { display: inline-flex; width: max-content; padding: 5px 8px; border-radius: 5px; font-size: .68rem; font-style: normal; font-weight: 800; white-space: nowrap; }
+.structureValidationStatus.validated { background: #def4e8; color: #247653; }
+.structureValidationStatus.pending { background: #edf1f2; color: #61767b; }
 .structureRoleDetail dl { margin: 14px 0; }
 .structureRoleDetail dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid #e2e9eb; font-size: .74rem; }
 .structureRoleDetail dt { color: var(--structure-muted); }
@@ -21901,6 +21908,7 @@ body {
 
 .findingsRowMain strong {
   font-size: .8rem;
+  font-weight: 500;
   line-height: 1.3;
 }
 
@@ -21977,10 +21985,17 @@ body {
 .findingsDetailPanel > h4 {
   margin-top: 22px;
   font-size: .94rem;
+  font-weight: 600;
   line-height: 1.35;
 }
 
-.findingsDetailPanel > p,
+.findingsDetailPanel > p {
+  color: var(--findings-muted);
+  font-size: .8rem;
+  font-style: normal;
+  line-height: 1.5;
+}
+
 .findingsRecommendation p {
   color: var(--findings-muted);
   font-size: .8rem;
@@ -38431,14 +38446,15 @@ button.summaryV3Card:active,
 .calendarPendingCardMain strong { font-size: .78rem; }
 .calendarPendingCardMain p { margin: 0; color: var(--agenda-muted); font-size: .7rem; line-height: 1.4; }
 .calendarPendingMeta { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--agenda-muted); font-size: .66rem; }
-.calendarPendingMeta > button {
+.calendarPendingDateMissing {
+  display: inline-flex;
+  align-items: center;
   min-height: 30px;
   border: 1px dashed #d89b32;
   border-radius: 5px;
   padding: 0 10px;
   color: #8c5b08;
   background: #fffaf0;
-  cursor: pointer;
   font-size: .65rem;
   font-weight: 800;
 }
@@ -38478,7 +38494,6 @@ button.summaryV3Card:active,
 @media (hover: hover) and (pointer: fine) {
   .calendarAgendaPrimaryAction:hover,
   .calendarWeekNavigation > button:hover,
-  .calendarPendingMeta > button:hover { background: #f0f8f7; }
   .calendarWeekMeeting:hover { filter: brightness(.97); }
   .calendarPendingCardMain:hover strong { color: var(--agenda-cyan-dark); }
 }
@@ -39112,7 +39127,7 @@ button.summaryV3Card:active,
 .gseDeliverableDetailProgress small { color: var(--gse-muted); font-size: 10px; font-weight: 500; }
 .gseDeliverableOpen,
 .gseDeliverableDetailValidate { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; border-radius: 6px; font-size: 11px; font-weight: 800; text-decoration: none; cursor: pointer; }
-.gseDeliverableOpen { border: 1px solid var(--gse-teal); background: var(--gse-teal); color: #063a39; }
+.gseDeliverableOpen { border: 1px solid var(--gse-teal); background: var(--gse-teal); color: #fff; }
 .gseDeliverableOpen.unavailable { border-color: #dfe7e9; background: #f1f5f6; color: #92a3a8; cursor: default; }
 .gseDeliverableDetailValidate { border: 1px solid #a9e3e1; background: #fff; color: var(--gse-teal-dark); }
 .gseDeliverableDetailValidate.validated { border-color: transparent; background: #e2f4ea; color: #23784f; }
@@ -39467,6 +39482,8 @@ button.summaryV3Card:active,
 .documentsUploadRowMain small { display: block; }
 .documentsUploadRowMain strong { overflow-wrap: anywhere; font-size: 0.84rem; line-height: 1.25; }
 .documentsUploadRowMain small { margin-top: 3px; color: #708389; font-size: 0.7rem; }
+.documentsUploadRowMain .documentsUploadRowDescription { max-width: 62ch; color: #526c72; line-height: 1.4; }
+.documentsUploadRowMain .documentsUploadRowCategory { display: inline-flex; width: max-content; margin-top: 6px; padding: 3px 6px; border-radius: 4px; background: #eef5f5; color: #60777c; font-size: .62rem; font-weight: 700; }
 .documentsUploadRowMain em,
 .documentsUploadDetailBadges em {
   flex: 0 0 auto;
@@ -39960,6 +39977,163 @@ button.summaryV3Card:active,
 
 @media (prefers-reduced-motion: reduce) {
   .personnelDecisionSummary, .personnelWorkspace { animation: none; }
+}
+
+/* RIVI · aviso no bloqueante de sincronizacion */
+.riviDataUpdateNotice {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1100;
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr);
+  width: min(470px, calc(100vw - 32px));
+  min-height: 184px;
+  overflow: hidden;
+  border: 1px solid #b9e5e2;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .9);
+  backdrop-filter: blur(14px) saturate(1.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  box-shadow: 0 18px 44px rgba(16, 47, 55, .18);
+  animation: riviDataNoticeIn 280ms cubic-bezier(.23, 1, .32, 1) both;
+}
+
+.riviDataUpdateMedia {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.riviDataUpdateMedia img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 148px;
+  max-height: 160px;
+  object-fit: contain;
+}
+
+.riviDataUpdateContent {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 42px 20px 20px;
+}
+
+.riviDataUpdateContent > span {
+  margin-bottom: 4px;
+  color: #007f7c;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.riviDataUpdateContent h2 {
+  margin: 0;
+  color: #102f37;
+  font-size: 1.06rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.riviDataUpdateContent p {
+  margin: 7px 0 14px;
+  color: #536d73;
+  font-size: .8rem;
+  line-height: 1.45;
+}
+
+.riviDataUpdateContent > button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 0;
+  border-radius: 6px;
+  background: #00b6b2;
+  color: #ffffff;
+  font-size: .76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.riviDataUpdateContent > button:focus-visible,
+.riviDataUpdateClose:focus-visible {
+  outline: 3px solid rgba(0, 182, 178, .28);
+  outline-offset: 2px;
+}
+
+.riviDataUpdateClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: #edf5f5;
+  color: #49656b;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .riviDataUpdateContent > button:hover {
+    background: #009f9b;
+    transform: translateY(-1px);
+  }
+
+  .riviDataUpdateClose:hover {
+    background: #dcecec;
+    color: #102f37;
+  }
+}
+
+@keyframes riviDataNoticeIn {
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 560px) {
+  .riviDataUpdateNotice {
+    right: 16px;
+    bottom: 16px;
+    grid-template-columns: 108px minmax(0, 1fr);
+    min-height: 168px;
+  }
+
+  .riviDataUpdateMedia img {
+    width: 100%;
+    height: 100%;
+    max-width: 108px;
+    max-height: 142px;
+  }
+
+  .riviDataUpdateContent {
+    padding: 17px 38px 17px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .riviDataUpdateNotice { animation: riviDataNoticeFade 180ms ease both; }
+  .riviDataUpdateMedia img { display: none; }
+  .riviDataUpdateNotice { grid-template-columns: 1fr; }
+  .riviDataUpdateContent > button { transition: background-color 140ms ease; }
+}
+
+@keyframes riviDataNoticeFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Experiencia clientes · resumen y encuesta enfocada */

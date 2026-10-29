@@ -1,5 +1,5 @@
 ﻿
-import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 // RESUMEN_HITOS_BARRA_FINAL
 // RADAR_5_SISTEMAS_GSE
 // BUSCADOR_ENTREGABLES_EDUCACION_FINAL
@@ -794,6 +794,29 @@ function normalizeSystemName(value = "") {
     .toLowerCase();
 }
 
+function getSafeClientLabel(...values) {
+  return values
+    .map((value) => String(value || "").trim())
+    .find((value) => {
+      const normalized = normalizeSystemName(value);
+      return normalized && !normalized.includes("sin conex") && !normalized.includes("revisar google sheet");
+    }) || "";
+}
+
+function getSheetDataFingerprint(data = {}) {
+  try {
+    const serialized = JSON.stringify(data);
+    let hash = 2166136261;
+    for (let index = 0; index < serialized.length; index += 1) {
+      hash ^= serialized.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `${(hash >>> 0).toString(36)}:${serialized.length}`;
+  } catch {
+    return "";
+  }
+}
+
 const BUSINESS_POWER_SYSTEMS = [
   {
     short: "S1",
@@ -1196,9 +1219,8 @@ const meetingItems = [
     setOpenPanel("");
   };
 
-  const topbarCompany = project?.companyClient || project?.client || "";
+  const topbarCompany = getSafeClientLabel(project?.companyClient, project?.client);
   const topbarName = project?.contactName || project?.responsibleClient || "Cliente";
-  const topbarRole = project?.contactRole || project?.role || "";
 
   return (
     <div className="canvaTopbar appGlobalTopbar">
@@ -1283,7 +1305,6 @@ const meetingItems = [
         <div className="canvaUserBlock">
           {topbarCompany && <span className="canvaUserCompany">{topbarCompany}</span>}
           <strong className="canvaUserName">{topbarName}</strong>
-          {topbarRole && <small className="canvaUserRole">{topbarRole}</small>}
         </div>
         <button className="topbarLogoutButton" type="button" onClick={onLogout}>
           Salir
@@ -1409,7 +1430,7 @@ function SummaryCanvaDashboard({ project, milestones = [], pending = [], finding
   return (
     <section className="canvaSummary summaryV3">
       <div className="summaryV3Welcome">
-        <h2>Hola, {project?.contactName || project?.companyClient || project?.client || "Cliente"}</h2>
+        <h2>Hola, {getSafeClientLabel(project?.companyClient, project?.client) || "Cliente"}</h2>
         <p>Hito {currentMilestone.id || currentMilestoneIndex + 1}: {currentMilestone.title || "Por definir"} · {activePending.length} pendientes por resolver.</p>
       </div>
 
@@ -2347,7 +2368,7 @@ function CalendarView({ meetings = [], pending = [], setView, onPendingValidatio
                 <strong>{item.title}</strong>
                 <p>{item.blocks ? `Bloquea: ${item.blocks}` : item.description || "Sin impacto registrado."}</p>
               </button>
-              <div className="calendarPendingMeta"><span>Responsable: <strong>{item.responsible}</strong></span>{item.dateObject ? <span>Fecha: <strong>{formatCalendarDate(item.dateObject, { day: "numeric", month: "long" })}</strong></span> : <button type="button" onClick={() => setView?.("pendientes")}>Asignar fecha</button>}</div>
+              <div className="calendarPendingMeta"><span>Responsable: <strong>{item.responsible}</strong></span>{item.dateObject ? <span>Fecha: <strong>{formatCalendarDate(item.dateObject, { day: "numeric", month: "long" })}</strong></span> : <span className="calendarPendingDateMissing">Fecha por asignar</span>}</div>
               <div className="calendarPendingBadges">
                 <span className={`status ${item.statusState}`}>{statusLabel(item)}</span>
                 {item.validationState === "done" ? (
@@ -2678,6 +2699,7 @@ function ImplementationIndicators({ indicators = [] }) {
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [onlyMissing, setOnlyMissing] = useState(false);
   const [expandedIndicatorId, setExpandedIndicatorId] = useState("");
+  const captureViewInitializedRef = useRef(false);
   const [summaryGroupMode, setSummaryGroupMode] = useState("process");
   const [visibleIndicators, setVisibleIndicators] = useState(12);
   const [localIndicators, setLocalIndicators] = useState(indicators);
@@ -2943,10 +2965,15 @@ function ImplementationIndicators({ indicators = [] }) {
   });
 
   useEffect(() => {
-    if (indicatorView === "capture" && !expandedIndicatorId && filteredIndicators.length) {
-      setExpandedIndicatorId(filteredIndicators.find(hasCapturedData)?.id || filteredIndicators[0].id);
+    if (indicatorView !== "capture") {
+      captureViewInitializedRef.current = false;
+      return;
     }
-  }, [indicatorView, expandedIndicatorId, filteredIndicators]);
+    if (!captureViewInitializedRef.current && filteredIndicators.length) {
+      captureViewInitializedRef.current = true;
+      setExpandedIndicatorId((current) => current || filteredIndicators.find(hasCapturedData)?.id || filteredIndicators[0].id);
+    }
+  }, [indicatorView, filteredIndicators]);
 
   const updateLocalIndicator = (indicatorId, field, value) => {
     setLocalIndicators((current) => current.map((item) => (
@@ -3832,6 +3859,7 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
   const orgCanvasDragRef = useRef(null);
   const orgCanvasContentRef = useRef(null);
   const orgNodeRefs = useRef(new Map());
+  const structureRolesRef = useRef(null);
 
   const validationWebhookUrl = safeUrl(import.meta.env.VITE_STRUCTURE_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_ARCHITECTURE_VALIDATION_WEBHOOK_URL || "");
   const structureRofValidationWebhookUrl = safeUrl(import.meta.env.VITE_STRUCTURE_ROF_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_STRUCTURE_ASSET_VALIDATION_WEBHOOK_URL || import.meta.env.VITE_STRUCTURE_VALIDATION_WEBHOOK_URL || "");
@@ -4030,6 +4058,16 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
     /(?:embed|embedview|preview)/i.test(selectedProfileUrl) ||
     /\.(?:pdf|png|jpe?g)(?:$|[?#])/i.test(selectedProfileUrl)
   ));
+
+  const selectManagementRole = (role) => {
+    setSearchTerm("");
+    setGerenciaFilter("Todos");
+    setAreaFilter("Todos");
+    setStatusFilter("Todos");
+    setArchitectureValidationFilter("Todos");
+    setSelectedRoleKey(roleKey(role));
+    window.requestAnimationFrame(() => structureRolesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
 
   useEffect(() => {
     if (!roleRows.length) {
@@ -4365,7 +4403,7 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
           <div className="structureManagementGrid">
             {architectureRowsByManagement.map((group) => <article key={group.management}>
               <h4>{group.management}</h4>
-              {group.areas.map((area) => <div key={`${group.management}-${area.area}`}><strong>{area.area}</strong><p>{area.roles.map((role) => role.cargo).filter(Boolean).join(" · ") || `${area.roles.length} cargos`}</p></div>)}
+              {group.areas.map((area) => <div key={`${group.management}-${area.area}`}><strong>{area.area}</strong><div className="structureManagementRoles">{area.roles.map((role) => <button type="button" key={roleKey(role)} className={selectedRole && roleKey(selectedRole) === roleKey(role) ? "selected" : ""} onClick={() => selectManagementRole(role)}>{role.cargo || "Cargo sin nombre"}</button>)}</div></div>)}
             </article>)}
             {!architectureRowsByManagement.length && <div className="emptyState">No hay gerencias registradas para esta versión.</div>}
           </div>
@@ -4373,7 +4411,7 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
         <small className="structureSourceNote">Datos cargados desde {structureViewMode === "tobe" ? "ImagenEstructuraTOBE y ArquitecturaCargosTOBE" : "ImagenEstructura y ArquitecturaCargos"}.</small>
       </section>
 
-      <section className="structureRolesCard" id="structure-roles">
+      <section className="structureRolesCard" id="structure-roles" ref={structureRolesRef}>
         <div className="structureRolesHeader"><div><h3>Arquitectura de cargos y perfiles</h3><p>Elige un cargo para ver su perfil y validarlo.</p></div><Badge status="En validación">{activeArchitectureRows.length} cargos</Badge></div>
         <div className="structureRoleToolbar">
           <label><Search size={16} /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar por gerencia, área, cargo o grupo..." /></label>
@@ -4388,7 +4426,7 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
               const selected = selectedRole && roleKey(selectedRole) === roleKey(item);
               const validated = getValidated(item);
               return <button type="button" className={`structureRoleRow ${selected ? "selected" : ""}`} key={roleKey(item)} onClick={() => setSelectedRoleKey(roleKey(item))}>
-                <span>{item.id}</span><span><strong>{item.cargo || "Cargo sin nombre"}</strong><small>{item.gerencia}{item.area && item.area !== item.gerencia ? ` · ${item.area}` : ""}</small></span><span>{item.occupationalGroup || "Por definir"}<small>{item.abbreviation || ""}</small></span><span><Badge status={item.status}>{item.status || "Por definir"}</Badge></span><span><Badge status={validated ? "Finalizado" : "Pendiente"}>{validated ? "Validado" : "Por validar"}</Badge></span>
+                <span>{item.id}</span><span><strong>{item.cargo || "Cargo sin nombre"}</strong><small>{item.gerencia}{item.area && item.area !== item.gerencia ? ` · ${item.area}` : ""}</small></span><span>{item.occupationalGroup || "Por definir"}<small>{item.abbreviation || ""}</small></span><span><Badge status={item.status}>{item.status || "Por definir"}</Badge></span><span><em className={`structureValidationStatus ${validated ? "validated" : "pending"}`}>{validated ? "Validado" : "Por validar"}</em></span>
               </button>;
             })}
             {!roleRows.length && <div className="emptyState">No hay cargos que coincidan con los filtros seleccionados.</div>}
@@ -4396,7 +4434,7 @@ function StructureView({ project = {}, architectureRoles = [], architectureRoles
           <aside className="structureRoleDetail">
             {selectedRole ? <>
               <span>Cargo seleccionado</span><h3>{selectedRole.cargo || "Cargo sin nombre"}</h3>
-              <div className="structureRoleBadges"><Badge status={selectedRole.status}>{selectedRole.status || "Por definir"}</Badge><Badge status={getValidated(selectedRole) ? "Finalizado" : "Pendiente"}>{getValidated(selectedRole) ? "Validado" : "Por validar"}</Badge></div>
+              <div className="structureRoleBadges"><Badge status={selectedRole.status}>{selectedRole.status || "Por definir"}</Badge><em className={`structureValidationStatus ${getValidated(selectedRole) ? "validated" : "pending"}`}>{getValidated(selectedRole) ? "Validado" : "Por validar"}</em></div>
               <dl><div><dt>Gerencia</dt><dd>{selectedRole.gerencia || "Por definir"}</dd></div><div><dt>Área</dt><dd>{selectedRole.area || "Por definir"}</dd></div><div><dt>Grupo ocupacional sugerido</dt><dd>{selectedRole.occupationalGroup || "Por definir"}</dd></div><div><dt>Abreviación</dt><dd>{selectedRole.abbreviation || "—"}</dd></div></dl>
               <div className="structureProfilePreviewCard"><FileText size={26} /><strong>Perfil del cargo</strong><span>{selectedProfileUrl ? "Revisa el perfil antes de validar" : "No hay un perfil enlazado"}</span><button type="button" disabled={!selectedProfileUrl} onClick={() => setProfilePreviewOpen(true)}>Ver perfil</button></div>
               <button type="button" className="structurePrimaryAction" disabled={getValidated(selectedRole) || savingValidation[getValidationKey(selectedRole)]} onClick={() => handleValidate(selectedRole, true)}>{savingValidation[getValidationKey(selectedRole)] ? "Guardando..." : getValidated(selectedRole) ? "Cargo validado" : "Validar cargo"}</button>
@@ -4676,6 +4714,7 @@ const RIVI_IMAGES = {
   celebration: getPublicAssetUrl("rivi-celebracion.png"),
   greeting: getPublicAssetUrl("rivi-señalando.png"),
   loading: getPublicAssetUrl("rivi-salundando.gif"),
+  alert: getPublicAssetUrl("rivi-alerta.gif"),
 };
 
 const EXPERIENCE_FEEDBACK_OPTIONS = [
@@ -5222,6 +5261,8 @@ function ClientExperiencePrompt({ periods = [], onShare, onLater, spreadsheetId 
 }
 
 function RivLoadingIntro({ clientName = "", exiting = false }) {
+  const safeClientName = getSafeClientLabel(clientName);
+
   return (
     <div className={`rivLoadingIntro ${exiting ? "leaving" : ""}`} role="status" aria-live="polite">
       <div className="rivLoadingCard">
@@ -5236,7 +5277,7 @@ function RivLoadingIntro({ clientName = "", exiting = false }) {
           />
         </div>
         <div className="rivLoadingText">
-          <h2>{clientName ? `Hola, ${clientName}` : "Bienvenido al RIV"}</h2>
+          <h2>{safeClientName ? `Hola, ${safeClientName}` : "Bienvenido al RIV"}</h2>
           <p>Estamos preparando tu ruta de implementación</p>
         </div>
         <div className="rivLoadingSteps">
@@ -5246,6 +5287,38 @@ function RivLoadingIntro({ clientName = "", exiting = false }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function RiviDataUpdateNotice({ company = "", onClose, onUpdate }) {
+  const companyName = getSafeClientLabel(company);
+
+  return (
+    <aside className="riviDataUpdateNotice" role="status" aria-live="polite">
+      <button className="riviDataUpdateClose" type="button" onClick={onClose} aria-label="Cerrar aviso">
+        <X size={17} />
+      </button>
+      <div className="riviDataUpdateMedia" aria-hidden="true">
+        <img
+          src={RIVI_IMAGES.alert}
+          alt=""
+          onError={(event) => {
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = RIVI_IMAGES.greeting;
+          }}
+        />
+      </div>
+      <div className="riviDataUpdateContent">
+        <span>Nueva información disponible</span>
+        <h2>Tienes datos por actualizar</h2>
+        <p>
+          {companyName ? `Detectamos cambios nuevos para ${companyName}.` : "Detectamos cambios nuevos en el proyecto."}
+        </p>
+        <button type="button" onClick={onUpdate}>
+          Actualizar ahora <ArrowRight size={16} />
+        </button>
+      </div>
+    </aside>
   );
 }
 
@@ -5361,6 +5434,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
   const selectedSheetUrl = safeUrl(selectedProcess?.technicalSheet || selectedProcess?.ficha || selectedProcess?.fichaTecnica || selectedProcess?.linkFicha);
   const activeProcessAssetUrl = processAssetView === "sheet" ? selectedSheetUrl : selectedFlowUrl;
   const activeProcessAssetPreviewUrl = getProcessAssetPreviewUrl(activeProcessAssetUrl, processAssetView);
+  const activeProcessAssetIsImage = /\.(?:png|jpe?g|gif|webp|svg)(?:$|[?#])/i.test(activeProcessAssetPreviewUrl) || /googleusercontent\.com/i.test(activeProcessAssetPreviewUrl);
   const activeProcessAssetCanEmbed = processAssetView === "flow" || !/sharepoint\.com|1drv\.ms|onedrive\.live\.com/i.test(activeProcessAssetUrl) || /(?:embed|embedview|action=embedview)/i.test(activeProcessAssetUrl);
   const activeValidationStats = processMapMode === "tobe" ? toBeValidationStats : asIsValidationStats;
   const activeValidationPercent = processMapMode === "tobe" ? toBeValidationPercent : asIsValidationPercent;
@@ -5850,7 +5924,7 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
                   </div>
                   <div className="processAssetViewerFrame">
                     {activeProcessAssetPreviewUrl && activeProcessAssetCanEmbed && !processAssetPreviewFailed ? (
-                      processAssetView === "flow" ? (
+                      processAssetView === "flow" && activeProcessAssetIsImage ? (
                         <img
                           key={`flow-${activeProcessAssetPreviewUrl}`}
                           src={activeProcessAssetPreviewUrl}
@@ -5859,9 +5933,9 @@ function ProcessesMasterList({ project = {}, processesAsIs = [], processesToBe =
                         />
                       ) : (
                         <iframe
-                          key={`sheet-${activeProcessAssetPreviewUrl}`}
+                          key={`${processAssetView}-${activeProcessAssetPreviewUrl}`}
                           src={activeProcessAssetPreviewUrl}
-                          title={`Ficha técnica de ${selectedProcess.processName || "proceso"}`}
+                          title={`${processAssetView === "sheet" ? "Ficha técnica" : "Flujo"} de ${selectedProcess.processName || "proceso"}`}
                           loading="lazy"
                         />
                       )
@@ -9492,6 +9566,11 @@ function DocumentsUpload({ documents = [], project, setView, previousView = "por
     if (status === "En revisión") return "En revisión por GSE";
     return status || "Pendiente";
   };
+  const getDocumentTitle = (item = {}) => item.item || item.title || item.description || "Documento solicitado";
+  const getDocumentDescription = (item = {}) => {
+    const titleValue = getDocumentTitle(item);
+    return item.detail || (item.description && item.description !== titleValue ? item.description : "") || "Revisa el detalle para conocer la información solicitada.";
+  };
 
   const handleDocumentAction = async (item, { respuesta, estado }) => {
     const key = getDocumentKey(item);
@@ -9938,7 +10017,7 @@ useEffect(() => {
               return (
                 <article className={selected ? "selected" : ""} key={`${stableKey}-${index}`}>
                   <button className="documentsUploadRowMain" type="button" onClick={() => setSelectedDocumentKey(stableKey)}>
-                    <span><strong>{item.item || item.description || item.title || "Documento solicitado"}</strong><small>{item.category || "Sin categoría"}</small></span>
+                    <span><strong>{getDocumentTitle(item)}</strong><small className="documentsUploadRowDescription">{getDocumentDescription(item)}</small><small className="documentsUploadRowCategory">{item.category || "Sin categoría"}</small></span>
                     {isRequiredDocument(item) && <em>Obligatorio</em>}
                   </button>
                   <span className={`documentsStatusPill status-${statusClass}`}>{status}</span>
@@ -9964,13 +10043,13 @@ useEffect(() => {
         {selectedDocument && (
           <aside className="documentsUploadDetail">
             <span>Documento seleccionado</span>
-            <h2>{selectedDocument.item || selectedDocument.description || selectedDocument.title || "Documento solicitado"}</h2>
+            <h2>{getDocumentTitle(selectedDocument)}</h2>
             <div className="documentsUploadDetailBadges">
               <span className={`documentsStatusPill status-${normalizeSystemName(selectedStatus).replace(/\s+/g, "-")}`}>{selectedStatus}</span>
               {isRequiredDocument(selectedDocument) && <em>Obligatorio</em>}
               <small>{selectedDocument.category || "Sin categoría"}</small>
             </div>
-            {selectedDocument.detail && <p className="documentsUploadDetailCopy">{selectedDocument.detail}</p>}
+            <p className="documentsUploadDetailCopy">{getDocumentDescription(selectedDocument)}</p>
 
             <ol className="documentsUploadDetailSteps">
               <li className="active">
@@ -12744,30 +12823,97 @@ function App() {
   const [introVisible, setIntroVisible] = useState(Boolean(getStoredClientSession()?.sheetId));
   const [introLeaving, setIntroLeaving] = useState(false);
   const introStartedAt = useRef(Date.now());
+  const dataFingerprintRef = useRef("");
+  const pendingSheetUpdateRef = useRef(null);
+  const refreshInFlightRef = useRef(false);
+  const lastRefreshAtRef = useRef(0);
   const [error, setError] = useState("");
+  const [dataUpdateNotice, setDataUpdateNotice] = useState(null);
   const [selectedDeliverable, setSelectedDeliverable] = useState("");
   const [selectedHito, setSelectedHito] = useState("");
   const [previousView, setPreviousView] = useState("resumen");
 
-  useEffect(() => {
-    if (!session?.sheetId) return;
+  const refreshSheetData = useCallback(async ({ background = false } = {}) => {
+    if (!session?.sheetId || refreshInFlightRef.current) return;
 
-    setLoadingData(true);
-    loadSheetData()
-      .then((sheetData) => {
-        setData(sheetData);
-        setConnected(true);
-        setError("");
-      })
-      .catch((err) => {
-        console.error(err);
+    refreshInFlightRef.current = true;
+    if (!background) setLoadingData(true);
+
+    try {
+      const sheetData = await loadSheetData();
+      const nextFingerprint = getSheetDataFingerprint(sheetData);
+      const fingerprintStorageKey = `gseSheetFingerprint:${session.sheetId}`;
+      const previousFingerprint = dataFingerprintRef.current;
+      const changed = Boolean(previousFingerprint && nextFingerprint && previousFingerprint !== nextFingerprint);
+
+      setConnected(true);
+      setError("");
+      lastRefreshAtRef.current = Date.now();
+
+      if (background) {
+        if (changed) {
+          pendingSheetUpdateRef.current = { data: sheetData, fingerprint: nextFingerprint, storageKey: fingerprintStorageKey };
+          setDataUpdateNotice((current) => (
+            current?.fingerprint === nextFingerprint
+              ? current
+              : { fingerprint: nextFingerprint, detectedAt: Date.now() }
+          ));
+        } else {
+          pendingSheetUpdateRef.current = null;
+          setDataUpdateNotice(null);
+        }
+        return;
+      }
+
+      setData(sheetData);
+      dataFingerprintRef.current = nextFingerprint;
+      pendingSheetUpdateRef.current = null;
+      setDataUpdateNotice(null);
+      try {
+        window.localStorage.setItem(fingerprintStorageKey, nextFingerprint);
+      } catch {
+        // La sincronización sigue funcionando aunque el navegador bloquee el almacenamiento local.
+      }
+    } catch (err) {
+      console.error(err);
+      if (!background) {
         setConnected(false);
         setError("No pudimos cargar tu ruta. Intenta actualizar o contacta a GSE.");
-      })
-      .finally(() => {
-        setLoadingData(false);
-      });
+      }
+    } finally {
+      refreshInFlightRef.current = false;
+      if (!background) setLoadingData(false);
+    }
   }, [session?.sheetId]);
+
+  useEffect(() => {
+    if (!session?.sheetId) return;
+    refreshSheetData();
+  }, [refreshSheetData, session?.sheetId]);
+
+  useEffect(() => {
+    if (!session?.sheetId) return undefined;
+
+    const refreshInterval = 60 * 60 * 1000;
+    const refreshIfDue = () => {
+      if (Date.now() - lastRefreshAtRef.current >= refreshInterval) {
+        refreshSheetData({ background: true });
+      }
+    };
+    const refreshOnReturn = () => refreshSheetData({ background: true });
+    const intervalId = window.setInterval(refreshIfDue, refreshInterval);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") refreshOnReturn();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", refreshOnReturn);
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", refreshOnReturn);
+    };
+  }, [refreshSheetData, session?.sheetId]);
 
   useEffect(() => {
     if (!session?.sheetId) {
@@ -12811,6 +12957,10 @@ function App() {
     setLoadingData(false);
     setIntroVisible(false);
     setIntroLeaving(false);
+    setDataUpdateNotice(null);
+    dataFingerprintRef.current = "";
+    pendingSheetUpdateRef.current = null;
+    lastRefreshAtRef.current = 0;
     setData(demoData);
   };
 
@@ -12819,6 +12969,26 @@ function App() {
     if (!nextView || nextView === view) return;
     setPreviousView(view);
     setView(nextView);
+  };
+
+  const applyPendingSheetUpdate = () => {
+    const pendingUpdate = pendingSheetUpdateRef.current;
+    if (!pendingUpdate) {
+      setDataUpdateNotice(null);
+      return;
+    }
+
+    setData(pendingUpdate.data);
+    dataFingerprintRef.current = pendingUpdate.fingerprint;
+    pendingSheetUpdateRef.current = null;
+    setDataUpdateNotice(null);
+    try {
+      window.localStorage.setItem(pendingUpdate.storageKey, pendingUpdate.fingerprint);
+    } catch {
+      // La actualización visible no depende del almacenamiento local.
+    }
+    navigate("resumen");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePendingValidationChange = (target = {}, value = "") => {
@@ -12850,7 +13020,19 @@ function App() {
 
   return (
     <div className="app">
-      {introVisible && <RivLoadingIntro clientName={session.nombre || session.usuario || project.contactName || ""} exiting={introLeaving} />}
+      {introVisible && (
+        <RivLoadingIntro
+          clientName={getSafeClientLabel(session.cliente, session.empresa, project.companyClient, project.client)}
+          exiting={introLeaving}
+        />
+      )}
+      {dataUpdateNotice && (
+        <RiviDataUpdateNotice
+          company={project.companyClient || project.client || session.cliente || ""}
+          onClose={() => setDataUpdateNotice(null)}
+          onUpdate={applyPendingSheetUpdate}
+        />
+      )}
       <Sidebar view={view} setView={navigate} project={project} />
       <ClientExperiencePrompt
         periods={experiencePeriods}
@@ -12881,26 +13063,6 @@ function App() {
         />
 
         <div className={`content view-${view}`}>
-          <div className="mobileTabs">
-            {[
-              ["resumen", "Resumen"],
-              ["calendario", "Agenda y pendientes"],
-              ["procesos", "Procesos"],
-              ["optimizacion-racionalizacion", "Optimización y Racionalización"],
-              ["coe", "COE"],
-              ["hallazgos", "Hallazgos"],
-              ["entregables", "Entregables"],
-              ["repositorio", "Repositorio"],
-              ["indicadores", "Indicadores"],
-              ["documentos", "Documentos"],
-              ["experiencia", "Tu experiencia"],
-            ].map(([value, label]) => (
-              <button key={value} onClick={() => navigate(value)} className={view === value ? "active" : ""}>
-                {label}
-              </button>
-            ))}
-          </div>
-
           {error && <div className="errorBox">{error}</div>}
 
           {view === "portal" && (
